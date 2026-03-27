@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { getDiasMonth, convertirTonalpohualli, tonalpohualliSimbolos, convertirDuran } from '../funtions/funtions';
+import { getDiasMonth, convertirTonalli, tonalliSimbolos, convertirXihuitl } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -20,8 +20,8 @@ const Inverso = () => {
     const [selectedEndDate, setSelectedEndDate] = useState(formatDateForInput(new Date()))
     const [results, setResults] = useState([])
     const [loading, setLoading] = useState(false);
-    // Símbolos del Duran
-    const duranSimbolos = ['Caña', 'Pedernal', 'Casa', 'Conejo']
+    // Símbolos del xihuitl
+    const xihuitlSimbolos = ['Caña', 'Pedernal', 'Casa', 'Conejo']
     //Fecha de referencia
     const referenceDate = new Date(1521, 7, 13)
     //Función para buscar coincidencias2
@@ -39,7 +39,7 @@ const Inverso = () => {
             const matches = []
             //codigo prueba
             // if(fechaInicio < fechaReferencia){
-            const tonalpohualliStart = convertirTonalpohualli(fechaInicio)
+            const tonalliStart = convertirTonalli(fechaInicio)
             // Ajustar por el cambio de calendario (5-15 de octubre de 1582 no existieron)
             const fechaJuliano = new Date(1582, 9, 4)
             const fechaGregoriano = new Date(1582, 9, 15)
@@ -61,22 +61,22 @@ const Inverso = () => {
                              continue
                          } */
                         const currentDate = new Date(year, month, day)
-                        const tonalpohualli = convertirTonalpohualli(currentDate)
-                        const duran = convertirDuran(currentDate)
-                        if (tonalpohualli.numero === numero && tonalpohualli.simbolo.español === simbolo) {// if(tonalpohualli.numero === numero && tonalpohualli.simbolo === simbolo)
+                        const tonalli = convertirTonalli(currentDate)
+                        const xihuitl = convertirXihuitl(currentDate)
+                        if (tonalli.numero === numero && tonalli.simbolo.español === simbolo) {// if(tonalpohualli.numero === numero && tonalpohualli.simbolo === simbolo)
                             if (currentDate <= fechaJuliano) {
                                 matches.push({
                                     date: currentDate,
                                     calendar: 'Juliano',
-                                    tonalpohualli: tonalpohualli,
-                                    duran: duran
+                                    tonalli: tonalli,
+                                    xihuitl: xihuitl
                                 })
                             } else {
                                 matches.push({
                                     date: currentDate,
                                     calendar: 'Gregoriano',
-                                    tonalpohualli: tonalpohualli,
-                                    duran: duran
+                                    tonalli: tonalli,
+                                    xihuitl: xihuitl
                                 })
                             }
                         }
@@ -152,9 +152,9 @@ const Inverso = () => {
             <div className="container text-center">
                 <h1 className="text-center mb-4">Conversor de calendarios invertido</h1>
                 <div className="row justify-content-center">
-                    <h5 className="text-center mb-4">Selecciona un digito y un simbolo del Tonalpohualli</h5>
+                    <h5 className="text-center mb-4">Selecciona un numeral y un signo del Tonalli</h5>
                     <div className="col-md-11">
-                        <label htmlFor="number" className="form-label">Digito Tonalpohualli</label>
+                        <label htmlFor="number" className="form-label">Numeral Tonalli</label>
                     </div>
                     <div className="col-md-11">
                         <select id="number" className="form-select" aria-label="Default select example" value={numero} onChange={(e) => setNumero(parseInt(e.target.value))}>
@@ -164,12 +164,12 @@ const Inverso = () => {
                 </div>
                 <div className="row justify-content-center">
                     <div className="col-md-11">
-                        <label htmlFor="symbol" className="form-label">Simbolo Tonalpohualli</label>
+                        <label htmlFor="symbol" className="form-label">Signo Tonalli</label>
                     </div>
                     <div className="col-md-11">
                         <select id="symbol" className="form-select" aria-label="Default select example" value={simbolo} onChange={(e) => setSimbolo(e.target.value)}>
                             {/* tonalpohualliSimbolos.map((sim)=>(<option key={sim} value={sim}>{sim.charAt(0).toUpperCase()+sim.slice(1)}</option>)) */}
-                            {tonalpohualliSimbolos.map((sim) => (<option key={sim.español} value={sim.español}>{sim.español.charAt(0).toUpperCase() + sim.español.slice(1)}</option>))}
+                            {tonalliSimbolos.map((sim) => (<option key={sim.español} value={sim.español}>{sim.español.charAt(0).toUpperCase() + sim.español.slice(1)}</option>))}
                         </select>
                     </div>
                 </div>
@@ -214,8 +214,8 @@ const Inverso = () => {
                                         <tr>
                                             <th scope="col">Fecha</th>
                                             <th scope="col">Calendario</th>
-                                            <th scope="col">Tonalpohualli</th>
-                                            <th scope="col">Duran</th>
+                                            <th scope="col">Tonalli</th>
+                                            <th scope="col">Xihuitl</th>
                                         </tr>
                                     </thead>
                                     <tbody>
