@@ -28,6 +28,7 @@ const xihuitlSimbolos = [
     { español: "Casa", nahuatl: "Calli", nusavi: "Cuau", image: "casa.png" },
     { español: "Conejo", nahuatl: "Tochtli", nusavi: "Sayu", image: "conejo.png" }
 ]
+
 // Función para verificar si un año es bisiesto según las reglas correspondientes
 const bisiestoAnio = (year) => {
     if (year < 1582) {
@@ -119,9 +120,11 @@ export const convertirTonalli = (date) => {
         let simboloCal = ((simboloReferencia + diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
         return {
-            numero,
+            /* numero, */
+            numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
-            numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href,
+            /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
+            numberImage: new URL(`../images/${numerosNombres[numero - 1].image}`, import.meta.url).href,
             symbolImage: new URL(`../images/${tonalliSimbolos[simboloCal].image}`, import.meta.url).href,
             diaCiclo,
             simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
@@ -139,9 +142,9 @@ export const convertirTonalli = (date) => {
         let simboloCal = ((simboloReferencia - diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
         return {
-            numero,
+            numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
-            numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href,
+            numberImage: new URL(`../images/${numerosNombres[numero - 1].image}`, import.meta.url).href,
             symbolImage: new URL(`../images/${tonalliSimbolos[simboloCal].image}`, import.meta.url).href,
             diaCiclo,
             simboloInv: tonalliSimbolos[simboloCal].español//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
@@ -150,9 +153,9 @@ export const convertirTonalli = (date) => {
         let numero = digitoReferencia
         let simboloCal = simboloReferencia
         return {
-            numero,
+            numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
-            numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href,
+            numberImage: new URL(`../images/${numerosNombres[numero - 1].image}`, import.meta.url).href,
             symbolImage: new URL(`../images/${tonalliSimbolos[simboloCal].image}`, import.meta.url).href,
             simboloInv: tonalliSimbolos[simboloCal].español//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
         }
@@ -177,9 +180,11 @@ export const convertirXihuitl = (date) => {
         let simboloCalXihuitl = ((simboloReferencia + diferencia) % 4)
         simboloCalXihuitl = simboloCalXihuitl < 0 ? simboloCalXihuitl + 4 : simboloCalXihuitl
         return {
-            numeroX,
+            /* numeroX, */
+            numeroX: numerosNombres[numeroX - 1],
             simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href,
+            /* numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href, */
+            numberImageX: new URL(`../images/${numerosNombres[numeroX - 1].image}`, import.meta.url).href,
             symbolImageX: new URL(`../images/${xihuitlSimbolos[simboloCalXihuitl].image}`, import.meta.url).href,
             simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
             simboloCalXihuitl
@@ -194,9 +199,9 @@ export const convertirXihuitl = (date) => {
         let simboloCalXihuitl = ((simboloReferencia - diferencia) % 4)
         simboloCalXihuitl = simboloCalXihuitl < 0 ? simboloCalXihuitl + 4 : simboloCalXihuitl
         return {
-            numeroX,
+            numeroX: numerosNombres[numeroX - 1],
             simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href,
+            numberImageX: new URL(`../images/${numerosNombres[numeroX - 1].image}`, import.meta.url).href,
             symbolImageX: new URL(`../images/${xihuitlSimbolos[simboloCalXihuitl].image}`, import.meta.url).href,
             simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
             simboloCalXihuitl
@@ -205,9 +210,9 @@ export const convertirXihuitl = (date) => {
         let numeroX = digitoReferencia
         let simboloCalXihuitl = simboloReferencia
         return {
-            numeroX,
+            numeroX: numerosNombres[numeroX - 1],
             simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href,
+            numberImageX: new URL(`../images/${numerosNombres[numeroX - 1].image}`, import.meta.url).href,
             symbolImageX: new URL(`../images/${xihuitlSimbolos[simboloCalXihuitl].image}`, import.meta.url).href,
             simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
             simboloCalXihuitl
@@ -215,10 +220,24 @@ export const convertirXihuitl = (date) => {
     }
 }
 //Funcion para obtener el archivo de imagen del numero
-export const numerosNombres = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
-const getNumberoImage = (numero) => {
-    /* const numerosNombres=[
-        "1","2","3","4","5","6","7","8","9","10","11","12","13"
-    ] */
-    return `${numerosNombres[numero - 1]}.png`
-}
+//export const numerosNombres = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
+export const numerosNombres = [
+    { español: "1", nahuatl: "Ce", nusavi: "Ca, co", image: "1.png" },
+    { español: "2", nahuatl: "Ome", nusavi: "Ca, co", image: "2.png" },
+    { español: "3", nahuatl: "Yei", nusavi: "Co", image: "3.png" },
+    { español: "4", nahuatl: "Nahui", nusavi: "Qui", image: "4.png" },
+    { español: "5", nahuatl: "Macuilli", nusavi: "Q, qhu", image: "5.png" },
+    { español: "6", nahuatl: "Chicuace", nusavi: "Ñu", image: "6.png" },
+    { español: "7", nahuatl: "Chicome", nusavi: "Sa", image: "7.png" },
+    { español: "8", nahuatl: "Chicueyi", nusavi: "Na", image: "8.png" },
+    { español: "9", nahuatl: "Chicnahui", nusavi: "Q, qhu", image: "9.png" },
+    { español: "10", nahuatl: "Matlacti", nusavi: "Si", image: "10.png" },
+    { español: "11", nahuatl: "Matlacti ihuan ce", nusavi: "Si, sii", image: "11.png" },
+    { español: "12", nahuatl: "Matlacti ihuan ome", nusavi: "Ca", image: "12.png" },
+    { español: "13", nahuatl: "Matlacti ihuan yei", nusavi: "Si", image: "13.png" }]
+/* const getNumberoImage = (numero) => { */
+/* const numerosNombres=[
+    "1","2","3","4","5","6","7","8","9","10","11","12","13"
+] */
+/*     return `${numerosNombres.español[numero - 1]}.png`
+} */

@@ -150,7 +150,7 @@ const Inverso = () => {
     return (
         <>
             <div className="container text-center">
-                <h1 className="text-center mb-4">Conversor de calendarios invertido</h1>
+                <h1 className="text-center mb-4">Correlaciones Calendarícas Precoloniales</h1>
                 <div className="row justify-content-center">
                     <h5 className="text-center mb-4">Selecciona un numeral y un signo del Tonalli</h5>
                     <div className="col-md-11">
@@ -223,9 +223,9 @@ const Inverso = () => {
                                             <tr key={index}>
                                                 <td>{formatDate(result.date)}</td>
                                                 <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning' : 'bg-info'}`}>{result.calendar}</span></td>
-                                                <td>{result.tonalpohualli.numero} - {result.tonalpohualli.simbolo.español}</td>
+                                                <td>{result.tonalli.numero.español} - {result.tonalli.simbolo.español}</td>
                                                 {/* <td>{result.tonalpohualli.numero} - {result.tonalpohualli.simbolo}</td> */}
-                                                <td>{result.duran.numeroD} - {result.duran.simboloDInv}</td>
+                                                <td>{result.xihuitl.numeroX} - {result.xihuitl.simboloXInv}</td>
                                             </tr>
                                         ))}
                                     </tbody>
