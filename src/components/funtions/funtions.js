@@ -22,7 +22,7 @@ export const tonalliSimbolos = [
     { español: "Flor", nahuatl: "Xochitl", nusavi: "Huaco", image: "flor.png" }
 ]
 //Simbolos del Xihuitl
-const xihuitlSimbolos = [
+export const xihuitlSimbolos = [
     { español: "Caña", nahuatl: "Acatl", nusavi: "Huiyo", image: "caña.png" },
     { español: "Pedernal", nahuatl: "Tecpatl", nusavi: "Cusi", image: "pedernal.png" },
     { español: "Casa", nahuatl: "Calli", nusavi: "Cuau", image: "casa.png" },
