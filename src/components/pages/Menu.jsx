@@ -30,6 +30,9 @@ const Menu = () => {
                 <li class="nav-item">
                   <Link class={`nav-link ${isActive('/Tablero') ? 'active' : ''}`} to="/Tablero">Tablero{isActive('/Tablero') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
+                <li class="nav-item">
+                  <Link class={`nav-link ${isActive('/Calculadora') ? 'active' : ''}`} to="/Calculadora">Calculadora{isActive('/Calculadora') && <span class="visually-hidden">(actual)</span>}</Link>
+                </li>
               </ul>
             </Nav>
           </Navbar.Collapse>

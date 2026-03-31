@@ -12,7 +12,7 @@ import Conversor from './components/pages/Conversor'
 import Inverso from './components/pages/Inverso'
 import Tablero from './components/pages/Tablero'
 import Engranajes from './components/pages/Engranajes'
-
+import Calculadora from './components/pages/Calculadora'
 function App() {
   /* const [count, setCount] = useState(0) */
 
@@ -29,6 +29,7 @@ function App() {
           <Route path="/inverso" element={<Inverso />} />
           <Route path="/tablero" element={<Tablero />} />
           <Route path="/engranajes" element={<Engranajes />} />
+          <Route path="/calculadora" element={<Calculadora />} />
         </Routes>
         <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
           <p className="mb-0">Creditos. TLACUATZIN CODEX LAB Investigación Transdisciplinaria de la Matemática en los Códices Prehispánicos de México</p>
