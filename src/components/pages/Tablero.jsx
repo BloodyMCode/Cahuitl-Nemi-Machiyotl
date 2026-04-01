@@ -155,7 +155,7 @@ const Tablero = () => {
           <div className={`col-md-2 p-2 rounded ${selectedCategories.cosas ? 'cell-cosas' : ''}`} style={{ transition: 'all 0.3s ease' }}>
             <div className="form-check">
               <input className="form-check-input" type="checkbox" value="" id="checkCosas" checked={selectedCategories.cosas} onChange={() => handleCategoryChange('cosas')} />
-              <label className="form-check-label" htmlFor="checkCosas">Cosas</label>
+              <label className="form-check-label" htmlFor="checkCosas">Objetos</label>
             </div>
           </div>
           <div className={`col-md-2 p-2 rounded ${selectedCategories.abstractos ? 'cell-abstractos' : ''}`} style={{ transition: 'all 0.3s ease' }}>
