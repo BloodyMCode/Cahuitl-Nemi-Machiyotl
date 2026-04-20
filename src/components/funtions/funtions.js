@@ -28,6 +28,28 @@ export const xihuitlSimbolos = [
     { español: "Casa", nahuatl: "Calli", nusavi: "Cuau", image: "casa.png" },
     { español: "Conejo", nahuatl: "Tochtli", nusavi: "Sayu", image: "conejo.png" }
 ]
+//Funcion para obtener la imagen del numero
+//export const numerosNombres = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
+export const numerosNombres = [
+    { español: "1", nahuatl: "Ce", nusavi: "Ca, co", image: "1.png" },
+    { español: "2", nahuatl: "Ome", nusavi: "Ca, co", image: "2.png" },
+    { español: "3", nahuatl: "Yei", nusavi: "Co", image: "3.png" },
+    { español: "4", nahuatl: "Nahui", nusavi: "Qui", image: "4.png" },
+    { español: "5", nahuatl: "Macuilli", nusavi: "Q, qhu", image: "5.png" },
+    { español: "6", nahuatl: "Chicuace", nusavi: "Ñu", image: "6.png" },
+    { español: "7", nahuatl: "Chicome", nusavi: "Sa", image: "7.png" },
+    { español: "8", nahuatl: "Chicueyi", nusavi: "Na", image: "8.png" },
+    { español: "9", nahuatl: "Chicnahui", nusavi: "Q, qhu", image: "9.png" },
+    { español: "10", nahuatl: "Matlacti", nusavi: "Si", image: "10.png" },
+    { español: "11", nahuatl: "Matlacti ihuan ce", nusavi: "Si, sii", image: "11.png" },
+    { español: "12", nahuatl: "Matlacti ihuan ome", nusavi: "Ca", image: "12.png" },
+    { español: "13", nahuatl: "Matlacti ihuan yei", nusavi: "Si", image: "13.png" }]
+/* const getNumberoImage = (numero) => { */
+/* const numerosNombres=[
+    "1","2","3","4","5","6","7","8","9","10","11","12","13"
+] */
+/*     return `${numerosNombres.español[numero - 1]}.png`
+} */
 
 // Función para verificar si un año es bisiesto según las reglas correspondientes
 const bisiestoAnio = (year) => {
@@ -48,7 +70,8 @@ export const getDiasMonth = (year, month) => {
     return diasInMonth[month]
 
 }
-// Función para calcular días transcurridos manualmente
+//CUENTA CASO
+// Función para calcular días transcurridos manualmente 
 export const calcularDiasManual = (date) => {
     let dias = 0
     const referenceFecha = new Date(1521, 7, 13)//fecha referencia 13-Ago-1521
@@ -219,25 +242,122 @@ export const convertirXihuitl = (date) => {
         }
     }
 }
-//Funcion para obtener el archivo de imagen del numero
-//export const numerosNombres = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
-export const numerosNombres = [
-    { español: "1", nahuatl: "Ce", nusavi: "Ca, co", image: "1.png" },
-    { español: "2", nahuatl: "Ome", nusavi: "Ca, co", image: "2.png" },
-    { español: "3", nahuatl: "Yei", nusavi: "Co", image: "3.png" },
-    { español: "4", nahuatl: "Nahui", nusavi: "Qui", image: "4.png" },
-    { español: "5", nahuatl: "Macuilli", nusavi: "Q, qhu", image: "5.png" },
-    { español: "6", nahuatl: "Chicuace", nusavi: "Ñu", image: "6.png" },
-    { español: "7", nahuatl: "Chicome", nusavi: "Sa", image: "7.png" },
-    { español: "8", nahuatl: "Chicueyi", nusavi: "Na", image: "8.png" },
-    { español: "9", nahuatl: "Chicnahui", nusavi: "Q, qhu", image: "9.png" },
-    { español: "10", nahuatl: "Matlacti", nusavi: "Si", image: "10.png" },
-    { español: "11", nahuatl: "Matlacti ihuan ce", nusavi: "Si, sii", image: "11.png" },
-    { español: "12", nahuatl: "Matlacti ihuan ome", nusavi: "Ca", image: "12.png" },
-    { español: "13", nahuatl: "Matlacti ihuan yei", nusavi: "Si", image: "13.png" }]
-/* const getNumberoImage = (numero) => { */
-/* const numerosNombres=[
-    "1","2","3","4","5","6","7","8","9","10","11","12","13"
-] */
-/*     return `${numerosNombres.español[numero - 1]}.png`
-} */
+
+//CUENTA MEZA
+
+/**
+ * Calcula la posición de una fecha dentro del ciclo ritual de 18,980 días.
+ * @param {string} sdate - Fecha en formato 'YYYY-MM-DD'
+ * @param {string} time - Hora en formato 'HH:MM' (opcional)
+ * @returns {object|null} Resultado del cálculo o null si no hay fecha.
+ */
+export const obtenerDiaRitual = (sdate, time) => {
+    if (!sdate) return null;
+    const [yStr, mStr, dStr] = sdate.split('-');
+    
+    let y = parseInt(yStr);
+    const m = parseInt(mStr);
+    const d = parseInt(dStr);
+
+    // Referencia Maestra: 12 de Marzo 2026, 06:43 AM = Bloque 1, Año 1, Día 1
+    const REF_YEAR = 2026;
+    
+    // 1. Determinar el Calendario (Juliano <= 1582)
+    const isJuliano = y <= 1582;
+    const baseDay = isJuliano ? 2 : 12;
+
+    // Función para obtener parámetros del año ritual
+    const getYearParams = (year) => {
+        let cyclePos = (year - REF_YEAR) % 4;
+        if (cyclePos < 0) cyclePos += 4;
+
+        let sDay = baseDay;
+        let sHour = 6;
+        let sMin = 43;
+
+        if (cyclePos === 1) sHour = 12;
+        if (cyclePos === 2) { sDay = baseDay - 1; sHour = 18; }
+        if (cyclePos === 3) { sHour = 0; }
+
+        return { cyclePos, sDay, sHour, sMin };
+    };
+
+    // 2. Calcular días transcurridos desde el 1 de Enero (Cuenta fija 365)
+    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const getAbsDays = (month, day) => {
+        let total = 0;
+        for (let i = 0; i < month - 1; i++) total += daysInMonth[i];
+        return total + day;
+    };
+
+    let targetAbsDays = getAbsDays(m, d);
+    let params = getYearParams(y);
+    let startAbsDays = getAbsDays(3, params.sDay);
+
+    // 3. Manejo de Hora y Comparación Ritual
+    let h, min;
+    let isBeforeStart = false;
+
+    if (time) {
+        const [hStr, minStr] = time.split(':');
+        h = parseInt(hStr);
+        min = parseInt(minStr);
+        const inputTotalMins = (h * 60) + min;
+        const startTotalMins = (params.sHour * 60) + params.sMin;
+        
+        if (targetAbsDays < startAbsDays || (targetAbsDays === startAbsDays && inputTotalMins < startTotalMins)) {
+            isBeforeStart = true;
+        }
+    } else {
+        if (targetAbsDays < startAbsDays) {
+            isBeforeStart = true;
+        }
+        // Si no hay hora y estamos en el día de inicio, se asume que es el inicio del año ritual
+    }
+
+    // 4. ¿Estamos antes del inicio del año ritual de este año civil?
+    if (isBeforeStart) {
+        y -= 1;
+        params = getYearParams(y);
+        startAbsDays = getAbsDays(3, params.sDay);
+        targetAbsDays += 365;
+    }
+
+    // 5. Resolver hora por defecto si no se proporcionó
+    if (!time) {
+        h = params.sHour;
+        min = params.sMin;
+    }
+
+    // 6. Determinar el Año dentro del Bloque (1 a 52)
+    let yearInBlock = ((y - 1974) % 52) + 1;
+    if (yearInBlock <= 0) yearInBlock += 52;
+
+    const inputTotalMins = (h * 60) + min;
+    const startTotalMins = (params.sHour * 60) + params.sMin;
+
+    // Diferencia de días nominales
+    let diffDays = targetAbsDays - startAbsDays;
+
+    if (inputTotalMins < startTotalMins) {
+        diffDays -= 1;
+    }
+
+    // Cap para asegurar que el año ritual solo tiene 365 días (del día 0 al 364)
+    // Esto absorbe el desfase de 6 horas al final del año anterior.
+    if (diffDays >= 365) {
+        diffDays = 364;
+    }
+
+    // 7. CÁLCULO FINAL
+    const finalDay = ((yearInBlock - 1) * 365) + diffDays + 1;
+
+    return {
+        day: finalDay,
+        year: yearInBlock,
+        cycle: params.cyclePos + 1,
+        cal: isJuliano ? "Juliano" : "Gregoriano",
+        startTime: `${params.sDay} de marzo, ${params.sHour}:${params.sMin < 10 ? '0' + params.sMin : params.sMin}`,
+        usedTime: `${h}:${min < 10 ? '0' + min : min}`
+    };
+};
