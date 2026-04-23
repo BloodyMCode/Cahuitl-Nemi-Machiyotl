@@ -25,13 +25,16 @@ const Menu = () => {
                   <Link class={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" to="/">Conversor{isActive('/') && <span class="visually-hidden">(actual)</span>}</      Link>
                 </li>
                 <li class="nav-item">
-                  <Link class={`nav-link ${isActive('/Inverso') ? 'active' : ''}`} to="/Inverso">Inverso{isActive('/Inverso') && <span class="visually-hidden">(actual)</span>}</Link>
+                  <Link class={`nav-link ${isActive('/inverso') ? 'active' : ''}`} to="/inverso">Inverso{isActive('/inverso') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li class="nav-item">
-                  <Link class={`nav-link ${isActive('/Tablero') ? 'active' : ''}`} to="/Tablero">Tablero{isActive('/Tablero') && <span class="visually-hidden">(actual)</span>}</Link>
+                  <Link class={`nav-link ${isActive('/tablero') ? 'active' : ''}`} to="/tablero">Tablero{isActive('/tablero') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li class="nav-item">
-                  <Link class={`nav-link ${isActive('/Calculadora') ? 'active' : ''}`} to="/Calculadora">Calculadora{isActive('/Calculadora') && <span class="visually-hidden">(actual)</span>}</Link>
+                  <Link class={`nav-link ${isActive('/engranajes') ? 'active' : ''}`} to="/engranajes">Engranajes{isActive('/engranajes') && <span class="visually-hidden">(actual)</span>}</Link>
+                </li>
+                <li class="nav-item">
+                  <Link class={`nav-link ${isActive('/calculadora') ? 'active' : ''}`} to="/calculadora">Calculadora{isActive('/calculadora') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
               </ul>
             </Nav>

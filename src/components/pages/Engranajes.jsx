@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { tonalliSimbolos, numerosNombres } from '../funtions/funtions'
+import { tonalliSimbolos, numerosNombres, getImagePath } from '../funtions/funtions'
 import '../styles/Estilos.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -79,10 +79,10 @@ const Engranajes = () => {
             /*  stroke="#495057" */
             strokeWidth="2"
           />
-          <image href={new URL(`../images/${configEngrane1.simbolos[i].image}`, import.meta.url).href} alt="" x={-configEngrane2.anchoDiente / 1.8}
+          <image href={getImagePath(configEngrane1.simbolos[i].image)} alt="" x={-configEngrane2.anchoDiente / 1.8}
             y={-configEngrane2.altoDiente / 1.5}
-            width={configEngrane2.anchoDiente * 1.12}
-            height={configEngrane2.altoDiente * 1.1} />
+            width={configEngrane1.anchoDiente * 1.12}
+            height={configEngrane1.altoDiente * 1.1} />
           {/* <text
                   textAnchor="middle"
                   dominantBaseline="middle"
@@ -121,7 +121,7 @@ const Engranajes = () => {
             strokeWidth="2"
           />
           {/* <polyline points={`${-configEngrane2.anchoDiente / 2}, 16 ${-configEngrane2.anchoDiente / 2},${-configEngrane2.altoDiente / 2} 16, ${-configEngrane2.altoDiente / 2} 16,16`} fill="none" stroke="#b9b9b9ff" stroke-width="1" /> */}
-          <image href={new URL(`../images/${configEngrane2.simbolos[i].image}`, import.meta.url).href} alt="" x={-configEngrane2.anchoDiente / 2}
+          <image href={getImagePath(configEngrane2.simbolos[i].image)} alt="" x={-configEngrane2.anchoDiente / 2}
             y={-configEngrane2.altoDiente / 2}
             width={configEngrane2.anchoDiente}
             height={configEngrane2.altoDiente} />

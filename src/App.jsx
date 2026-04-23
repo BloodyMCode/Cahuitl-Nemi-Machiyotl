@@ -13,6 +13,8 @@ import Inverso from './components/pages/Inverso'
 import Tablero from './components/pages/Tablero'
 import Engranajes from './components/pages/Engranajes'
 import Calculadora from './components/pages/Calculadora'
+import { getImagePath } from './components/funtions/funtions'
+
 function App() {
   /* const [count, setCount] = useState(0) */
 
@@ -21,7 +23,7 @@ function App() {
       <Router>
         <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center' }}>
           {/* <img src={new URL('./components/images/logo-tlacua.png', import.meta.url).href} alt="Logo TLACUATZIN" style={{ width: '100%', maxWidth: '120px', minWidth: '30px', height: 'auto', objectFit: 'contain', objectPosition: 'right' }} /> */}
-          <img src={new URL('./components/images/prueba2.png', import.meta.url).href} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  */ }} />
+          <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  */ }} />
         </div>
         <Menu />
         <Routes>
@@ -32,7 +34,7 @@ function App() {
           <Route path="/calculadora" element={<Calculadora />} />
         </Routes>
         <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
-          <p className="mb-0">Creditos. TLACUATZIN CODEX LAB Investigación Transdisciplinaria de la Matemática en los Códices Prehispánicos de México</p>
+          <p className="mb-0">Creditos. © 2026 TLACUATZIN CODEX LAB Investigación Transdisciplinaria de la Matemática en los Códices Prehispánicos de México. Todos los derechos reservados.</p>
         </footer>
       </Router>
       {/* <section id="center">

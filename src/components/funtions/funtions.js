@@ -1,3 +1,16 @@
+// Mapa de imágenes usando import.meta.glob para asegurar que Vite las incluya en el build
+const images = import.meta.glob('../images/*.png', { eager: true, import: 'default' });
+
+/**
+ * Función auxiliar para obtener la URL de una imagen desde el mapa de Vite
+ * @param {string} imageName - nombre del archivo (ej: 'lagarto.png')
+ * @returns {string} URL de la imagen procesada por Vite
+ */
+export const getImagePath = (imageName) => {
+    const path = `../images/${imageName}`;
+    return images[path] || '';
+};
+
 //Simbolos del calendario Tonalli
 export const tonalliSimbolos = [
     { español: "Lagarto", nahuatl: "Cipactli", nusavi: "Quevui", image: "lagarto.png" },
@@ -147,8 +160,8 @@ export const convertirTonalli = (date) => {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
             /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
-            numberImage: new URL(`../images/${numerosNombres[numero - 1].image}`, import.meta.url).href,
-            symbolImage: new URL(`../images/${tonalliSimbolos[simboloCal].image}`, import.meta.url).href,
+            numberImage: getImagePath(numerosNombres[numero - 1].image),
+            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
             diaCiclo,
             simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
         }
@@ -167,8 +180,8 @@ export const convertirTonalli = (date) => {
         return {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
-            numberImage: new URL(`../images/${numerosNombres[numero - 1].image}`, import.meta.url).href,
-            symbolImage: new URL(`../images/${tonalliSimbolos[simboloCal].image}`, import.meta.url).href,
+            numberImage: getImagePath(numerosNombres[numero - 1].image),
+            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
             diaCiclo,
             simboloInv: tonalliSimbolos[simboloCal].español//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
         }
@@ -178,8 +191,8 @@ export const convertirTonalli = (date) => {
         return {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
-            numberImage: new URL(`../images/${numerosNombres[numero - 1].image}`, import.meta.url).href,
-            symbolImage: new URL(`../images/${tonalliSimbolos[simboloCal].image}`, import.meta.url).href,
+            numberImage: getImagePath(numerosNombres[numero - 1].image),
+            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
             simboloInv: tonalliSimbolos[simboloCal].español//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
         }
     }
@@ -207,8 +220,8 @@ export const convertirXihuitl = (date) => {
             numeroX: numerosNombres[numeroX - 1],
             simboloX: xihuitlSimbolos[simboloCalXihuitl],
             /* numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href, */
-            numberImageX: new URL(`../images/${numerosNombres[numeroX - 1].image}`, import.meta.url).href,
-            symbolImageX: new URL(`../images/${xihuitlSimbolos[simboloCalXihuitl].image}`, import.meta.url).href,
+            numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
+            symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
             simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
             simboloCalXihuitl
         }
@@ -224,8 +237,8 @@ export const convertirXihuitl = (date) => {
         return {
             numeroX: numerosNombres[numeroX - 1],
             simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: new URL(`../images/${numerosNombres[numeroX - 1].image}`, import.meta.url).href,
-            symbolImageX: new URL(`../images/${xihuitlSimbolos[simboloCalXihuitl].image}`, import.meta.url).href,
+            numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
+            symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
             simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
             simboloCalXihuitl
         }
@@ -235,8 +248,8 @@ export const convertirXihuitl = (date) => {
         return {
             numeroX: numerosNombres[numeroX - 1],
             simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: new URL(`../images/${numerosNombres[numeroX - 1].image}`, import.meta.url).href,
-            symbolImageX: new URL(`../images/${xihuitlSimbolos[simboloCalXihuitl].image}`, import.meta.url).href,
+            numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
+            symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
             simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
             simboloCalXihuitl
         }
@@ -254,14 +267,14 @@ export const convertirXihuitl = (date) => {
 export const obtenerDiaRitual = (sdate, time) => {
     if (!sdate) return null;
     const [yStr, mStr, dStr] = sdate.split('-');
-    
+
     let y = parseInt(yStr);
     const m = parseInt(mStr);
     const d = parseInt(dStr);
 
     // Referencia Maestra: 12 de Marzo 2026, 06:43 AM = Bloque 1, Año 1, Día 1
     const REF_YEAR = 2026;
-    
+
     // 1. Determinar el Calendario (Juliano <= 1582)
     const isJuliano = y <= 1582;
     const baseDay = isJuliano ? 2 : 12;
@@ -304,7 +317,7 @@ export const obtenerDiaRitual = (sdate, time) => {
         min = parseInt(minStr);
         const inputTotalMins = (h * 60) + min;
         const startTotalMins = (params.sHour * 60) + params.sMin;
-        
+
         if (targetAbsDays < startAbsDays || (targetAbsDays === startAbsDays && inputTotalMins < startTotalMins)) {
             isBeforeStart = true;
         }
@@ -361,3 +374,37 @@ export const obtenerDiaRitual = (sdate, time) => {
         usedTime: `${h}:${min < 10 ? '0' + min : min}`
     };
 };
+export const convertirTonalliMeza = (sdate, time) => {
+    const numDay = (obtenerDiaRitual(sdate, time))
+    const day = numDay.day
+
+
+    // Fecha de referencia: 13 de agosto de 1521 (1-serpiente)
+    const referenceFecha = new Date(1521, 7, 13)
+    const fechaInicial = new Date(referenceFecha.getTime())
+    const fechaFinal = new Date(date.getTime())
+    const digitoReferencia = 1 // índice para digito tomado del 1 al 13
+    const simboloReferencia = 4 // índice para serpiente tomado del 0 al 19
+    // Si la fecha elegida es posterior a la fecha de referencia
+    if (fechaInicial < fechaFinal) {
+        const diferenciaDias = (calcularDiasManual(date))
+        //El ciclo tonalli es de 260 dias (13*20)
+        const tonalliCiclo = 260
+        const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
+        //Calcular el numero (1-13) y simbolo (0-19)
+        let numero = ((digitoReferencia + diaCiclo) % 13)
+        numero = numero <= 0 ? numero + 13 : numero
+        let simboloCal = ((simboloReferencia + diaCiclo) % 20)
+        simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
+        return {
+            /* numero, */
+            numero: numerosNombres[numero - 1],
+            simbolo: tonalliSimbolos[simboloCal],
+            /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
+            numberImage: getImagePath(numerosNombres[numero - 1].image),
+            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+            diaCiclo,
+            simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+        }
+    }
+}
