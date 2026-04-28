@@ -376,7 +376,50 @@ export const obtenerDiaRitual = (sdate, time) => {
 };
 export const convertirTonalliMeza = (sdate, time) => {
     const numDay = (obtenerDiaRitual(sdate, time))
-    const day = numDay.day
+    const day = numDay.day//numero de día de los 18980
+
+    let coincide = false;
+    // Revisamos si day es múltiplo de 361 a 365, ya que estos son nemontemi
+    for (let nem = 361; nem <= 365; nem++) {//nem =>nemontemi
+        let i = day / nem
+        //Revisamos si existe modulo 0 y si i esta entre 1 y 52 que son los multiplos de 361-365
+        if (day % nem === 0 && i >= 1 && i <= 52) {
+            coincide = true
+            break // Si ya encontramos uno, no hace falta seguir buscando
+        }
+
+    }
+    let numeroTonal = 0
+    let signoTonal = 0
+    if (coincide) {
+        numeroTonal = ((day % 13) + 13) % 13;// el resultado siempre sera positivo (incluso si day fuera negativo)
+        numeroTonal = numeroTonal <= 0 ? numeroTonal + 13 : numeroTonal//validación de seguridad para asegurar que el resultado sea un número entre 1 y 13, en lugar de entre 0 y 12
+        signoTonal = ((day % 20) + 20) % 20;
+        signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal
+    } else {
+        let k = Math.floor(day / 365);//Definir k, Math.floor Para redondear siempre hacia abajo al número entero más cercano
+        //let k = (numeroEspecial / 365) | 0;// Tambien se puede hacer la linea de arriba truncando decimales con el operador bitwise or or
+        numeroTonal = ((((((day % 13) + 13) % 13) - (5 * k)) % 13) + 13) % 13;//numero tonal meza
+        numeroTonal = numeroTonal <= 0 ? numeroTonal + 13 : numeroTonal
+        //numeroTonal = numeroTonal === 0 ? 13 : numeroTonal;
+        signoTonal = ((((((day % 20) + 20) % 20) - (5 * k)) % 20) + 20) % 20;
+        signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal
+        /*  let parte1 = ((numeroEspecial % 13) + 13) % 13;// 2. Calculamos la primera parte (módulo 13 positivo)
+         let numero = (((parte1 - (5 * k)) % 13) + 13) % 13;// 3. Calculamos el resultado final con la resta de 5k// Aplicamos el doble módulo para que sea positivo (0 a 12)
+ numero = numero === 0 ? 13 : numero;// 4. Si el resultado es 0, lo convertimos en 13
+          */
+    }
+    return {
+        /* numero, */
+        numero: numerosNombres[numero - 1],
+        simbolo: tonalliSimbolos[simboloCal],
+        /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
+        numberImage: getImagePath(numerosNombres[numero - 1].image),
+        symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+        diaCiclo,
+        simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+    }
+
 
 
     // Fecha de referencia: 13 de agosto de 1521 (1-serpiente)
