@@ -380,15 +380,25 @@ export const convertirTonalliMeza = (sdate, time) => {
 
     let coincide = false;
     // Revisamos si day es múltiplo de 361 a 365, ya que estos son nemontemi
-    for (let nem = 361; nem <= 365; nem++) {//nem =>nemontemi
-        let i = day / nem
-        //Revisamos si existe modulo 0 y si i esta entre 1 y 52 que son los multiplos de 361-365
-        if (day % nem === 0 && i >= 1 && i <= 52) {
+    /*  for (let nem = 361; nem <= 365; nem++) {//nem =>nemontemi
+         let i = day / nem
+         //Revisamos si existe modulo 0 y si i esta entre 1 y 52 que son los multiplos de 361-365
+         if (day % nem === 0 && i >= 1 && i <= 52) {
+             coincide = true
+             break // Si ya encontramos uno, no hace falta seguir buscando
+         }
+ 
+     } */
+    //Revisamos si el numero de día corresponde a un nemontemi
+    for (let base = 361; base <= 365; base++) { //tomamos 361 a 365 como numeros base para calcular nemontemi
+        let k = Math.floor(day / 365)//calculamos k dividiendo el día entre 365 y redondeandolo al numero entero inferior, asi podremos saber en que vuelta del calendario nos encontramos
+        let nem = base + (365 * k)//calculamos el nemontemi sumando la base al producto de 365 por k
+        if (day = nem) {//comparamos si el numero de día es igual a un nemontemi
             coincide = true
-            break // Si ya encontramos uno, no hace falta seguir buscando
+            break//si coincide salimos del bucle
         }
-
     }
+
     let numeroTonal = 0
     let signoTonal = 0
     if (coincide) {
