@@ -402,10 +402,13 @@ export const convertirTonalliMeza = (sdate, time) => {
     let numeroTonal = 0
     let signoTonal = 0
     if (coincide) {
-        numeroTonal = ((day % 13) + 13) % 13;// el resultado siempre sera positivo (incluso si day fuera negativo)
+        let i = Math.ceil(day / 365)// sirve para saber en que vuelta del calendario esta
+        numeroTonal = (day - (360 * i)) % 13 //revisar formula y definir i
+        signoTonal = (day - (360 * i)) % 20
+        /* numeroTonal = ((day % 13) + 13) % 13;// el resultado siempre sera positivo (incluso si day fuera negativo)
         numeroTonal = numeroTonal <= 0 ? numeroTonal + 13 : numeroTonal//validación de seguridad para asegurar que el resultado sea un número entre 1 y 13, en lugar de entre 0 y 12
         signoTonal = ((day % 20) + 20) % 20;
-        signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal
+        signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal */
     } else {
         let k = Math.floor(day / 365);//Definir k, Math.floor Para redondear siempre hacia abajo al número entero más cercano
         //let k = (numeroEspecial / 365) | 0;// Tambien se puede hacer la linea de arriba truncando decimales con el operador bitwise or or
