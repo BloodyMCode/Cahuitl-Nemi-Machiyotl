@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { convertirTonalli, convertirXihuitl } from '../funtions/funtions';
+import { convertirTonalli, convertirXihuitl, convertirTonalliMeza } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 

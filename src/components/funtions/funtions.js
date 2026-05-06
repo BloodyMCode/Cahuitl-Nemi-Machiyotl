@@ -379,6 +379,7 @@ export const convertirTonalliMeza = (sdate, time) => {
     const day = numDay.day//numero de día de los 18980
 
     let coincide = false;
+    let k = Math.floor(day / 365)//redondeo al numero entero inferior, k= 0 a 51, se puede conocer en que vuelta completa del calendario 365 nos encontramos, por ejemplo la primera vuelta se completa al transcurrir los primeros 365 días
     // Revisamos si day es múltiplo de 361 a 365, ya que estos son nemontemi
     /*  for (let nem = 361; nem <= 365; nem++) {//nem =>nemontemi
          let i = day / nem
@@ -391,8 +392,7 @@ export const convertirTonalliMeza = (sdate, time) => {
      } */
     //Revisamos si el numero de día corresponde a un nemontemi
     for (let base = 361; base <= 365; base++) { //tomamos 361 a 365 como numeros base para calcular nemontemi
-        let k = Math.floor(day / 365)//calculamos k dividiendo el día entre 365 y redondeandolo al numero entero inferior, asi podremos saber en que vuelta del calendario nos encontramos
-        let nem = base + (365 * k)//calculamos el nemontemi sumando la base al producto de 365 por k
+        let nem = base + (365 * k)//calculamos el nemontemi sumando el número base al producto de 365 por k (0 a 51, numero de vuelta del calendario)
         if (day = nem) {//comparamos si el numero de día es igual a un nemontemi
             coincide = true
             break//si coincide salimos del bucle
@@ -402,65 +402,29 @@ export const convertirTonalliMeza = (sdate, time) => {
     let numeroTonal = 0
     let signoTonal = 0
     if (coincide) {
-        let i = Math.ceil(day / 365)// sirve para saber en que vuelta del calendario esta
-        numeroTonal = (day - (360 * i)) % 13 //revisar formula y definir i
-        signoTonal = (day - (360 * i)) % 20
-        /* numeroTonal = ((day % 13) + 13) % 13;// el resultado siempre sera positivo (incluso si day fuera negativo)
-        numeroTonal = numeroTonal <= 0 ? numeroTonal + 13 : numeroTonal//validación de seguridad para asegurar que el resultado sea un número entre 1 y 13, en lugar de entre 0 y 12
-        signoTonal = ((day % 20) + 20) % 20;
-        signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal */
+        let i = Math.ceil(day / 365)// redondeo al numero entero superior, i= 1 a 52, sirve para saber en que numero del ciclo de 52 años nos encontramos, por ejemplo los primeros 365 días corresponden al ciclo 1 de 52 años. 
+        //numeroTonal = (day - (360 * i)) % 13 //formula original
+        numeroTonal = ((day - (360 * i)) % 13 + 13) % 13//formula  asegurando que el resultado siempre sera positivo (incluso si day fuera negativo)
+        numeroTonal = numeroTonal <= 0 ? numeroTonal + 13 : numeroTonal//asegurar que si el resultado es 0 se vuelve 13; si es 1..12 → queda igual 
+        //signoTonal = (day - (360 * i)) % 20//formula original
+        signoTonal = ((day - (360 * i)) % 20 + 20) % 20//formula  asegurando que el resultado siempre sera positivo (incluso si day fuera negativo)
+        signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal//asegurar que si el resultado es 0 se vuelve 20; si es 1..19 → queda igual
     } else {
-        let k = Math.floor(day / 365);//Definir k, Math.floor Para redondear siempre hacia abajo al número entero más cercano
-        //let k = (numeroEspecial / 365) | 0;// Tambien se puede hacer la linea de arriba truncando decimales con el operador bitwise or or
         numeroTonal = ((((((day % 13) + 13) % 13) - (5 * k)) % 13) + 13) % 13;//numero tonal meza
         numeroTonal = numeroTonal <= 0 ? numeroTonal + 13 : numeroTonal
         //numeroTonal = numeroTonal === 0 ? 13 : numeroTonal;
         signoTonal = ((((((day % 20) + 20) % 20) - (5 * k)) % 20) + 20) % 20;
         signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal
-        /*  let parte1 = ((numeroEspecial % 13) + 13) % 13;// 2. Calculamos la primera parte (módulo 13 positivo)
-         let numero = (((parte1 - (5 * k)) % 13) + 13) % 13;// 3. Calculamos el resultado final con la resta de 5k// Aplicamos el doble módulo para que sea positivo (0 a 12)
- numero = numero === 0 ? 13 : numero;// 4. Si el resultado es 0, lo convertimos en 13
-          */
     }
     return {
-        /* numero, */
-        numero: numerosNombres[numero - 1],
-        simbolo: tonalliSimbolos[simboloCal],
-        /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
-        numberImage: getImagePath(numerosNombres[numero - 1].image),
-        symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-        diaCiclo,
-        simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+        numeroT: numerosNombres[numeroTonal],
+        signoT: tonalliSimbolos[signoTonal],
+        /* numberTonalImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
+        numberTonalImage: getImagePath(numerosNombres[numeroTonal].image),
+        signTonalImage: getImagePath(tonalliSimbolos[signoTonal].image),
+        signoTonalInv: tonalliSimbolos[signoTonal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
     }
 
 
 
-    // Fecha de referencia: 13 de agosto de 1521 (1-serpiente)
-    const referenceFecha = new Date(1521, 7, 13)
-    const fechaInicial = new Date(referenceFecha.getTime())
-    const fechaFinal = new Date(date.getTime())
-    const digitoReferencia = 1 // índice para digito tomado del 1 al 13
-    const simboloReferencia = 4 // índice para serpiente tomado del 0 al 19
-    // Si la fecha elegida es posterior a la fecha de referencia
-    if (fechaInicial < fechaFinal) {
-        const diferenciaDias = (calcularDiasManual(date))
-        //El ciclo tonalli es de 260 dias (13*20)
-        const tonalliCiclo = 260
-        const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
-        //Calcular el numero (1-13) y simbolo (0-19)
-        let numero = ((digitoReferencia + diaCiclo) % 13)
-        numero = numero <= 0 ? numero + 13 : numero
-        let simboloCal = ((simboloReferencia + diaCiclo) % 20)
-        simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
-        return {
-            /* numero, */
-            numero: numerosNombres[numero - 1],
-            simbolo: tonalliSimbolos[simboloCal],
-            /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
-            numberImage: getImagePath(numerosNombres[numero - 1].image),
-            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-            diaCiclo,
-            simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
-        }
-    }
 }
