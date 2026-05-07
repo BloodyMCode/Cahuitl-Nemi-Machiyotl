@@ -155,6 +155,12 @@ export const convertirTonalli = (date) => {
         numero = numero <= 0 ? numero + 13 : numero
         let simboloCal = ((simboloReferencia + diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+        const h12 = hours % 12 || 12;
+        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
         return {
             /* numero, */
             numero: numerosNombres[numero - 1],
@@ -163,37 +169,52 @@ export const convertirTonalli = (date) => {
             numberImage: getImagePath(numerosNombres[numero - 1].image),
             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
             diaCiclo,
-            simboloInv: tonalliSimbolos[simboloCal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+            simboloInv: tonalliSimbolos[simboloCal].español, //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+            usedTime: usedTime
         }
     } else if (fechaInicial > fechaFinal) {// Si la fecha elegida es anterior a la fecha dereferencia
         const diferenciaDias = (calcularDiasManual(date))
-        console.log(diferenciaDias)
+        /* console.log(diferenciaDias) */
         //El ciclo tonalli es de 260 dias (13*20)
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
-        console.log(diaCiclo)
+        /* console.log(diaCiclo) */
         //Calcular el numero (1-13) y simbolo (0-19)
         let numero = ((digitoReferencia - diaCiclo) % 13)
         numero = numero <= 0 ? numero + 13 : numero
         let simboloCal = ((simboloReferencia - diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
+
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+        const h12 = hours % 12 || 12;
+        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
         return {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
             numberImage: getImagePath(numerosNombres[numero - 1].image),
             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
             diaCiclo,
-            simboloInv: tonalliSimbolos[simboloCal].español//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
+            simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
+            usedTime: usedTime
         }
     } else {// Si la fecha elegida es la fecha de referencia
         let numero = digitoReferencia
         let simboloCal = simboloReferencia
+
+        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+        const h12 = hours % 12 || 12;
+        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
         return {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
             numberImage: getImagePath(numerosNombres[numero - 1].image),
             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-            simboloInv: tonalliSimbolos[simboloCal].español//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
+            simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
+            usedTime: usedTime
         }
     }
 }
@@ -325,7 +346,6 @@ export const obtenerDiaRitual = (sdate, time) => {
         if (targetAbsDays < startAbsDays) {
             isBeforeStart = true;
         }
-        // Si no hay hora y estamos en el día de inicio, se asume que es el inicio del año ritual
     }
 
     // 4. ¿Estamos antes del inicio del año ritual de este año civil?
@@ -371,7 +391,8 @@ export const obtenerDiaRitual = (sdate, time) => {
         cycle: params.cyclePos + 1,
         cal: isJuliano ? "Juliano" : "Gregoriano",
         startTime: `${params.sDay} de marzo, ${params.sHour}:${params.sMin < 10 ? '0' + params.sMin : params.sMin}`,
-        usedTime: `${h}:${min < 10 ? '0' + min : min}`
+        usedTime: `${h % 12 || 12}:${min < 10 ? '0' + min : min} ${h >= 12 ? 'p.m.' : 'a.m.'}`
+        /* usedTime: `${h}:${min < 10 ? '0' + min : min}` */
     };
 };
 export const convertirTonalliMeza = (sdate, time) => {
@@ -379,7 +400,7 @@ export const convertirTonalliMeza = (sdate, time) => {
     const day = numDay.day//numero de día de los 18980
 
     let coincide = false;
-    let k = Math.floor(day / 365)//redondeo al numero entero inferior, k= 0 a 51, se puede conocer en que vuelta completa del calendario 365 nos encontramos, por ejemplo la primera vuelta se completa al transcurrir los primeros 365 días
+    let k = Math.floor((day - 1) / 365)//redondeo al numero entero inferior, k= 0 a 51, se puede conocer en que vuelta completa del calendario 365 nos encontramos, por ejemplo la primera vuelta se completa al transcurrir los primeros 365 días
     // Revisamos si day es múltiplo de 361 a 365, ya que estos son nemontemi
     /*  for (let nem = 361; nem <= 365; nem++) {//nem =>nemontemi
          let i = day / nem
@@ -393,7 +414,7 @@ export const convertirTonalliMeza = (sdate, time) => {
     //Revisamos si el numero de día corresponde a un nemontemi
     for (let base = 361; base <= 365; base++) { //tomamos 361 a 365 como numeros base para calcular nemontemi
         let nem = base + (365 * k)//calculamos el nemontemi sumando el número base al producto de 365 por k (0 a 51, numero de vuelta del calendario)
-        if (day = nem) {//comparamos si el numero de día es igual a un nemontemi
+        if (day === nem) {//comparamos si el numero de día es igual a un nemontemi
             coincide = true
             break//si coincide salimos del bucle
         }
@@ -417,12 +438,14 @@ export const convertirTonalliMeza = (sdate, time) => {
         signoTonal = signoTonal <= 0 ? signoTonal + 20 : signoTonal
     }
     return {
-        numeroT: numerosNombres[numeroTonal],
-        signoT: tonalliSimbolos[signoTonal],
+        numeroT: numerosNombres[numeroTonal - 1],
+        signoT: tonalliSimbolos[signoTonal - 1],
         /* numberTonalImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
-        numberTonalImage: getImagePath(numerosNombres[numeroTonal].image),
-        signTonalImage: getImagePath(tonalliSimbolos[signoTonal].image),
-        signoTonalInv: tonalliSimbolos[signoTonal].español //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+        numberTonalImage: getImagePath(numerosNombres[numeroTonal - 1].image),
+        signTonalImage: getImagePath(tonalliSimbolos[signoTonal - 1].image),
+        signoTonalInv: tonalliSimbolos[signoTonal - 1].español, //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+        usedTime: numDay.usedTime,
+        startTime: numDay.startTime
     }
 
 
