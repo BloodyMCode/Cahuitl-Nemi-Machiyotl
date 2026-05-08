@@ -107,6 +107,7 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDia.usedTime}</small>
                                     <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDia.usedTime}</div>
                                     {/* <div className="alert alert-info py-1 small">Inicio del año: {tonalliDia.startTime}</div> */}
                                 </div>
@@ -153,6 +154,8 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDiaMeza.usedTime}</small><br></br>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {tonalliDiaMeza.startTime}</small>
                                     <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDiaMeza.usedTime}</div>
                                     <div className="alert alert-info py-1 small">Inicio del año: {tonalliDiaMeza.startTime}</div>
                                 </div>
