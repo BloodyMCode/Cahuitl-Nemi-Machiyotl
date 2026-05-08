@@ -447,7 +447,34 @@ export const convertirTonalliMeza = (sdate, time) => {
         usedTime: numDay.usedTime,
         startTime: numDay.startTime
     }
-
-
-
 }
+
+export const convertirXihuitlMeza = (sdate, time) => {
+    const ritualData = obtenerDiaRitual(sdate, time);
+    if (!ritualData) return null;
+
+    const yearInBlock = ritualData.year; // 1 a 52
+
+    // numeroMeza 1-13
+    let numeroMeza = ((yearInBlock - 1) % 13) + 1;
+
+    // signoMeza (índice en xihuitlSimbolos)
+    // Año 1: Conejo (índice 3)
+    // Año 2: Caña (índice 0)
+    // Año 3: Pedernal (índice 1)
+    // Año 4: Casa (índice 2)
+    // Fórmula: (yearInBlock - 1 + 3) % 4
+    let signoMezaIndex = (yearInBlock - 1 + 3) % 4;
+
+    return {
+        numeroX: numerosNombres[numeroMeza - 1],
+        simboloX: xihuitlSimbolos[signoMezaIndex],
+        numberImageX: getImagePath(numerosNombres[numeroMeza - 1].image),
+        symbolImageX: getImagePath(xihuitlSimbolos[signoMezaIndex].image),
+        simboloXInv: xihuitlSimbolos[signoMezaIndex].español,
+        usedTime: ritualData.usedTime,
+        startTime: ritualData.startTime
+    };
+};
+
+

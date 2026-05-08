@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { convertirTonalli, convertirXihuitl, convertirTonalliMeza } from '../funtions/funtions';
+import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -10,6 +10,7 @@ const Conversor = () => {
     const [tonalliDia, setTonalliDia] = useState(null)
     const [xihuitlAnio, setXihuitlAnio] = useState(null)
     const [tonalliDiaMeza, setTonalliDiaMeza] = useState(null)
+    const [xihuitlAnioMeza, setXihuitlAnioMeza] = useState(null)
     //Funcion para manejar el clic en el boton
     const handleConvert = () => {
         if (!selectedDate) return
@@ -22,10 +23,12 @@ const Conversor = () => {
         const tonalliResult = convertirTonalli(date)//llamada de funcion
         const xihuitlResult = convertirXihuitl(date)//llamada de funcion
         const tonalliResultMeza = convertirTonalliMeza(selectedDate, timeMeza)//llamada de funcion
+        const xihuitlResultMeza = convertirXihuitlMeza(selectedDate, timeMeza)//llamada de funcion
         //Actualizar el estado
         setTonalliDia(tonalliResult)
         setXihuitlAnio(xihuitlResult)
         setTonalliDiaMeza(tonalliResultMeza)
+        setXihuitlAnioMeza(xihuitlResultMeza)
     }
     return (
         <>
@@ -63,10 +66,10 @@ const Conversor = () => {
                 </div>
             </div>
             <br></br>
-            {tonalliDia && xihuitlAnio && (
+            {tonalliDia && tonalliDiaMeza && xihuitlAnio && xihuitlAnioMeza && (
                 <div className="container text-center">
                     <div className="row justify-content-center">
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <div className="card" >
                                 <p><img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="card-img-top img-com" /> <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="card-img-top img-com" /></p>
                                 {/*  <div className="card-header rounded-3 bg-light">
@@ -113,7 +116,7 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <div className="card" >
                                 <p><img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="card-img-top img-com" /> <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="card-img-top img-com" /></p>
                                 {/* <div className="card-header rounded-3 bg-light">
@@ -161,7 +164,7 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <div className="card" >
                                 <p><img src={xihuitlAnio.numberImageX} alt={xihuitlAnio.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnio.symbolImageX} alt={xihuitlAnio.symbolImageX} className="card-img-top img-com" /></p>
                                 {/*  <div className="card-header rounded-3 bg-light">
@@ -170,6 +173,7 @@ const Conversor = () => {
                                 </div> */}
                                 <div className="card-body">
                                     <h5 className="card-title">Xihuitl</h5>
+                                    <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Caso</small>
                                     <p className="card-text text-subtitle">Año:</p>
                                     {/* <p className="card-text">{xihuitlAnio.numeroX.español} - {xihuitlAnio.simboloX.español}</p>
                                     <p className="card-text">{xihuitlAnio.numeroX.nahuatl} - {xihuitlAnio.simboloX.nahuatl}</p>
@@ -200,7 +204,46 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
-
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-3">
+                            <div className="card" >
+                                <p><img src={xihuitlAnioMeza.numberImageX} alt={xihuitlAnioMeza.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnioMeza.symbolImageX} alt={xihuitlAnioMeza.symbolImageX} className="card-img-top img-com" /></p>
+                                <div className="card-body">
+                                    <h5 className="card-title">Xihuitl</h5>
+                                    <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Meza</small>
+                                    <p className="card-text text-subtitle">Año:</p>
+                                    <table className="table table-dark table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Idioma</th>
+                                                <th scope="col">Numeral</th>
+                                                <th scope="col">Signo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Español</td>
+                                                <td>{xihuitlAnioMeza.numeroX.español}</td>
+                                                <td>{xihuitlAnioMeza.simboloX.español}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Nahuatl</td>
+                                                <td>{xihuitlAnioMeza.numeroX.nahuatl}</td>
+                                                <td>{xihuitlAnioMeza.simboloX.nahuatl}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Ñu savi Ceremonial</td>
+                                                <td>{xihuitlAnioMeza.numeroX.nusavi}</td>
+                                                <td>{xihuitlAnioMeza.simboloX.nusavi}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {xihuitlAnioMeza.usedTime}</small><br></br>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {xihuitlAnioMeza.startTime}</small>
+                                    <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {xihuitlAnioMeza.usedTime}</div>
+                                    <div className="alert alert-info py-1 small">Inicio del año: {xihuitlAnioMeza.startTime}</div>
                                 </div>
                             </div>
                         </div>
