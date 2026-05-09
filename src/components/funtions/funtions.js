@@ -63,7 +63,28 @@ export const numerosNombres = [
 ] */
 /*     return `${numerosNombres.español[numero - 1]}.png`
 } */
+//Veintenas
+export const cempohuallapohualli = [
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Tlacaxipehualiztli" },
+    { nahuatl: "Tozoztontli" },
+    { nahuatl: "Ueitozoztli" },
+    { nahuatl: "Toxcatl" },
+    { nahuatl: "Etzalcualiztli" },
+    { nahuatl: "Tecuil" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" },
+    { nahuatl: "Atlacahualo" }
 
+]
 // Función para verificar si un año es bisiesto según las reglas correspondientes
 const bisiestoAnio = (year) => {
     if (year < 1582) {
