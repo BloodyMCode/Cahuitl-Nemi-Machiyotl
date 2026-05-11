@@ -71,20 +71,20 @@ export const cempohuallapohualli = [
     { nahuatl: "Ueitozoztli" },
     { nahuatl: "Toxcatl" },
     { nahuatl: "Etzalcualiztli" },
-    { nahuatl: "Tecuil" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" },
-    { nahuatl: "Atlacahualo" }
-
+    { nahuatl: "Tecuilhuitontli" },
+    { nahuatl: "Uetecuilhuitl" },
+    { nahuatl: "Tlaxochimaco" },
+    { nahuatl: "Xocotl Uetzi" },
+    { nahuatl: "Ochpaniliztli" },
+    { nahuatl: "Teotlehco" },
+    { nahuatl: "Tepeilhuitl" },
+    { nahuatl: "Quecholli" },
+    { nahuatl: "Panquetzaliztli" },
+    { nahuatl: "Atemoztli" },
+    { nahuatl: "Tititl" },
+    { nahuatl: "Izcalli" }
 ]
+
 // Función para verificar si un año es bisiesto según las reglas correspondientes
 const bisiestoAnio = (year) => {
     if (year < 1582) {
@@ -497,5 +497,22 @@ export const convertirXihuitlMeza = (sdate, time) => {
         startTime: ritualData.startTime
     };
 };
+
+export const cempohualliMeza = (sdate, time) => {
+    const ritualData = obtenerDiaRitual(sdate, time);
+    if (!ritualData) return null;
+
+    // Calculamos dInYear (día del año ritual 0-364)
+    // dInYear = (day - 1) % 365
+    const dInYear = (ritualData.day - 1) % 365;
+
+    if (dInYear < 360) {
+        const index = Math.floor(dInYear / 20);
+        return cempohuallapohualli[index].nahuatl;
+    } else {
+        return "Nemontemi";
+    }
+}
+
 
 

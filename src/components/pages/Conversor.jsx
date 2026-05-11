@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza } from '../funtions/funtions';
+import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza, cempohualliMeza } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -11,6 +11,7 @@ const Conversor = () => {
     const [xihuitlAnio, setXihuitlAnio] = useState(null)
     const [tonalliDiaMeza, setTonalliDiaMeza] = useState(null)
     const [xihuitlAnioMeza, setXihuitlAnioMeza] = useState(null)
+    const [veintenaMeza, setVeintenaMeza] = useState(null)
     //Funcion para manejar el clic en el boton
     const handleConvert = () => {
         if (!selectedDate) return
@@ -24,11 +25,13 @@ const Conversor = () => {
         const xihuitlResult = convertirXihuitl(date)//llamada de funcion
         const tonalliResultMeza = convertirTonalliMeza(selectedDate, timeMeza)//llamada de funcion
         const xihuitlResultMeza = convertirXihuitlMeza(selectedDate, timeMeza)//llamada de funcion
+        const veintenaResultMeza = cempohualliMeza(selectedDate, timeMeza)//llamada de funcion
         //Actualizar el estado
         setTonalliDia(tonalliResult)
         setXihuitlAnio(xihuitlResult)
         setTonalliDiaMeza(tonalliResultMeza)
         setXihuitlAnioMeza(xihuitlResultMeza)
+        setVeintenaMeza(veintenaResultMeza)
     }
     return (
         <>
@@ -111,7 +114,7 @@ const Conversor = () => {
                                         </tbody>
                                     </table>
                                     <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDia.usedTime}</small>
-                                    <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDia.usedTime}</div>
+                                    {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDia.usedTime}</div> */}
                                     {/* <div className="alert alert-info py-1 small">Inicio del año: {tonalliDia.startTime}</div> */}
                                 </div>
                             </div>
@@ -159,8 +162,9 @@ const Conversor = () => {
                                     </table>
                                     <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDiaMeza.usedTime}</small><br></br>
                                     <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {tonalliDiaMeza.startTime}</small>
-                                    <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDiaMeza.usedTime}</div>
-                                    <div className="alert alert-info py-1 small">Inicio del año: {tonalliDiaMeza.startTime}</div>
+                                    {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDiaMeza.usedTime}</div>
+                                    <div className="alert alert-info py-1 small mb-1">Inicio del año: {tonalliDiaMeza.startTime}</div> */}
+                                    <div className="alert alert-success py-1 small">Esta fecha pertenece a la veintena: {veintenaMeza}</div>
                                 </div>
                             </div>
                         </div>
@@ -240,10 +244,10 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {xihuitlAnioMeza.usedTime}</small><br></br>
-                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {xihuitlAnioMeza.startTime}</small>
-                                    <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {xihuitlAnioMeza.usedTime}</div>
-                                    <div className="alert alert-info py-1 small">Inicio del año: {xihuitlAnioMeza.startTime}</div>
+                                    {/* <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {xihuitlAnioMeza.usedTime}</small><br></br>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {xihuitlAnioMeza.startTime}</small> */}
+                                    {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {xihuitlAnioMeza.usedTime}</div>
+                                    <div className="alert alert-info py-1 small">Inicio del año: {xihuitlAnioMeza.startTime}</div> */}
                                 </div>
                             </div>
                         </div>
@@ -251,8 +255,8 @@ const Conversor = () => {
                 </div>
             )}
             <footer className="mt-5 text-center text-secondary" style={{ color: '#adb5bd' }}>
-                <p className="text-white">Conversión Caso:Basado en la fecha de referencia: día 1-Coatl, año 3-Calli (13 de agosto de 1521)</p>
-                <p className="text-white">Conversión Meza:Basado en la fecha de referencia: día 1-Cipactli, año 1-Tochtli (12 de marzo de 2026)</p>
+                <p className="text-white">*Conversión de Caso basado en la fecha de referencia: día 1-Coatl, año 3-Calli (13 de agosto de 1521)</p>
+                <p className="text-white">*Conversión de Meza basado en la fecha de referencia: día 1-Cipactli, año 1-Tochtli (12 de marzo de 2026)</p>
             </footer>
         </>
     )
