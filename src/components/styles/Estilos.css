@@ -7,4 +7,29 @@
     font-weight: bold;
 }
 /* Estilos para los engranajes */
+@keyframes spin-right {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin-left {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.spinning-right {
+    animation: spin-right 20s linear infinite;
+}
+
+.spinning-left {
+    animation: spin-left 20s linear infinite;
+}
+
+.gear.spinning-right {
+    animation-duration: 10s;
+}
+
+.gear.spinning-left {
+    animation-duration: 15.38s; /* Para mantener la relación 13/20 */
+}
 

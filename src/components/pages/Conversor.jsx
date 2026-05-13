@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza, cempohualliMeza } from '../funtions/funtions';
+import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza, cempohualliMeza, obtenerDiaRitual } from '../funtions/funtions';
+import CalendarioGiratorio from './CalendarioGiratorio';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -12,6 +13,7 @@ const Conversor = () => {
     const [tonalliDiaMeza, setTonalliDiaMeza] = useState(null)
     const [xihuitlAnioMeza, setXihuitlAnioMeza] = useState(null)
     const [veintenaMeza, setVeintenaMeza] = useState(null)
+    const [ritualDay, setRitualDay] = useState(null)
     //Funcion para manejar el clic en el boton
     const handleConvert = () => {
         if (!selectedDate) return
@@ -32,6 +34,11 @@ const Conversor = () => {
         setTonalliDiaMeza(tonalliResultMeza)
         setXihuitlAnioMeza(xihuitlResultMeza)
         setVeintenaMeza(veintenaResultMeza)
+
+        const ritualData = obtenerDiaRitual(selectedDate, timeMeza)
+        if (ritualData) {
+            setRitualDay(((ritualData.day - 1) % 365) + 1)
+        }
     }
     return (
         <>
@@ -63,6 +70,11 @@ const Conversor = () => {
                                 </div>
                                 <br />
                                 <button type="button" className="btn btn-secondary" onClick={handleConvert} disabled={!selectedDate}>Mostrar conversión</button>
+                                <CalendarioGiratorio
+                                    tonalliDiaMeza={tonalliDiaMeza}
+                                    veintenaMeza={veintenaMeza}
+                                    ritualDay={ritualDay}
+                                />
                             </div>
                         </div>
                     </div>
