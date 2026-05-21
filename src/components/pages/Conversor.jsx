@@ -84,7 +84,8 @@ const Conversor = () => {
             {tonalliDia && tonalliDiaMeza && xihuitlAnio && xihuitlAnioMeza && (
                 <div className="container text-center">
                     <div className="row justify-content-center">
-                        <div className="col-md-3">
+                        <p className="text-white">* Correspondencia de Caso</p>
+                        <div className="col-md-6">
                             <div className="card" >
                                 <p><img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="card-img-top img-com" /> <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="card-img-top img-com" /></p>
                                 {/*  <div className="card-header rounded-3 bg-light">
@@ -131,56 +132,7 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-3">
-                            <div className="card" >
-                                <p><img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="card-img-top img-com" /> <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="card-img-top img-com" /></p>
-                                {/* <div className="card-header rounded-3 bg-light">
-                                    <img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="img-com" />
-                                    <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="img-com" />
-                                </div> */}
-                                <div className="card-body">
-                                    <h5 className="card-title">Tonalli</h5>
-                                    <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Meza</small>
-                                    <p className="card-text text-subtitle">Día:</p>
-                                    {/* <p className="card-text text-white small">Hora considerada: {tonalliDiaMeza.usedTime}</p> */}
-                                    {/* <p className="card-text">{tonalliDia.numero.español} - {tonalliDia.simbolo.español}</p>
-                                    <p className="card-text">{tonalliDia.numero.nahuatl} - {tonalliDia.simbolo.nahuatl}</p>
-                                    <p className='card-text'>{tonalliDia.numero.nusavi} - {tonalliDia.simbolo.nusavi}</p> */}
-                                    <table className="table table-dark table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Idioma</th>
-                                                <th scope="col">Numeral</th>
-                                                <th scope="col">Signo</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Español</td>
-                                                <td>{tonalliDiaMeza.numeroT.español}</td>
-                                                <td>{tonalliDiaMeza.signoT.español}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Nahuatl</td>
-                                                <td>{tonalliDiaMeza.numeroT.nahuatl}</td>
-                                                <td>{tonalliDiaMeza.signoT.nahuatl}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Ñu savi Ceremonial</td>
-                                                <td>{tonalliDiaMeza.numeroT.nusavi}</td>
-                                                <td>{tonalliDiaMeza.signoT.nusavi}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDiaMeza.usedTime}</small><br></br>
-                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {tonalliDiaMeza.startTime}</small>
-                                    {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDiaMeza.usedTime}</div>
-                                    <div className="alert alert-info py-1 small mb-1">Inicio del año: {tonalliDiaMeza.startTime}</div> */}
-                                    <div className="alert alert-success py-1 small">Esta fecha pertenece a la veintena: {veintenaMeza}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-md-3">
+                        <div className="col-md-6">
                             <div className="card" >
                                 <p><img src={xihuitlAnio.numberImageX} alt={xihuitlAnio.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnio.symbolImageX} alt={xihuitlAnio.symbolImageX} className="card-img-top img-com" /></p>
                                 {/*  <div className="card-header rounded-3 bg-light">
@@ -223,7 +175,57 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-3">
+                        <small className="text-secondary" style={{ fontSize: '13px', color: '#adb5bd' }}>* Correspondencia de Caso basado en la fecha de referencia: día 1-Coatl, año 3-Calli (13 de agosto de 1521)</small><br /><br />
+                        <p className="text-white">* Correspondencia de Meza</p>
+                        <div className="col-md-6">
+                            <div className="card" >
+                                <p><img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="card-img-top img-com" /> <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="card-img-top img-com" /></p>
+                                {/* <div className="card-header rounded-3 bg-light">
+                                    <img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="img-com" />
+                                    <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="img-com" />
+                                </div> */}
+                                <div className="card-body">
+                                    <h5 className="card-title">Tonalli</h5>
+                                    <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Meza</small>
+                                    <p className="card-text text-subtitle">Día:</p>
+                                    {/* <p className="card-text text-white small">Hora considerada: {tonalliDiaMeza.usedTime}</p> */}
+                                    {/* <p className="card-text">{tonalliDia.numero.español} - {tonalliDia.simbolo.español}</p>
+                                    <p className="card-text">{tonalliDia.numero.nahuatl} - {tonalliDia.simbolo.nahuatl}</p>
+                                    <p className='card-text'>{tonalliDia.numero.nusavi} - {tonalliDia.simbolo.nusavi}</p> */}
+                                    <table className="table table-dark table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Idioma</th>
+                                                <th scope="col">Numeral</th>
+                                                <th scope="col">Signo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Español</td>
+                                                <td>{tonalliDiaMeza.numeroT.español}</td>
+                                                <td>{tonalliDiaMeza.signoT.español}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Nahuatl</td>
+                                                <td>{tonalliDiaMeza.numeroT.nahuatl}</td>
+                                                <td>{tonalliDiaMeza.signoT.nahuatl}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Ñu savi Ceremonial</td>
+                                                <td>{tonalliDiaMeza.numeroT.nusavi}</td>
+                                                <td>{tonalliDiaMeza.signoT.nusavi}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDiaMeza.usedTime}</small><br></br>
+                                    {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDiaMeza.usedTime}</div>
+                                    <div className="alert alert-info py-1 small mb-1">Inicio del año: {tonalliDiaMeza.startTime}</div> */}
+                                    <div className="alert alert-success py-1 small">Esta fecha pertenece a la veintena: {veintenaMeza}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-6">
                             <div className="card" >
                                 <p><img src={xihuitlAnioMeza.numberImageX} alt={xihuitlAnioMeza.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnioMeza.symbolImageX} alt={xihuitlAnioMeza.symbolImageX} className="card-img-top img-com" /></p>
                                 <div className="card-body">
@@ -256,6 +258,7 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {tonalliDiaMeza.startTime}</small>
                                     {/* <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {xihuitlAnioMeza.usedTime}</small><br></br>
                                     <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {xihuitlAnioMeza.startTime}</small> */}
                                     {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {xihuitlAnioMeza.usedTime}</div>
@@ -263,13 +266,14 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
+                        <small className="text-secondary" style={{ fontSize: '13px', color: '#adb5bd' }}>* Correspondencia de Meza basado en la fecha de referencia: día 1-Cipactli, año 1-Tochtli (12 de marzo de 2026)</small>
                     </div>
                 </div>
             )}
-            <footer className="mt-5 text-center text-secondary" style={{ color: '#adb5bd' }}>
+            {/*  <footer className="mt-5 text-center text-secondary" style={{ color: '#adb5bd' }}>
                 <p className="text-white">*Conversión de Caso basado en la fecha de referencia: día 1-Coatl, año 3-Calli (13 de agosto de 1521)</p>
                 <p className="text-white">*Conversión de Meza basado en la fecha de referencia: día 1-Cipactli, año 1-Tochtli (12 de marzo de 2026)</p>
-            </footer>
+            </footer> */}
         </>
     )
 }
