@@ -26,10 +26,11 @@
 }
 
 .gear.spinning-right {
-    animation-duration: 10s;
+    animation-duration: 13s;
 }
 
 .gear.spinning-left {
-    animation-duration: 15.38s; /* Para mantener la relación 13/20 */
+    animation-duration: 20s; /* Relación perfecta 13/20 para evitar desfasamiento a largo plazo */
 }
+
 

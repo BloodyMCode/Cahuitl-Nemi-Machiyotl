@@ -114,7 +114,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                             transition: 'transform 2.8s cubic-bezier(0.19, 1, 0.22, 1)',
                             position: 'relative'
                         }}>
-                            <img src={getImagePath('engrane20-002.png')} alt="Gear 20" style={{
+                            <img src={getImagePath('engrane20-002-02.png')} alt="Gear 20" style={{
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'contain',
@@ -149,7 +149,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                             transition: 'transform 2.5s cubic-bezier(0.19, 1, 0.22, 1)',
                             position: 'relative'
                         }}>
-                            <img src={getImagePath('engrane13-002.png')} alt="Gear 13" style={{
+                            <img src={getImagePath('engrane13-002-02.png')} alt="Gear 13" style={{
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'contain',
@@ -191,7 +191,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         transition: 'transform 3s cubic-bezier(0.23, 1, 0.32, 1)',
                         zIndex: 2
                     }}>
-                        <img src={getImagePath('365.png')} alt="Ciclo 365" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        <img src={getImagePath('365-02.png')} alt="Ciclo 365" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                     {/* <div className={`ring ring-veintenas ${isSpinning ? 'spinning-right' : ''}`} style={{ */}
                     <div className={`ring ring-veintenas ${isSpinning ? 'spinning-left' : ''}`} style={{
@@ -200,7 +200,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         transition: 'transform 3.5s cubic-bezier(0.23, 1, 0.32, 1)',
                         zIndex: 3
                     }}>
-                        <img src={getImagePath('veintenas.png')} alt="Veintenas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        <img src={getImagePath('veintenas-02.png')} alt="Veintenas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
 
                     {!isSpinning && (
@@ -227,7 +227,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                     </div>
                 ) : (
                     <div className="spinning-status" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontSize: '0.9rem' }}>
-                        CALENDARIO GIRATORIO BASADO EN LA CUENTA DE MEZA
+                        RUEDA CALENDÁRICA BASADA EN LA CUENTA DE MEZA
                     </div>
                 )}
             </div>
