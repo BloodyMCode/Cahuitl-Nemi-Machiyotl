@@ -170,7 +170,7 @@ export const convertirTonalli = (date) => {
         const diferenciaDias = (calcularDiasManual(date))
         //El ciclo tonalli es de 260 dias (13*20)
         const tonalliCiclo = 260
-        const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
+        const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo //operacion modulas num mod 260
         //Calcular el numero (1-13) y simbolo (0-19)
         let numero = ((digitoReferencia + diaCiclo) % 13)
         numero = numero <= 0 ? numero + 13 : numero
