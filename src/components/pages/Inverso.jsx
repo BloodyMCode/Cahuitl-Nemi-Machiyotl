@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { getDiasMonth, convertirTonalli, tonalliSimbolos, convertirXihuitl, xihuitlSimbolos } from '../funtions/funtions';
+import { tonalliSimbolos, xihuitlSimbolos, encuentraCoincidence, buscarXihuitl, formatDate } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -22,110 +22,6 @@ const Inverso = () => {
 
     const [loading, setLoading] = useState(false);
     const [loadingX, setLoadingX] = useState(false);
-
-    // Funcion para buscar coincidencias en Tonalli
-    const encuentraCoincidence = () => {
-        if (selectedStartDate === selectedEndDate) {
-            setResults([])
-            setTonalliMessage("En este periodo no existen coincidencias con el nombre Tonalli indicado, por favor introduzca un periodo distinto")
-            return
-        }
-
-        const fechaInicio = new Date(selectedStartDate + 'T00:00:00')
-        const fechaFin = new Date(selectedEndDate + 'T00:00:00')
-
-        setLoading(true)
-        setTonalliMessage("")
-        setResults([])
-
-        setTimeout(() => {
-            const matches = []
-            const fechaJuliano = new Date(1582, 9, 4)
-
-            // Recorrer años, meses y días.
-            for (let year = fechaInicio.getFullYear(); year <= fechaFin.getFullYear(); year++) {
-                if (year === 0) continue
-
-                const startMonth = (year === fechaInicio.getFullYear()) ? fechaInicio.getMonth() : 0
-                const endMonth = (year === fechaFin.getFullYear()) ? fechaFin.getMonth() : 11
-
-                for (let month = startMonth; month <= endMonth; month++) {
-                    const diasInMonth = getDiasMonth(year, month)
-                    const startDay = (year === fechaInicio.getFullYear() && month === fechaInicio.getMonth()) ? fechaInicio.getDate() : 1
-                    const endDay = (year === fechaFin.getFullYear() && month === fechaFin.getMonth()) ? fechaFin.getDate() : diasInMonth
-
-                    for (let day = startDay; day <= endDay; day++) {
-                        const currentDate = new Date(year, month, day)
-                        if (currentDate > fechaFin) break
-
-                        const tonalli = convertirTonalli(currentDate)
-                        const xihuitl = convertirXihuitl(currentDate)
-
-                        if (tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo) {
-                            matches.push({
-                                date: currentDate,
-                                calendar: currentDate <= fechaJuliano ? 'Juliano' : 'Gregoriano',
-                                tonalli: tonalli,
-                                xihuitl: xihuitl
-                            })
-                        }
-                    }
-                }
-            }
-
-            if (matches.length === 0) {
-                setTonalliMessage("En este periodo no existen coincidencias con el nombre Tonalli indicado, por favor introduzca un periodo distinto")
-            }
-            setResults(matches)
-            setLoading(false)
-        }, 100)
-    }
-
-    // Funcion para buscar coincidencias del Xihuitl
-    const buscarXihuitl = () => {
-        if (yearStart === yearEnd) {
-            setXihuitlResults([])
-            setXihuitlMessage("En este periodo no existen coincidencias con el nombre de Xihutil indicado, por favor introduzca un periodo distinto")
-            return
-        }
-
-        setLoadingX(true)
-        setXihuitlMessage("")
-        setXihuitlResults([])
-
-        setTimeout(() => {
-            const matches = []
-            const firstYear = Math.min(yearStart, yearEnd)
-            const lastYear = Math.max(yearStart, yearEnd)
-
-            for (let year = firstYear; year <= lastYear; year++) {
-                if (year === 0) continue
-                // Cada año tiene un identificador Xihuitl.
-                const xihuitl = convertirXihuitl(new Date(year, 0, 1))
-                if (xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX.español === simboloX) {
-                    matches.push({
-                        year: year,
-                        calendar: year < 1582 ? 'Juliano' : 'Gregoriano',
-                        xihuitl: xihuitl
-                    })
-                }
-            }
-
-            if (matches.length === 0) {
-                setXihuitlMessage("En este periodo no existen coincidencias con el nombre de Xihutil indicado, por favor introduzca un periodo distinto")
-            }
-            setXihuitlResults(matches)
-            setLoadingX(false)
-        }, 100)
-    }
-    // Formatear fecha para mostrar
-    const formatDate = (date) => {
-        return date.toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        })
-    }
 
     return (
         <div className="container-fluid py-4">
@@ -167,7 +63,8 @@ const Inverso = () => {
                     </div>
 
                     <div className="d-grid">
-                        <button type="button" className="btn btn-primary shadow-sm" onClick={encuentraCoincidence} disabled={loading}>
+                        {/*  <button type="button" className="btn btn-primary shadow-sm" onClick={encuentraCoincidence} disabled={loading}> */}
+                        <button type="button" className="btn btn-primary shadow-sm" onClick={() => encuentraCoincidence(selectedStartDate, selectedEndDate, numero, simbolo, setResults, setTonalliMessage, setLoading)} disabled={loading}>
                             {loading ? (<><span className="spinner-border spinner-border-sm me-2"></span>Calculando...</>) : ('Buscar Tonalli')}
                         </button>
                     </div>
@@ -202,7 +99,8 @@ const Inverso = () => {
                     </div>
 
                     <div className="d-grid">
-                        <button type="button" className="btn btn-success shadow-sm" onClick={buscarXihuitl} disabled={loadingX}>
+                        {/*  <button type="button" className="btn btn-success shadow-sm" onClick={buscarXihuitl} disabled={loadingX}> */}
+                        <button type="button" className="btn btn-success shadow-sm" onClick={() => buscarXihuitl(yearStart, yearEnd, numeroX, simboloX, setXihuitlResults, setXihuitlMessage, setLoadingX)} disabled={loadingX}>
                             {loadingX ? (<><span className="spinner-border spinner-border-sm me-2"></span>Calculando...</>) : ('Buscar Xihuitl')}
                         </button>
                     </div>
