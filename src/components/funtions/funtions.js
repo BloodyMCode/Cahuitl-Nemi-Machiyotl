@@ -415,6 +415,14 @@ export const obtenerDiaRitual = (sdate, time) => {
     };
 };
 export const convertirTonalliMeza = (sdate, time) => {
+    //Detecta si el valor recibido en sdate es un objeto Date (usando inverso.jsx). Si lo es, extrae el año, mes y día en formato local y lo convierte en una cadena "YYYY-MM-DD", si es una cadena (usando conversor.jsx) el if se ignora
+    if (sdate instanceof Date) {
+        const y = sdate.getFullYear();
+        const m = String(sdate.getMonth() + 1).padStart(2, '0');
+        const d = String(sdate.getDate()).padStart(2, '0');
+        sdate = `${y}-${m}-${d}`;
+    }
+    //fin de admitir objeto Date
     const numDay = (obtenerDiaRitual(sdate, time))
     const day = numDay.day//numero de día de los 18980
 
@@ -469,6 +477,14 @@ export const convertirTonalliMeza = (sdate, time) => {
 }
 
 export const convertirXihuitlMeza = (sdate, time) => {
+    //Detecta si el valor recibido en sdate es un objeto Date (usando inverso.jsx). Si lo es, extrae el año, mes y día en formato local y lo convierte en una cadena "YYYY-MM-DD", si es una cadena (usando conversor.jsx) el if se ignora
+    if (sdate instanceof Date) {
+        const y = sdate.getFullYear();
+        const m = String(sdate.getMonth() + 1).padStart(2, '0');
+        const d = String(sdate.getDate()).padStart(2, '0');
+        sdate = `${y}-${m}-${d}`;
+    }
+    //fin de admitir objeto Date
     const ritualData = obtenerDiaRitual(sdate, time);
     if (!ritualData) return null;
 
@@ -497,6 +513,14 @@ export const convertirXihuitlMeza = (sdate, time) => {
 };
 
 export const cempohualliMeza = (sdate, time) => {
+    //Detecta si el valor recibido en sdate es un objeto Date (usando inverso.jsx). Si lo es, extrae el año, mes y día en formato local y lo convierte en una cadena "YYYY-MM-DD", si es una cadena (usando conversor.jsx) el if se ignora
+    if (sdate instanceof Date) {
+        const y = sdate.getFullYear();
+        const m = String(sdate.getMonth() + 1).padStart(2, '0');
+        const d = String(sdate.getDate()).padStart(2, '0');
+        sdate = `${y}-${m}-${d}`;
+    }
+    //fin de admitir objeto Date
     const ritualData = obtenerDiaRitual(sdate, time);
     if (!ritualData) return null;
 
@@ -558,13 +582,23 @@ export const encuentraCoincidence = (
 
                     const tonalli = convertirTonalli(currentDate)
                     const xihuitl = convertirXihuitl(currentDate)
+                    const tonalliMeza = convertirTonalliMeza(currentDate)
+                    const xihuitlMeza = convertirXihuitlMeza(currentDate)
 
-                    if (tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo) {
+                    //if (tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo) {
+                    const matchCaso = tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo;
+                    const matchMeza = tonalliMeza && tonalliMeza.numeroT.español === numero.toString() && tonalliMeza.signoT.español === simbolo;
+
+                    if (matchCaso || matchMeza) {
                         matches.push({
                             date: currentDate,
                             calendar: currentDate <= fechaJuliano ? 'Juliano' : 'Gregoriano',
                             tonalli: tonalli,
-                            xihuitl: xihuitl
+                            xihuitl: xihuitl,
+                            tonalliMeza: tonalliMeza,
+                            xihuitlMeza: xihuitlMeza,
+                            matchCaso: matchCaso,
+                            matchMeza: matchMeza
                         })
                     }
                 }

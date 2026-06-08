@@ -23,6 +23,9 @@ const Inverso = () => {
     const [loading, setLoading] = useState(false);
     const [loadingX, setLoadingX] = useState(false);
 
+    const resultsCaso = results.filter(r => r.matchCaso);
+    const resultsMeza = results.filter(r => r.matchMeza);
+
     return (
         <div className="container-fluid py-4">
             <h1 className="text-center mb-5">Correlaciones Calendarícas Precoloniales</h1>
@@ -62,10 +65,13 @@ const Inverso = () => {
                         </div>
                     </div>
 
-                    <div className="d-grid">
+                    <div className="d-flex gap-2">
                         {/*  <button type="button" className="btn btn-primary shadow-sm" onClick={encuentraCoincidence} disabled={loading}> */}
-                        <button type="button" className="btn btn-primary shadow-sm" onClick={() => encuentraCoincidence(selectedStartDate, selectedEndDate, numero, simbolo, setResults, setTonalliMessage, setLoading)} disabled={loading}>
+                        <button type="button" className="btn btn-primary flex-grow-1 shadow-sm" onClick={() => encuentraCoincidence(selectedStartDate, selectedEndDate, numero, simbolo, setResults, setTonalliMessage, setLoading)} disabled={loading}>
                             {loading ? (<><span className="spinner-border spinner-border-sm me-2"></span>Calculando...</>) : ('Buscar Tonalli')}
+                        </button>
+                        <button type="button" className="btn btn-secondary shadow-sm" onClick={() => { setResults([]); setTonalliMessage(""); }} disabled={loading}>
+                            Limpiar
                         </button>
                     </div>
                 </div>
@@ -114,10 +120,11 @@ const Inverso = () => {
                         {tonalliMessage}
                     </div>
                 )}
-                {results.length > 0 && (
+
+                {resultsCaso.length > 0 && (
                     <div className="card shadow-sm mb-4">
                         <div className="card-header text-white" style={{ backgroundColor: '#1e3a8a' }}>
-                            <h5 className="mb-0">Resultados Tonalli: {numero} - {simbolo} ({results.length} coincidencias)</h5>
+                            <h5 className="mb-0">Resultados Tonalli desde Caso: {numero} - {simbolo} ({resultsCaso.length} coincidencias)</h5>
                         </div>
                         <div className="table-responsive">
                             <table className="table table-hover mb-0">
@@ -125,17 +132,55 @@ const Inverso = () => {
                                     <tr>
                                         <th>Fecha</th>
                                         <th>Calendario</th>
-                                        <th>Tonalli</th>
-                                        <th>Xihuitl</th>
+                                        <th>Tonalli (Caso)</th>
+                                        <th>Xihuitl (Caso)</th>
+                                        <th>Tonalli (Meza)</th>
+                                        <th>Xihuitl (Meza)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {results.map((result, index) => (
+                                    {resultsCaso.map((result, index) => (
                                         <tr key={index}>
                                             <td>{formatDate(result.date)}</td>
                                             <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
-                                            <td>{result.tonalli.numero.español} - {result.tonalli.simbolo.español}</td>
-                                            <td>{result.xihuitl.numeroX.español} - {result.xihuitl.simboloX.español}</td>
+                                            <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
+                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
+                                            <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
+                                            <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {resultsMeza.length > 0 && (
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-header text-white" style={{ backgroundColor: '#14532d' }}>
+                            <h5 className="mb-0">Resultados Tonalli desde Meza: {numero} - {simbolo} ({resultsMeza.length} coincidencias)</h5>
+                        </div>
+                        <div className="table-responsive">
+                            <table className="table table-hover mb-0">
+                                <thead className="table-dark">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Calendario</th>
+                                        <th>Tonalli (Meza)</th>
+                                        <th>Xihuitl (Meza)</th>
+                                        <th>Tonalli (Caso)</th>
+                                        <th>Xihuitl (Caso)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {resultsMeza.map((result, index) => (
+                                        <tr key={index}>
+                                            <td>{formatDate(result.date)}</td>
+                                            <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                            <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
+                                            <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
+                                            <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
+                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                         </tr>
                                     ))}
                                 </tbody>
