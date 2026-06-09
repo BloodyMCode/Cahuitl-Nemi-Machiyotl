@@ -564,11 +564,11 @@ export const encuentraCoincidence = (
         const matches = []
         const fechaJuliano = new Date(1582, 9, 4)
 
-        // Recorrer años, meses y días.
+        // Recorrer años, meses y días desde la fecha inicio hasta la fecha fin
         for (let year = fechaInicio.getFullYear(); year <= fechaFin.getFullYear(); year++) {
-            if (year === 0) continue
+            if (year === 0) continue//el año 0 no existe en el calendario civil
 
-            const startMonth = (year === fechaInicio.getFullYear()) ? fechaInicio.getMonth() : 0
+            const startMonth = (year === fechaInicio.getFullYear()) ? fechaInicio.getMonth() : 0 //Condición ? Valor_si_es_verdadero : Valor_si_es_falso
             const endMonth = (year === fechaFin.getFullYear()) ? fechaFin.getMonth() : 11
 
             for (let month = startMonth; month <= endMonth; month++) {
@@ -642,11 +642,19 @@ export const buscarXihuitl = (
             if (year === 0) continue
             // Cada año tiene un identificador Xihuitl.
             const xihuitl = convertirXihuitl(new Date(year, 0, 1))
+            // Se pasa el año como string 'YYYY-01-01' para que obtenerDiaRitual calcule
+            // correctamente la fecha y hora de inicio del año ritual (startTime) según el
+            // ciclo de 4 posiciones: año 1 = 2/12-mar 06:43, año 2 = 2/12-mar 12:43,
+            // año 3 = 1/11-mar 18:43, año 4 = 2/12-mar 00:43 (juliano/gregoriano)
+            const xihuitlMeza = convertirXihuitlMeza(`${year}-01-01`)
             if (xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX.español === simboloX) {
                 matches.push({
                     year: year,
                     calendar: year < 1582 ? 'Juliano' : 'Gregoriano',
-                    xihuitl: xihuitl
+                    xihuitl: xihuitl,
+                    xihuitlMeza: xihuitlMeza,
+                    xihuitlMezaStartTime: xihuitlMeza ? xihuitlMeza.startTime : null,
+                    xihuitlMezaCal: xihuitlMeza ? (year <= 1582 ? 'Juliano' : 'Gregoriano') : null
                 })
             }
         }
