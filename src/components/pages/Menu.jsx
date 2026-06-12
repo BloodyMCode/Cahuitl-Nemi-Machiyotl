@@ -31,6 +31,9 @@ const Menu = () => {
                   <Link class={`nav-link ${isActive('/tablero') ? 'active' : ''}`} to="/tablero">Tablero{isActive('/tablero') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li class="nav-item">
+                  <Link class={`nav-link ${isActive('/toro') ? 'active' : ''}`} to="/toro">Toro{isActive('/toro') && <span class="visually-hidden">(actual)</span>}</Link>
+                </li>
+                <li class="nav-item">
                   <Link class={`nav-link ${isActive('/engranajes') ? 'active' : ''}`} to="/engranajes">Engranajes{isActive('/engranajes') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li class="nav-item">

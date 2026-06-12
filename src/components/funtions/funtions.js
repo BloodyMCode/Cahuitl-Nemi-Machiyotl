@@ -675,3 +675,115 @@ export const formatDate = (date) => {
         day: 'numeric'
     })
 }
+
+// Funcion para buscar coincidencias de Tonalli y Xihuitl combinados
+export const buscarAmbos = (
+    selectedStartDate,
+    selectedEndDate,
+    modoAmbos,
+    yearStart,
+    yearEnd,
+    numero,
+    simbolo,
+    numeroX,
+    simboloX,
+    setAmbosResults,
+    setAmbosMessage,
+    setLoadingAmbos
+) => {
+    // Determinar fechaInicio y fechaFin según modoAmbos
+    let startDateStr, endDateStr;
+
+    if (modoAmbos === 'fecha') {
+        // Usar directamente las fechas ingresadas; normalizar orden internamente
+        startDateStr = selectedStartDate;
+        endDateStr = selectedEndDate;
+    } else {
+        // Año inicio y año fin: se usa el primer día del año inicio y el último del año fin
+        const yA = parseInt(yearStart);
+        const yB = parseInt(yearEnd);
+        const yMin = Math.min(yA, yB);
+        const yMax = Math.max(yA, yB);
+        startDateStr = `${yMin}-01-01`;
+        endDateStr = `${yMax}-12-31`;
+    }
+
+    const fechaA = new Date(startDateStr + 'T00:00:00');
+    const fechaB = new Date(endDateStr + 'T00:00:00');
+    // Normalizar: fechaInicio siempre es la menor, fechaFin la mayor (permite ingreso invertido)
+    const fechaInicio = fechaA <= fechaB ? fechaA : fechaB;
+    const fechaFin = fechaA <= fechaB ? fechaB : fechaA;
+
+    if (fechaInicio.getTime() === fechaFin.getTime()) {
+        setAmbosResults([]);
+        setAmbosMessage("En este periodo no existen coincidencias con los nombres indicados, por favor introduzca un periodo distinto");
+        return;
+    }
+
+    setLoadingAmbos(true);
+    setAmbosMessage("");
+    setAmbosResults([]);
+
+    setTimeout(() => {
+        const matches = [];
+        const fechaJuliano = new Date(1582, 9, 4);
+
+        // Recorrer todos los días del periodo, igual que en encuentraCoincidence
+        for (let year = fechaInicio.getFullYear(); year <= fechaFin.getFullYear(); year++) {
+            if (year === 0) continue;//el año 0 no existe en el calendario civil
+
+            const startMonth = (year === fechaInicio.getFullYear()) ? fechaInicio.getMonth() : 0;
+            const endMonth = (year === fechaFin.getFullYear()) ? fechaFin.getMonth() : 11;
+
+            for (let month = startMonth; month <= endMonth; month++) {
+                const diasEnMes = getDiasMonth(year, month);
+                const startDay = (year === fechaInicio.getFullYear() && month === fechaInicio.getMonth()) ? fechaInicio.getDate() : 1;
+                const endDay = (year === fechaFin.getFullYear() && month === fechaFin.getMonth()) ? fechaFin.getDate() : diasEnMes;
+
+                for (let day = startDay; day <= endDay; day++) {
+                    const currentDate = new Date(year, month, day);
+                    if (currentDate > fechaFin) break;
+
+                    const tonalli = convertirTonalli(currentDate);
+                    // Para xihuitl: en modo 'fecha' el xihuitl considera el año de la fecha actual
+                    // En modo 'anio' también se usa el año de la fecha actual (primer día del año)
+                    const xihuitl = convertirXihuitl(currentDate);
+                    const tonalliMeza = convertirTonalliMeza(currentDate);
+                    const xihuitlMeza = convertirXihuitlMeza(currentDate);
+
+                    const matchTonalliCaso = tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo;
+                    const matchTonalliMeza = tonalliMeza && tonalliMeza.numeroT.español === numero.toString() && tonalliMeza.signoT.español === simbolo;
+                    const matchXihuitlCaso = xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX.español === simboloX;
+                    const matchXihuitlMeza = xihuitlMeza && xihuitlMeza.numeroX.español === numeroX.toString() && xihuitlMeza.simboloX.español === simboloX;
+
+                    // Solo incluir si coincide tonalli Y xihuitl (cualquier combinación Caso/Meza)
+                    const coincideTonalli = matchTonalliCaso || matchTonalliMeza;
+                    const coincideXihuitl = matchXihuitlCaso || matchXihuitlMeza;
+
+                    if (coincideTonalli && coincideXihuitl) {
+                        matches.push({
+                            date: currentDate,
+                            calendar: currentDate <= fechaJuliano ? 'Juliano' : 'Gregoriano',
+                            tonalli,
+                            xihuitl,
+                            tonalliMeza,
+                            xihuitlMeza,
+                            matchTonalliCaso,
+                            matchTonalliMeza,
+                            matchXihuitlCaso,
+                            matchXihuitlMeza,
+                        });
+                    }
+                }
+            }
+        }
+
+        if (matches.length === 0) {
+            setAmbosMessage("En este periodo no existen coincidencias con los nombres indicados, por favor introduzca un periodo distinto");
+        }
+        // Ordenar de más actual a más antiguo
+        matches.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setAmbosResults(matches);
+        setLoadingAmbos(false);
+    }, 100);
+}

@@ -11,6 +11,7 @@ import Menu from './components/pages/Menu'
 import Conversor from './components/pages/Conversor'
 import Inverso from './components/pages/Inverso'
 import Tablero from './components/pages/Tablero'
+import Toro from './components/pages/Toro'
 import Engranajes from './components/pages/Engranajes'
 import Calculadora from './components/pages/Calculadora'
 import { getImagePath } from './components/funtions/funtions'
@@ -30,6 +31,7 @@ function App() {
           <Route path="/" element={<Conversor />} />
           <Route path="/inverso" element={<Inverso />} />
           <Route path="/tablero" element={<Tablero />} />
+          <Route path="/toro" element={<Toro />} />
           <Route path="/engranajes" element={<Engranajes />} />
           <Route path="/calculadora" element={<Calculadora />} />
         </Routes>
