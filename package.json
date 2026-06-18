@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "generate-data": "python src/components/python/toro_animacion_3d_v3.3.py",
+    "dev": "npm run generate-data && vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
