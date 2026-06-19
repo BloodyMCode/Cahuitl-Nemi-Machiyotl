@@ -1,11 +1,16 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
-import Plot from 'react-plotly.js';
+//import Plot from 'react-plotly.js';
+import Plotly from 'plotly.js-dist-min';
+import _reactPlotly from 'react-plotly.js';
 import { pointsData, categoriasInfo, groupedData, framesData, getPointByDay } from '../data/toroData';
 import { getImagePath } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/Toro.css';
-
-
+const PlotComponent = _reactPlotly.default || _reactPlotly;
+import createPlotlyComponent from 'react-plotly.js/factory';
+const Plot = typeof createPlotlyComponent === 'function'
+    ? createPlotlyComponent(Plotly)
+    : PlotComponent;
 const Toro = () => {
     const [representation, setRepresentation] = useState('numeros');
     const [followMode, setFollowMode] = useState('cursor');
@@ -249,65 +254,141 @@ const Toro = () => {
 
     const allTraces = useMemo(() => [...traces, trailTrace, tracerTrace], [traces]);
 
-    useEffect(() => {
-        const plotDiv = plotRef.current?.el;
-        if (!plotDiv) return;
+    /*  useEffect(() => {
+         const plotDiv = plotRef.current?.el;
+         if (!plotDiv) return;
+ 
+         const handleHover = (event) => {
+             if (followMode === 'cursor' && event.points.length > 0) {
+                 const day = event.points[0].customdata;
+                 if (day) setSelectedDay(day);
+             }
+         };
+ 
+         const handleClick = (event) => {
+             if (followMode === 'cursor' && event.points.length > 0) {
+                 const day = event.points[0].customdata;
+                 if (day) setSelectedDay(day);
+             }
+         };
+ 
+         const handleSliderChange = (event) => {
+             if (followMode === 'trayectoria' && event.slider && event.slider.active !== undefined) {
+                 const day = event.slider.active + 1;
+                 setSelectedDay(day);
+             }
+         };
+ 
+         const handleAnimated = () => {
+             if (followMode === 'trayectoria') {
+                 const layout = plotDiv.layout;
+                 if (layout?.sliders?.[0]) {
+                     const active = layout.sliders[0].active;
+                     if (active !== undefined) {
+                         setSelectedDay(active + 1);
+                     }
+                 }
+             }
+         };
+ 
+         plotDiv.on('plotly_hover', handleHover);
+         plotDiv.on('plotly_click', handleClick);
+         plotDiv.on('plotly_sliderchange', handleSliderChange);
+         plotDiv.on('plotly_animated', handleAnimated);
+ 
+         return () => {
+             plotDiv.removeListener('plotly_hover', handleHover);
+             plotDiv.removeListener('plotly_click', handleClick);
+             plotDiv.removeListener('plotly_sliderchange', handleSliderChange);
+             plotDiv.removeListener('plotly_animated', handleAnimated);
+         };
+     }, [followMode]); */
+    // Define las funciones limpias y seguras para los eventos de Plotly:
+    const handleHover = (event) => {
+        if (followMode !== 'cursor') return;
 
-        const handleHover = (event) => {
-            if (followMode === 'cursor' && event.points.length > 0) {
-                const day = event.points[0].customdata;
-                if (day) setSelectedDay(day);
-            }
-        };
+        // Cortocircuito defensivo absoluto
+        if (!event || typeof event !== 'object' || !('points' in event)) return;
 
-        const handleClick = (event) => {
-            if (followMode === 'cursor' && event.points.length > 0) {
-                const day = event.points[0].customdata;
-                if (day) setSelectedDay(day);
-            }
-        };
-
-        const handleSliderChange = (event) => {
-            if (followMode === 'trayectoria' && event.slider && event.slider.active !== undefined) {
-                const day = event.slider.active + 1;
+        const points = event.points;
+        if (Array.isArray(points) && points.length > 0 && points[0]) {
+            const day = points[0].customdata;
+            if (day !== undefined && day !== null) {
                 setSelectedDay(day);
             }
-        };
+        }
+    };
 
-        const handleAnimated = () => {
-            if (followMode === 'trayectoria') {
-                const layout = plotDiv.layout;
-                if (layout?.sliders?.[0]) {
-                    const active = layout.sliders[0].active;
-                    if (active !== undefined) {
-                        setSelectedDay(active + 1);
-                    }
+    const handleClick = (event) => {
+        if (followMode !== 'cursor') return;
+
+        // Cortocircuito defensivo absoluto idéntico para click
+        if (!event || typeof event !== 'object' || !('points' in event)) return;
+
+        const points = event.points;
+        if (Array.isArray(points) && points.length > 0 && points[0]) {
+            const day = points[0].customdata;
+            if (day !== undefined && day !== null) {
+                setSelectedDay(day);
+            }
+        }
+    };
+
+    const handleSliderChange = (event) => {
+        if (followMode !== 'trayectoria') return;
+
+        if (event && typeof event === 'object' && event.slider && event.slider.active !== undefined) {
+            const day = event.slider.active + 1;
+            setSelectedDay(day);
+        }
+    };
+
+    const handleAnimated = () => {
+        if (followMode !== 'trayectoria') return;
+
+        if (plotRef.current?.el?.layout) {
+            const layoutObj = plotRef.current.el.layout;
+            if (layoutObj && Array.isArray(layoutObj.sliders) && layoutObj.sliders[0]) {
+                const active = layoutObj.sliders[0].active;
+                if (active !== undefined && active !== null) {
+                    setSelectedDay(active + 1);
                 }
             }
-        };
+        }
+    };
 
-        plotDiv.on('plotly_hover', handleHover);
-        plotDiv.on('plotly_click', handleClick);
-        plotDiv.on('plotly_sliderchange', handleSliderChange);
-        plotDiv.on('plotly_animated', handleAnimated);
 
-        return () => {
-            plotDiv.removeListener('plotly_hover', handleHover);
-            plotDiv.removeListener('plotly_click', handleClick);
-            plotDiv.removeListener('plotly_sliderchange', handleSliderChange);
-            plotDiv.removeListener('plotly_animated', handleAnimated);
-        };
-    }, [followMode]);
-
+    // Cambia esto en tu segundo useEffect (alrededor de la línea 305)
     useEffect(() => {
-        if (plotRef.current) {
+        const plotEl = plotRef.current?.el;
+
+        // Validamos rigurosamente:
+        // 1. Que exista el nodo del DOM.
+        // 2. Que la librería Plotly esté cargada y disponga del método restyle.
+        // 3. Que Plotly ya haya inicializado internamente las trazas básicas del gráfico.
+        if (
+            plotEl &&
+            Plotly &&
+            typeof Plotly.restyle === 'function' &&
+            (plotEl._fullData || plotEl.data)
+        ) {
             const texts = getTextsForTraces();
             const fontSize = representation === 'numeros' ? 11 : 12;
+
+            // Generamos los índices correspondientes a las categorías de información
             const traceIndices = Array.from({ length: categoriasInfo.length }, (_, i) => i);
-            Plot.restyle(plotRef.current.el, {
-                text: texts,
-                'textfont.size': fontSize,
-            }, traceIndices);
+
+            // Doble capa de seguridad: Solo ejecutamos si hay índices y el gráfico los reconoce
+            if (traceIndices.length > 0 && (plotEl.data?.length >= traceIndices.length)) {
+                try {
+                    Plotly.restyle(plotEl, {
+                        text: texts,
+                        'textfont.size': fontSize,
+                    }, traceIndices);
+                } catch (error) {
+                    console.warn("Plotly.restyle se detuvo de forma segura para prevenir un colapso en el renderizado:", error);
+                }
+            }
         }
     }, [representation, getTextsForTraces]);
 
@@ -361,7 +442,7 @@ const Toro = () => {
                             <div>
                                 <div className="border rounded-3 p-2 bg-white" style={{ width: '110px', height: '110px' }}>
                                     <img
-                                        src={getImagePath(`numerales/${data.numeral}.png`)}
+                                        src={getImagePath(`${data.numeral}.png`)}
                                         alt={`Numeral ${data.numeral}`}
                                         className="img-fluid"
                                         onError={(e) => { e.target.src = ''; e.target.alt = 'N/A'; }}
@@ -373,7 +454,7 @@ const Toro = () => {
                             <div>
                                 <div className="border rounded-3 p-2 bg-white" style={{ width: '110px', height: '110px' }}>
                                     <img
-                                        src={getImagePath(`simbolos/${data.symFile}`)}
+                                        src={getImagePath(`${data.symFile}`)}
                                         alt={`Símbolo ${data.symName}`}
                                         className="img-fluid"
                                         onError={(e) => { e.target.src = ''; e.target.alt = 'N/A'; }}
@@ -406,6 +487,16 @@ const Toro = () => {
             <style>{style}</style>
 
             <div className="col-9 position-relative" style={{ height: '100vh' }}>
+                {/* <Plot
+                    ref={plotRef}
+                    data={allTraces}
+                    layout={layout}
+                    frames={frames}
+                    config={{ responsive: true }}
+                    useResizeHandler
+                    style={{ width: '100%', height: '100%' }}
+                    className="w-100 h-100"
+                /> */}
                 <Plot
                     ref={plotRef}
                     data={allTraces}
@@ -415,6 +506,10 @@ const Toro = () => {
                     useResizeHandler
                     style={{ width: '100%', height: '100%' }}
                     className="w-100 h-100"
+                    onHover={handleHover}
+                    onClick={handleClick}
+                    onSliderChange={handleSliderChange}
+                    onAnimated={handleAnimated}
                 />
             </div>
 
