@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/Toro.css';
 
 const Toro = () => {
+
     /*  const [data, setData] = useState(null);
      const [loading, setLoading] = useState(true);
      const [currentDay, setCurrentDay] = useState(1);
@@ -470,7 +471,7 @@ const Toro = () => {
              </div>
          </div> */
     // );
-    return (
+    /* return (
         <div style={{ width: '100%', height: '100vh' }}>
             <iframe
                 src="../../../public/toro_animacion_3d_v3.6html"
@@ -478,7 +479,7 @@ const Toro = () => {
                 title="Tonalpohualli 3D"
             />
         </div>
-    );
+    ); */
 };
 
 

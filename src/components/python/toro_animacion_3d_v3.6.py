@@ -7,18 +7,25 @@ import plotly.io as pio
 print("Generando Animación 3D v3 con Representación Dual de Numerales e Imágenes...")
 
 # 1. Escanear carpeta de imágenes para símbolos
-simbolos_dir = "images/simbolos"
-simbolos_files = {}
+""" simbolos_dir = "imagenes/simbolos"
+simbolos_files = {} """
+# ============================================================
+# MODIFICACIÓN: Ruta absoluta a la carpeta de imágenes
+# ============================================================
+# El script está en src/components/python, las imágenes en src/components/images
+script_dir = os.path.dirname(__file__)                      # src/components/python
+simbolos_dir = os.path.join(script_dir, '..', 'images')    # src/components/images
+
 
 # Mapeo por defecto por si las imágenes no están accesibles
 nombres_simbolos_defecto = {
     0: "flor", 1: "lagarto", 2: "viento", 3: "casa", 4: "lagartija",
     5: "serpiente", 6: "muerte", 7: "venado", 8: "conejo", 9: "agua",
-    10: "perro", 11: "mono", 12: "hierba", 13: "caña", 14: "jaguar",
+    10: "perro", 11: "mono", 12: "hierba", 13: "carrizo", 14: "jaguar",
     15: "aguila", 16: "zopilote", 17: "movimiento", 18: "pedernal", 19: "lluvia"
 }
 
-if os.path.exists(simbolos_dir):
+""" if os.path.exists(simbolos_dir):
     for filename in os.listdir(simbolos_dir):
         if filename.endswith(".png"):
             parts = filename.split("-")
@@ -27,10 +34,10 @@ if os.path.exists(simbolos_dir):
                     r_val = int(parts[0].strip())
                     simbolos_files[r_val] = filename
                 except ValueError:
-                    pass
+                    pass """
 
 # Generar diccionario completo de mapeo de nombres y archivos de símbolos
-simbolos_info = {}
+""" simbolos_info = {}
 for r in range(20):
     filename = simbolos_files.get(r, "")
     if filename:
@@ -46,7 +53,19 @@ for r in range(20):
     simbolos_info[r] = {
         "file": filename,
         "name": name
+    } """
+# ============================================================
+# Generar simbolos_info usando nombres de archivo sin guiones
+# ============================================================
+simbolos_info = {}
+for r in range(20):
+    name = nombres_simbolos_defecto[r]
+    simbolos_info[r] = {
+        "file": f"{name}.png",   # ej: "flor.png"
+        "name": name
     }
+
+# (Opcional) Podrías verificar que los archivos existen, pero se asume que están.
 
 # 2. Parámetros del Toro
 R_major = 5
@@ -128,12 +147,12 @@ for n in range(1, 261):
     
     numeral = 13 if q == 0 else q
     sym_name = simbolos_info[r]["name"]
-    sym_file = simbolos_info[r]["file"]
+    sym_file = simbolos_info[r]["file"] # ahora es "flor.png", etc.
     
     label_num = f"({q},{r})"
     label_img = f"({numeral}, {sym_name.capitalize()})"
     
-    hover_info = f"Dia n: <b>{n}</b><br>Coordenadas: <b>({q}, {r})</b>"
+    hover_info = f"Día n: <b>{n}</b><br>Coordenadas: <b>({q}, {r})</b>"
     
     # Clasificación
     if q == 1:
@@ -157,7 +176,7 @@ for n in range(1, 261):
         class_name = 'Inicio de Veintena'
     else:
         class_key = 'base'
-        class_name = 'Dia Regular'
+        class_name = 'Día Regular'
         
     categorías[class_key]['x'].append(X)
     categorías[class_key]['y'].append(Y)
@@ -172,7 +191,7 @@ for n in range(1, 261):
         "r": r,
         "numeral": numeral,
         "symName": sym_name,
-        "symFile": sym_file,
+        "symFile": sym_file, # ej: "flor.png"
         "className": class_name,
         "classKey": class_key
     }
@@ -339,6 +358,9 @@ text_imagenes_js = [
 ]
 
 # 5. Generar la estructura HTML final
+# ============================================================
+# MODIFICACIÓN: Plantilla HTML con rutas corregidas
+# ============================================================
 html_template = """<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -818,8 +840,12 @@ html_template = """<!DOCTYPE html>
                     </div>
                 `;
             } else {
-                const numImgSrc = `image/numerales/${data.q}.png`;
-                const symImgSrc = `image/simbolos/${data.symFile}`;
+              // ============================================================
+                // MODIFICACIÓN: mapeo correcto de numerales a archivos
+                // ============================================================
+                const numeralFile = data.q === 0 ? '13.png' : data.q + '.png';
+                const numImgSrc = `../images/${numeralFile}`;
+                const symImgSrc = `../images/${data.symFile}`;
                 const traditionalName = `${data.numeral} - ${data.symName}`;
                 
                 html += `
@@ -827,7 +853,7 @@ html_template = """<!DOCTYPE html>
                         <div class="image-row">
                             <div class="image-card">
                                 <div class="img-wrapper">
-                                    <img src="${numImgSrc}" alt="Numeral ${data.q}" onerror="this.src=''; this.alt='N/A';">
+                                    <img src="${numImgSrc}" alt="Numeral ${data.numeral}" onerror="this.src=''; this.alt='N/A';">
                                 </div>
                                 <span class="label">Numeral ${data.numeral}</span>
                             </div>
@@ -903,76 +929,7 @@ html_content = html_content.replace("{TEXT_NUMEROS_JSON}", json.dumps(text_numer
 html_content = html_content.replace("{TEXT_IMAGENES_JSON}", json.dumps(text_imagenes_js))
 
 # Guardar a archivo HTML
-""" with open("toro_animacion_3d_v3.6html", "w", encoding="utf-8") as f:
-    f.write(html_content) """
-output_path = os.path.join("public", "toro_animacion_3d_v3.6html")
-with open(output_path, "w", encoding="utf-8") as f:
+with open("toro_animacion_3d_v3.html", "w", encoding="utf-8") as f:
     f.write(html_content)
+
 print("¡toro_animacion_3d_v3.html creado exitosamente!")
-
-# ================================================================
-# BLOQUE PARA EXPORTAR A JSON
-# ================================================================
-
-# Función para serializar arrays numpy
-def convert_numpy(obj):
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    if isinstance(obj, np.integer):
-        return int(obj)
-    if isinstance(obj, np.floating):
-        return float(obj)
-    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
-
-# Construir la lista completa de días con todos los campos necesarios
-days_list = []
-for n in range(1, 261):
-    q = n % 13
-    r = n % 20
-    X, Y, Z = mapear(q, r)  # Función definida en tu script
-    
-    info = points_data[n]
-    numeral = 13 if q == 0 else q
-    sym_name = simbolos_info[r]["name"]
-    sym_file = simbolos_info[r]["file"]
-    
-    label_num = f"({q},{r})"
-    label_img = f"({numeral}, {sym_name.capitalize()})"
-    hover = f"Dia n: <b>{n}</b><br>Coordenadas: <b>({q}, {r})</b><br>Tipo: <b>{info['className']}</b>"
-    
-    days_list.append({
-        "n": n,
-        "q": q,
-        "r": r,
-        "x": float(X),
-        "y": float(Y),
-        "z": float(Z),
-        "numeral": numeral,
-        "symName": sym_name,
-        "symFile": sym_file,
-        "className": info['className'],
-        "classKey": info['classKey'],
-        "labelNum": label_num,
-        "labelImg": label_img,
-        "hover": hover
-    })
-
-# Estructura completa del JSON
-data_export = {
-    "surface": {
-        "x": X_surf.tolist(),  # X_surf debe estar definido
-        "y": Y_surf.tolist(),
-        "z": Z_surf.tolist()
-    },
-    "days": days_list,
-    "textNumeros": text_numeros_js,   # del script original
-    "textImagenes": text_imagenes_js, # del script original
-    "pointsData": points_data         # del script original
-}
-
-# Guardar en la carpeta src/data/ del proyecto React (crea la carpeta si no existe)
-os.makedirs("src/components/data", exist_ok=True)
-with open("src/components/data/toroData.json", "w", encoding="utf-8") as f:
-    json.dump(data_export, f, indent=2, default=convert_numpy)
-
-print("✅ toroData.json generado correctamente en src/data/")
