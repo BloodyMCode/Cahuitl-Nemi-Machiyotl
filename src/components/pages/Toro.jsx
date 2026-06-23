@@ -1,16 +1,496 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Plotly from 'plotly.js-dist-min';
+import _reactPlotly from 'react-plotly.js';
+import createPlotlyComponent from 'react-plotly.js/factory';
+// Cargar el JSON de datos geométricos
+import toroData from '../data/toroData.json';
+// Configuración del factory seguro para Plotly en Vite
+const PlotComponent = _reactPlotly.default || _reactPlotly;
+const Plot = typeof createPlotlyComponent === 'function'
+    ? createPlotlyComponent(Plotly)
+    : PlotComponent;
 // Importa plotly.js y la función factory
 /* import * as Plotly from 'plotly.js-dist';
 import createPlotlyComponent from 'react-plotly.js/factory';
 const Plot = createPlotlyComponent(Plotly);
 import toroData from '../data/toroData.json'; */
 // Importar el archivo Python como texto plano usando '?raw' de Vite
-import pythonCode from '../python/toro_animacion_3d_v3.6.py?raw';
+//import pythonCode from '../python/toro_animacion_3d_v3.6.py?raw';
 import { getImagePath } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/Toro.css';
+//import '../styles/Toro.css';
+
+// Mapeo de colores estéticos por rumbo de Trecena para los trazos segmentados
+const RUMBO_COLORS = {
+    tlahuiztlanpa: '#F1C40F', // Oriente / Amarillo
+    huitztlanpa: '#0984E3',    // Sur / Azul
+    cihuatlanpa: '#D63031',    // Poniente / Rojo
+    mictlanpa: '#7F8C8D',      // Norte / Gris
+    base: '#475569'
+};
 
 const Toro = () => {
+
+    // --- ESTADOS ORIGINALES DE LA APLICACIÓN ---
+    const [currentRepresentation, setCurrentRepresentation] = useState('numeros'); // 'numeros' | 'imagenes'
+    const [followMode, setFollowMode] = useState('cursor'); // 'cursor' | 'trayectoria'
+    const [speed, setSpeed] = useState(300); // ms por intervalo
+    const [hoveredDay, setHoveredDay] = useState(null);
+    const [activeDayData, setActiveDayData] = useState(null);
+
+    const plotRef = useRef(null);
+    const followModeRef = useRef('cursor');
+    const isAnimatingRef = useRef(false);
+    // Guarda el último día renderizado para que React no reinicie la animación al actualizar la UI
+    const currentDayRef = useRef(1);
+    // Sincronizar la referencia del modo de seguimiento para los eventos nativos de Plotly
+    useEffect(() => {
+        followModeRef.current = followMode;
+    }, [followMode]);
+
+    // --- PROPUESTA: SINCRONIZACIÓN PERFECTA (PRE-CACHÉ DE IMÁGENES) ---
+    useEffect(() => {
+        // Fuerza al navegador a descargar y almacenar en caché todas las imágenes 
+        // de los glifos al montar el componente para eliminar el parpadeo en la animación.
+        Object.keys(toroData.points).forEach((key) => {
+            const data = toroData.points[key];
+            // 1. Imagen del glifo
+            const symImg = new Image();
+            symImg.src = getImagePath(data.symFile);
+            // 2. Imagen del numeral asociativo
+            const numeralFile = data.q === 0 ? '13.png' : `${data.q}.png`;
+            const numImg = new Image();
+            numImg.src = getImagePath(numeralFile);
+        });
+        // Cargar por defecto el estado del día 1 en el panel lateral
+        updateSidebar(1);
+    }, []);
+    // Actualiza la barra lateral según el día actual activo del sistema
+    const updateSidebar = (day) => {
+        currentDayRef.current = day;
+        const data = toroData.points[day];
+        if (data) {
+            setActiveDayData({ day, ...data });
+        }
+    };
+    // --- ESCUCHA DE EVENTOS NATIVOS MEJORADA ---
+    // Vincular detectores de eventos nativos de Plotly.js para interactividad sin lag
+    const bindPlotlyEvents = (el) => {
+        el.removeAllListeners?.('plotly_hover');
+        el.removeAllListeners?.('plotly_click');
+        el.removeAllListeners?.('plotly_sliderchange');
+        el.removeAllListeners?.('plotly_animated');
+        el.on('plotly_hover', (data) => {
+            if (followModeRef.current === 'cursor' && !isAnimatingRef.current) {
+                const pt = data.points[0];
+                if (pt && pt.customdata) updateSidebar(pt.customdata);
+            }
+        });
+        el.on('plotly_click', (data) => {
+            if (followModeRef.current === 'cursor') {
+                const pt = data.points[0];
+                if (pt && pt.customdata) updateSidebar(pt.customdata);
+            }
+        });
+        // Sincronización precisa al arrastrar manualmente el Slider nativo
+        el.on('plotly_sliderchange', (data) => {
+            if (data.step && data.step.label) {
+                const day = parseInt(data.step.label);
+                if (!isNaN(day)) updateSidebar(day);
+            }
+        });
+
+        // Sincroniza frame a frame mientras corre el Play o se detiene en Pause
+        el.on('plotly_animated', (data) => {
+            // Solo actualiza si está en modo trayectoria Y la animación sigue corriendo activa
+            if (data && data.name) {
+                const day = parseInt(data.name);
+                if (!isNaN(day)) updateSidebar(day);
+            } else {
+                // Fallback de seguridad leyendo la propiedad del slider nativo
+                const plotDiv = plotRef.current?.el;
+                if (plotDiv?.layout?.sliders?.[0]) {
+                    const activeStep = plotDiv.layout.sliders[0].active || 0;
+                    updateSidebar(activeStep + 1);
+                }
+            }
+        });
+    };
+    // --- CONSTRUCCIÓN DE LA MALLA GEOMÉTRICA (TRAZA 0) ---
+    const R_major = 5;
+    const r_minor = 1.5;
+    const u_arr = Array.from({ length: 40 }, (_, i) => (2 * Math.PI * i) / 39);
+    const v_arr = Array.from({ length: 40 }, (_, i) => (2 * Math.PI * i) / 39);
+
+    let x_surf = [], y_surf = [], z_surf = [];
+    for (let i = 0; i < v_arr.length; i++) {
+        let x_row = [], y_row = [], z_row = [];
+        for (let j = 0; j < u_arr.length; j++) {
+            x_row.push((R_major + r_minor * Math.cos(u_arr[j])) * Math.cos(v_arr[i]));
+            y_row.push((R_major + r_minor * Math.cos(u_arr[j])) * Math.sin(v_arr[i]));
+            z_row.push(r_minor * Math.sin(u_arr[j]));
+        }
+        x_surf.push(x_row); y_surf.push(y_row); z_surf.push(z_row);
+    }
+
+    const surfaceTrace = {
+        type: 'surface',
+        x: x_surf, y: y_surf, z: z_surf,
+        opacity: 0.08,
+        colorscale: 'Jet',
+        showscale: false,
+        hoverinfo: 'skip'
+    };
+
+    // --- MAPEO DE LAS TRAZAS ESTÁTICAS DE PUNTOS POR CATEGORÍA (TRAZAS 1 A 6) ---
+    const trace_keys = ['base', 'familia_q_1', 'tlahuiztlanpa', 'huitztlanpa', 'cihuatlanpa', 'mictlanpa'];
+
+    // Diccionario de inicialización para segmentar por coordenadas
+    const catContainers = {
+        base: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 5, color: '#334155', symbol: 'circle', name: 'Día Regular' },
+        familia_q_1: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 7, color: '#00CEC9', symbol: 'diamond', name: 'Inicio Veintena' },
+        tlahuiztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.tlahuiztlanpa, symbol: 'circle', name: 'Tlahuiztlanpa (Oriente)' },
+        huitztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.huitztlanpa, symbol: 'circle', name: 'Huitztlanpa (Sur)' },
+        cihuatlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.cihuatlanpa, symbol: 'circle', name: 'Cihuatlanpa (Poniente)' },
+        mictlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.mictlanpa, symbol: 'circle', name: 'Mictlanpa (Norte)' }
+    };
+
+    // Distribuir la data geométrica dentro de las 6 categorías estructurales
+    toroData.trajectory.forEach((t) => {
+        const pt = toroData.points[t.n];
+        const container = catContainers[pt.classKey] || catContainers.base;
+
+        container.x.push(t.x);
+        container.y.push(t.y);
+        container.z.push(t.z);
+        container.n.push(t.n);
+        container.text_num.push(`(${pt.q},${pt.r})`);
+        container.text_img.push(`${pt.numeral}-${pt.symName}`);
+        container.hover.push(`Día n=${t.n}<br>Tonal: ${pt.numeral} ${pt.symName}<br>Coord: (${pt.q},${pt.r})`);
+    });
+
+    const categoryTraces = trace_keys.map((cat_key) => {
+        const cat = catContainers[cat_key];
+        const isBase = cat_key === 'base';
+
+        return {
+            type: 'scatter3d',
+            x: cat.x, y: cat.y, z: cat.z,
+            mode: 'markers',
+            marker: {
+                size: cat.size,
+                color: cat.color,
+                symbol: cat.symbol,
+                line: { color: isBase ? '#000000' : '#FFFFFF', width: isBase ? 0.5 : 1 }
+            },
+            text: currentRepresentation === 'numeros' ? cat.text_num : cat.text_img,
+            textposition: 'top center',
+            textfont: { color: '#94A3B8', size: 10, family: 'Arial, sans-serif' },
+            hovertext: cat.hover,
+            customdata: cat.n,
+            name: cat.name
+        };
+    });
+
+    // --- TRAZO 7: RASTRO (TRAIL) ANIMADO ---
+    // CORRECCIÓN: Garantizar que tengan arrays con el origen inicial estructurado desde el día 1
+    const currentSampleIndex = currentDayRef.current;
+    const activeTrajectorySlice = toroData.trajectory.slice(0, currentSampleIndex);
+    const lastActivePos = toroData.trajectory[currentSampleIndex - 1] || toroData.trajectory[0];
+    const lastActiveMeta = toroData.points[lastActivePos.n];
+    const trailTrace = {
+        type: 'scatter3d',
+        x: activeTrajectorySlice.map(s => s.x),
+        y: activeTrajectorySlice.map(s => s.y),
+        z: activeTrajectorySlice.map(s => s.z),
+        mode: 'lines',
+        line: { color: '#F1C40F', width: 4.5 }, // Amarillo de alta visibilidad continuo
+        opacity: 0.9,
+        name: 'Trayectoria',
+        hoverinfo: 'skip'
+    };
+
+    // --- TRAZO 8: GENERADOR ACTIVO (TRACER) ANIMADO ---
+    const tracerTrace = {
+        type: 'scatter3d',
+        x: [lastActivePos.x],
+        y: [lastActivePos.y],
+        z: [lastActivePos.z],
+        mode: 'markers+text',
+        marker: { size: 10, color: '#EF4444', symbol: 'circle', line: { color: 'black', width: 1.5 } },
+        text: [currentRepresentation === 'numeros' ? `(${lastActiveMeta.q},${lastActiveMeta.r})` : `${lastActiveMeta.numeral}-${lastActiveMeta.symName}`],
+        textposition: 'top center',
+        textfont: { color: '#EF4444', size: 12, family: 'Arial Black' },
+        name: 'Generador Activo',
+        hoverinfo: 'skip'
+    };
+
+    // --- CONSTRUCCIÓN COMPLETA DE ANIMACIÓN DE FRAMES CON RASTRO MULTICOLOR ---
+    const steps = [];
+    const frames = [];
+    const totalPoints = toroData.trajectory.length;
+
+    for (let k = 1; k <= totalPoints; k++) {
+        const currentSample = toroData.trajectory.slice(0, k);
+        const currentPt = toroData.trajectory[k - 1];
+        const ptMeta = toroData.points[currentPt.n];
+
+        steps.push({
+            label: k.toString(),
+            method: 'animate',
+            args: [[k.toString()], {
+                frame: { duration: 0, redraw: false },
+                mode: 'immediate',
+                transition: { duration: 0 }
+            }]
+        });
+
+        frames.push({
+            name: k.toString(),
+            data: [
+                {
+                    type: 'scatter3d',
+                    x: currentSample.map(s => s.x),
+                    y: currentSample.map(s => s.y),
+                    z: currentSample.map(s => s.z),
+                    line: { color: '#F1C40F', width: 4.5 } // Mantiene la consistencia del color durante el Play
+                },
+                {
+                    type: 'scatter3d',
+                    x: [currentPt.x], y: [currentPt.y], z: [currentPt.z],
+                    text: [currentRepresentation === 'numeros' ? `(${ptMeta.q},${ptMeta.r})` : `${ptMeta.numeral}-${ptMeta.symName}`]
+                }
+            ],
+            traces: [7, 8]
+        });
+    }
+    // --- CONTROLES DE INTERFAZ INTEGRADOS DIRECTAMENTE AL CONTENEDOR LAYOUT DARK ---
+    const layout = {
+        paper_bgcolor: '#0F172A',
+        plot_bgcolor: '#0F172A',
+        margin: { l: 10, r: 10, b: 10, t: 70 },
+        scene: {
+            xaxis: { visible: false },
+            yaxis: { visible: false },
+            zaxis: { visible: false },
+            bgcolor: '#0F172A',
+            aspectmode: 'data'
+        },
+        updatemenus: [
+            // 1. Botones nativos de Play/Pause alineados en zona izquierda superior
+            {
+                type: 'buttons',
+                direction: 'left',
+                pad: { r: 10, t: 10 },
+                showactive: false,
+                x: 0.15, y: 1.15, xanchor: 'right', yanchor: 'top',
+                font: { color: '#E2E8F0', size: 12 },
+                bgcolor: '#1E293B',
+                bordercolor: '#334155',
+                buttons: [
+                    {
+                        label: '► Play',
+                        method: 'animate',
+                        args: [null, {
+                            frame: { duration: speed, redraw: false },
+                            fromcurrent: true, // Crucial: continúa exactamente en el frame pausado
+                            transition: { duration: 0 },
+                            mode: 'immediate'
+                        }]
+                    },
+                    {
+                        label: '⏸ Pause',
+                        method: 'animate',
+                        args: [[null], {
+                            frame: { duration: 0, redraw: false },
+                            mode: 'immediate',
+                            transition: { duration: 0 }
+                        }]
+                    }
+                ]
+            }
+        ],
+        sliders: [{
+            active: currentSampleIndex - 1,
+            yanchor: 'top',
+            xanchor: 'left',
+            currentvalue: { font: { size: 13, color: '#38BDF8' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
+            transition: { duration: 0 },
+            pad: { b: 10, t: 40 },
+            len: 0.9,
+            x: 0.05, y: 0,
+            font: { color: '#94A3B8', size: 10 },
+            bgcolor: '#1E293B',
+            bordercolor: '#334155',
+            steps: steps
+        }]
+    };
+    // --- ACCIONES UI ---
+    // Métodos dinámicos para acoplar selectores de HTML con los métodos nativos de Plotly Restyle
+    const toggleLabelsRepresentation = (mode) => {
+        setCurrentRepresentation(mode);
+        const plotDiv = plotRef.current?.el;
+        if (!plotDiv) return;
+
+        const textMatrix = trace_keys.map((key) => catContainers[key][mode === 'numeros' ? 'text_num' : 'text_img']);
+        Plotly.restyle(plotDiv, {
+            text: textMatrix,
+            'textfont.size': mode === 'numeros' ? 10 : 13
+        }, [1, 2, 3, 4, 5, 6]);
+    };
+
+    const toggleLabelsVisibility = (visibilityMode) => {
+        const plotDiv = plotRef.current?.el;
+        if (!plotDiv) return;
+
+        let modesArray = [];
+        if (visibilityMode === 'none') {
+            modesArray = Array(6).fill('markers');
+        } else if (visibilityMode === 'highlights') {
+            modesArray = ['markers', 'markers', 'markers+text', 'markers+text', 'markers+text', 'markers+text'];
+        } else {
+            modesArray = Array(6).fill('markers+text');
+        }
+
+        Plotly.restyle(plotDiv, { mode: modesArray }, [1, 2, 3, 4, 5, 6]);
+    };
+
+    const updatePlaySpeed = (val) => {
+        const newSpeed = parseInt(val);
+        setSpeed(newSpeed);
+        const plotDiv = plotRef.current?.el;
+        if (plotDiv) {
+            Plotly.relayout(plotDiv, {
+                'updatemenus[0].buttons[0].args[1].frame.duration': newSpeed
+            });
+        }
+    };
+    // CORRECCIÓN: Manejar el cambio de modo asegurando la conmutación de estado en React
+    const handleFollowModeChange = (mode) => {
+        setFollowMode(mode);
+        if (mode === 'trayectoria') {
+            const plotDiv = plotRef.current?.el;
+            if (plotDiv?.layout?.sliders?.[0]) {
+                const activeStep = plotDiv.layout.sliders[0].active || 0;
+                updateSidebar(activeStep + 1);
+            }
+        }
+    };
+
+    return (
+        <div id="app-container" style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#0F172A', color: '#F8FAFC', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
+
+            {/* ÁREA DEL GRÁFICO */}
+            <div id="plot-area" style={{ flex: 1, height: '100%', position: 'relative', backgroundColor: '#0F172A' }}>
+                <Plot
+                    ref={plotRef}
+                    data={[surfaceTrace, ...categoryTraces, trailTrace, tracerTrace]}
+                    layout={layout}
+                    frames={frames}
+                    config={{ responsive: true, displayModeBar: false }}
+                    style={{ width: '100%', height: '100%' }}
+                    onInitialized={(figure, el) => bindPlotlyEvents(el)}
+                    onUpdate={(figure, el) => bindPlotlyEvents(el)}
+                    onStartAnimating={() => { isAnimatingRef.current = true; }}
+                    onStopAnimating={() => { isAnimatingRef.current = false; }}
+                />
+            </div>
+
+            {/* BARRA LATERAL */}
+            <div id="sidebar" style={{ width: '340px', minWidth: '340px', height: '100%', backgroundColor: '#1E293B', borderLeft: '1px solid #334155', padding: '24px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflowY: 'auto' }}>
+                <h1 style={{ margin: '0 0 2px 0', fontSize: '26px', fontWeight: 800, color: '#F8FAFC' }}>Tonalpohualli</h1>
+                <h1 style={{ margin: '2px 0 5px 0', fontSize: '20px', fontWeight: 600, color: '#38BDF8' }}>Toro Interactivo 3D</h1>
+                <div className="subtitle" style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>Modelo Z₁₃ ⊕ Z₂₀</div>
+
+                {/* REPRESENTACIÓN */}
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px', marginTop: '5px' }}>Representación</div>
+                <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '15px' }}>
+                    <button className={`selector-btn ${currentRepresentation === 'numeros' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('numeros')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'numeros' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'numeros' ? '#0F172A' : '#94A3B8' }}>
+                        Números (q, r)
+                    </button>
+                    <button className={`selector-btn ${currentRepresentation === 'imagenes' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('imagenes')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'imagenes' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'imagenes' ? '#0F172A' : '#94A3B8' }}>
+                        (Numeral, Glifo)
+                    </button>
+                </div>
+
+                {/* MODO DE SEGUIMIENTO */}
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Modo de Seguimiento</div>
+                <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '15px' }}>
+                    <button className={`selector-btn ${followMode === 'cursor' ? 'active' : ''}`} onClick={() => handleFollowModeChange('cursor')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'cursor' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
+                        Al Señalar
+                    </button>
+                    <button className={`selector-btn ${followMode === 'trayectoria' ? 'active' : ''}`} onClick={() => handleFollowModeChange('trayectoria')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'trayectoria' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
+                        Al Animar
+                    </button>
+                </div>
+
+                {/* ETIQUETAS EN EL TORO */}
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Etiquetas en el Toro</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '20px' }}>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('none')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#94A3B8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Ocultar Coordenadas</button>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('highlights')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#38BDF8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Solo Destacados</button>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('all')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#F8FAFC', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Todas</button>
+                </div>
+
+                {/* VELOCIDAD */}
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Velocidad de Animación</div>
+                <div style={{ backgroundColor: '#0F172A', border: '1px solid #334155', borderRadius: '12px', padding: '12px', marginBottom: '25px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Intervalo:</span>
+                        <span style={{ fontSize: '12px', color: '#38BDF8', fontWeight: 800 }}>{speed} ms</span>
+                    </div>
+                    <input type="range" id="speed-slider" min="100" max="1500" step="50" value={speed} onChange={(e) => updatePlaySpeed(e.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: '#38BDF8' }} />
+                </div>
+
+                {/* TARJETA DINÁMICA DE DETALLES */}
+                <div id="details-card" style={{ backgroundColor: '#0F172A', borderRadius: '16px', padding: '20px', border: '1px solid #334155', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {activeDayData ? (
+                        <div id="details-content" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#334155', padding: '3px 9px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
+                                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '3px 9px', borderRadius: '12px', color: '#0F172A', backgroundColor: RUMBO_COLORS[activeDayData.classKey] || '#FFF' }}>{activeDayData.className}</span>
+                            </div>
+
+                            {currentRepresentation === 'numeros' ? (
+                                <div className="visual-numeros" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                                    <div style={{ flex: 1, backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '8px', padding: '8px 4px', display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
+                                        <span style={{ fontSize: '22px', fontWeight: 800, color: '#F87171' }}>{activeDayData.q}</span>
+                                        <span style={{ fontSize: '9px', color: '#64748B', textTransform: 'uppercase' }}>módulo 13</span>
+                                    </div>
+                                    <div style={{ flex: 1, backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '8px', padding: '8px 4px', display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
+                                        <span style={{ fontSize: '22px', fontWeight: 800, color: '#34D399' }}>{activeDayData.r}</span>
+                                        <span style={{ fontSize: '9px', color: '#64748B', textTransform: 'uppercase' }}>módulo 20</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="visual-imagenes" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', width: '100%' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '75px' }}>
+                                            <div style={{ width: '55px', height: '55px', backgroundColor: '#1E293B', borderRadius: '8px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <img src={getImagePath(activeDayData.q === 0 ? '13.png' : `${activeDayData.q}.png`)} alt={`Numeral ${activeDayData.numeral}`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                                            </div>
+                                            <span style={{ fontSize: '8px', color: '#64748B', marginTop: '4px' }}>Num. {activeDayData.numeral}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '75px' }}>
+                                            <div style={{ width: '55px', height: '55px', backgroundColor: '#1E293B', borderRadius: '8px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <img src={getImagePath(activeDayData.symFile)} alt={`Signo ${activeDayData.symName}`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                                            </div>
+                                            <span style={{ fontSize: '8px', color: '#64748B', marginTop: '4px' }}>Signo: {activeDayData.symName}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: '15px', fontWeight: 700, color: '#38BDF8', marginTop: '10px', textTransform: 'capitalize' }}>{activeDayData.numeral} - {activeDayData.symName}</div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center' }}>
+                            Pasa el cursor o haz clic sobre cualquier punto en el toro 3D para explorar su coordenada, día y glifo tradicional.
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 
     /*  const [data, setData] = useState(null);
      const [loading, setLoading] = useState(true);
