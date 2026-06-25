@@ -26,7 +26,56 @@ const RUMBO_COLORS = {
     huitztlanpa: '#0984E3',    // Sur / Azul
     cihuatlanpa: '#D63031',    // Poniente / Rojo
     mictlanpa: '#7F8C8D',      // Norte / Gris
-    base: '#475569'
+    base: '#64748B'            // Regular / Gris Base'
+};
+// --- COMPONENTE LÓGICO CON CAMBIO DE COLOR EXACTO EN EL VÉRTICE ---
+// --- NUEVA LOGICA: TRAZAS DE TRAYECTORIA SEPARADAS POR RUMBO (ELIMINA DEGRADADOS) ---
+const getRumboSegments = (maxDay) => {
+    const segments = { tlahuiztlanpa: [], huitztlanpa: [], cihuatlanpa: [], mictlanpa: [] };
+    const activeTrajectory = toroData.trajectory.slice(0, maxDay);
+
+    let currentRumbo = null;
+
+    // 1. Encontrar el rumbo inicial real de la trayectoria activa
+    for (let i = 0; i < activeTrajectory.length; i++) {
+        const pt = toroData.points[activeTrajectory[i].n];
+        if (pt && ['tlahuiztlanpa', 'huitztlanpa', 'cihuatlanpa', 'mictlanpa'].includes(pt.classKey)) {
+            currentRumbo = pt.classKey;
+            break;
+        }
+    }
+    if (!currentRumbo) currentRumbo = 'tlahuiztlanpa';
+
+    // 2. Construir trayectorias insertando rupturas nulas (null) para levantar el lápiz de Plotly
+    for (let i = 0; i < activeTrajectory.length; i++) {
+        const t = activeTrajectory[i];
+        const pt = toroData.points[t.n];
+
+        if (pt && ['tlahuiztlanpa', 'huitztlanpa', 'cihuatlanpa', 'mictlanpa'].includes(pt.classKey)) {
+
+            // Si hay un cambio de rumbo auténtico
+            if (pt.classKey !== currentRumbo) {
+                // A) Cerramos de forma exacta el vértice en el rumbo anterior
+                if (segments[currentRumbo] && segments[currentRumbo].length > 0) {
+                    segments[currentRumbo].push(t);
+
+                    // B) ¡SOLUCIÓN CRUCIAL!: Insertamos un nodo null en el rumbo que se apaga.
+                    // Esto le dice a Plotly: "Cuando este color vuelva a abrirse en el futuro, NO lo unas con este punto".
+                    segments[currentRumbo].push({ x: null, y: null, z: null, n: null });
+                }
+
+                // Cambiamos al nuevo rumbo
+                currentRumbo = pt.classKey;
+            }
+        }
+
+        // Añadimos el punto al rumbo que está corriendo actualmente
+        if (segments[currentRumbo]) {
+            segments[currentRumbo].push(t);
+        }
+    }
+
+    return segments;
 };
 
 const Toro = () => {
@@ -40,13 +89,21 @@ const Toro = () => {
 
     const plotRef = useRef(null);
     const followModeRef = useRef('cursor');
+    const representationRef = useRef('numeros');
+    // --- ESTADOS DE CONTROL CRÍTICOS (SIN RETRASOS) ---
+    const currentDayRef = useRef(1); // Siempre inicia en el día 1 al montar por primera vez (cambios de menú)
     const isAnimatingRef = useRef(false);
-    // Guarda el último día renderizado para que React no reinicie la animación al actualizar la UI
-    const currentDayRef = useRef(1);
+    const animationIntervalRef = useRef(null);
+    // Guardamos la revisión de la interfaz para persistir la cámara
+    //const [uiRevision, setUiRevision] = useState('true');
     // Sincronizar la referencia del modo de seguimiento para los eventos nativos de Plotly
     useEffect(() => {
         followModeRef.current = followMode;
     }, [followMode]);
+
+    useEffect(() => {
+        representationRef.current = currentRepresentation;
+    }, [currentRepresentation]);
 
     // --- PROPUESTA: SINCRONIZACIÓN PERFECTA (PRE-CACHÉ DE IMÁGENES) ---
     useEffect(() => {
@@ -62,30 +119,101 @@ const Toro = () => {
             const numImg = new Image();
             numImg.src = getImagePath(numeralFile);
         });
-        // Cargar por defecto el estado del día 1 en el panel lateral
+        // REGLA: Al cambiar de pestaña de menú y regresar, inicia estrictamente en el Día 1
+        currentDayRef.current = 1;
         updateSidebar(1);
+        // Limpieza de intervalos al desmontar el componente (salir de la pestaña del Toro)
+        return () => {
+            if (animationIntervalRef.current) clearInterval(animationIntervalRef.current);
+        };
     }, []);
+
     // Actualiza la barra lateral según el día actual activo del sistema
     const updateSidebar = (day) => {
-        currentDayRef.current = day;
         const data = toroData.points[day];
         if (data) {
             setActiveDayData({ day, ...data });
         }
     };
+    // --- MOTOR NATIVO ULTRA FLUIDO PUNTO A PUNTO (PLAY/PAUSE CONTROLADO) ---
+    const runFrameStep = () => {
+        const plotDiv = plotRef.current?.el;
+        if (!plotDiv) return;
+
+        const totalPoints = toroData.trajectory.length;
+        if (currentDayRef.current >= totalPoints) {
+            // Llegó al final del trayecto (Día 260)
+            handlePause();
+            return;
+        }
+
+        // Avanzar al siguiente punto en el recorrido
+        currentDayRef.current += 1;
+        const targetDay = currentDayRef.current;
+
+        // Construir la muestra exacta acumulada sin retrasos
+        //const sample = toroData.trajectory.slice(0, targetDay);
+        const currentPt = toroData.trajectory[targetDay - 1];
+        const ptMeta = toroData.points[currentPt.n];
+
+        const textLabel = representationRef.current === 'numeros'
+            ? `(${ptMeta.q},${ptMeta.r})`
+            : `${ptMeta.numeral}-${ptMeta.symName}`;
+        // Mapeamos el color de cada punto en el trayecto recorrido hasta ahora según su trecena real
+        // const sampleColors = sample.map(s => trecenaColorsMap[s.n]);
+        // Obtener segmentos tridimensionales independientes
+        const segments = getRumboSegments(targetDay);
+
+        // Inyección directa en el hilo WebGL (Evita recargar la escena completa del Toro)
+        Plotly.animate(plotDiv, {
+            data: [
+                { x: segments.tlahuiztlanpa.map(s => s.x), y: segments.tlahuiztlanpa.map(s => s.y), z: segments.tlahuiztlanpa.map(s => s.z) }, // Traza 7
+                { x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) },     // Traza 8
+                { x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) },     // Traza 9
+                { x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) },         // Traza 10
+                { x: [currentPt.x], y: [currentPt.y], z: [currentPt.z], text: [textLabel] }                                                 // Traza 11  
+            ],
+            traces: [7, 8, 9, 10, 11],
+            layout: { 'sliders[0].active': targetDay - 1 }
+        }, {
+            frame: { duration: 0, redraw: false },
+            transition: { duration: 0 },
+            mode: 'immediate'
+        });
+
+        if (isAnimatingRef.current || followModeRef.current === 'trayectoria') {
+            updateSidebar(targetDay);
+        }
+    };
+
+    const handlePlay = () => {
+        if (isAnimatingRef.current) return;
+        isAnimatingRef.current = true;
+        // Bucle de temporización de alta precisión basado en la velocidad (speed) seleccionada
+        animationIntervalRef.current = setInterval(runFrameStep, speed);
+    };
+
+    const handlePause = () => {
+        isAnimatingRef.current = false;
+        if (animationIntervalRef.current) {
+            clearInterval(animationIntervalRef.current);
+            animationIntervalRef.current = null;
+        }
+    };
+
     // --- ESCUCHA DE EVENTOS NATIVOS MEJORADA ---
     // Vincular detectores de eventos nativos de Plotly.js para interactividad sin lag
     const bindPlotlyEvents = (el) => {
         el.removeAllListeners?.('plotly_hover');
         el.removeAllListeners?.('plotly_click');
         el.removeAllListeners?.('plotly_sliderchange');
-        el.removeAllListeners?.('plotly_animated');
         el.on('plotly_hover', (data) => {
             if (followModeRef.current === 'cursor' && !isAnimatingRef.current) {
                 const pt = data.points[0];
                 if (pt && pt.customdata) updateSidebar(pt.customdata);
             }
         });
+
         el.on('plotly_click', (data) => {
             if (followModeRef.current === 'cursor') {
                 const pt = data.points[0];
@@ -94,24 +222,49 @@ const Toro = () => {
         });
         // Sincronización precisa al arrastrar manualmente el Slider nativo
         el.on('plotly_sliderchange', (data) => {
-            if (data.step && data.step.label) {
+            if (data.step && data.step.label && !isAnimatingRef.current) {
                 const day = parseInt(data.step.label);
-                if (!isNaN(day)) updateSidebar(day);
-            }
-        });
+                if (!isNaN(day)) {
+                    currentDayRef.current = day;
+                    updateSidebar(day);
 
-        // Sincroniza frame a frame mientras corre el Play o se detiene en Pause
-        el.on('plotly_animated', (data) => {
-            // Solo actualiza si está en modo trayectoria Y la animación sigue corriendo activa
-            if (data && data.name) {
-                const day = parseInt(data.name);
-                if (!isNaN(day)) updateSidebar(day);
-            } else {
-                // Fallback de seguridad leyendo la propiedad del slider nativo
-                const plotDiv = plotRef.current?.el;
-                if (plotDiv?.layout?.sliders?.[0]) {
-                    const activeStep = plotDiv.layout.sliders[0].active || 0;
-                    updateSidebar(activeStep + 1);
+                    // Actualizar traza visual tras movimiento manual del slider
+                    const currentPt = toroData.trajectory[day - 1];
+                    const ptMeta = toroData.points[currentPt.n];
+                    const textLabel = representationRef.current === 'numeros' ? `(${ptMeta.q},${ptMeta.r})` : `${ptMeta.numeral}-${ptMeta.symName}`;
+
+                    const segments = getRumboSegments(day);
+
+                    // Usamos un único Plotly.update para enviar datos y mantener la uirevision intacta
+                    Plotly.update(el, {
+                        x: [
+                            segments.tlahuiztlanpa.map(s => s.x),
+                            segments.huitztlanpa.map(s => s.x),
+                            segments.cihuatlanpa.map(s => s.x),
+                            segments.mictlanpa.map(s => s.x)
+                        ],
+                        y: [
+                            segments.tlahuiztlanpa.map(s => s.y),
+                            segments.huitztlanpa.map(s => s.y),
+                            segments.cihuatlanpa.map(s => s.y),
+                            segments.mictlanpa.map(s => s.y)
+                        ],
+                        z: [
+                            segments.tlahuiztlanpa.map(s => s.z),
+                            segments.huitztlanpa.map(s => s.z),
+                            segments.cihuatlanpa.map(s => s.z),
+                            segments.mictlanpa.map(s => s.z)
+                        ]
+                    }, {
+                        // Esto le dice a Plotly que preserve el estado de la cámara (zoom/rotación) que tiene el usuario
+                        uirevision: 'toro-view'
+                    }, [7, 8, 9, 10]);
+
+                    Plotly.update(el, {
+                        x: [[currentPt.x]], y: [[currentPt.y]], z: [[currentPt.z]], text: [[textLabel]]
+                    }, {
+                        uirevision: 'toro-view'
+                    }, [11]);
                 }
             }
         });
@@ -136,7 +289,7 @@ const Toro = () => {
     const surfaceTrace = {
         type: 'surface',
         x: x_surf, y: y_surf, z: z_surf,
-        opacity: 0.08,
+        opacity: 0.12,
         colorscale: 'Jet',
         showscale: false,
         hoverinfo: 'skip'
@@ -144,11 +297,10 @@ const Toro = () => {
 
     // --- MAPEO DE LAS TRAZAS ESTÁTICAS DE PUNTOS POR CATEGORÍA (TRAZAS 1 A 6) ---
     const trace_keys = ['base', 'familia_q_1', 'tlahuiztlanpa', 'huitztlanpa', 'cihuatlanpa', 'mictlanpa'];
-
     // Diccionario de inicialización para segmentar por coordenadas
     const catContainers = {
-        base: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 5, color: '#334155', symbol: 'circle', name: 'Día Regular' },
-        familia_q_1: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 7, color: '#00CEC9', symbol: 'diamond', name: 'Inicio Veintena' },
+        base: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 5, color: '#94A3B8', symbol: 'circle', name: 'Día Regular' },
+        familia_q_1: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 7, color: '#00B5B5', symbol: 'diamond', name: 'Inicio Veintena' },
         tlahuiztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.tlahuiztlanpa, symbol: 'circle', name: 'Tlahuiztlanpa (Oriente)' },
         huitztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.huitztlanpa, symbol: 'circle', name: 'Huitztlanpa (Sur)' },
         cihuatlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.cihuatlanpa, symbol: 'circle', name: 'Cihuatlanpa (Poniente)' },
@@ -159,11 +311,7 @@ const Toro = () => {
     toroData.trajectory.forEach((t) => {
         const pt = toroData.points[t.n];
         const container = catContainers[pt.classKey] || catContainers.base;
-
-        container.x.push(t.x);
-        container.y.push(t.y);
-        container.z.push(t.z);
-        container.n.push(t.n);
+        container.x.push(t.x); container.y.push(t.y); container.z.push(t.z); container.n.push(t.n);
         container.text_num.push(`(${pt.q},${pt.r})`);
         container.text_img.push(`${pt.numeral}-${pt.symName}`);
         container.hover.push(`Día n=${t.n}<br>Tonal: ${pt.numeral} ${pt.symName}<br>Coord: (${pt.q},${pt.r})`);
@@ -172,20 +320,17 @@ const Toro = () => {
     const categoryTraces = trace_keys.map((cat_key) => {
         const cat = catContainers[cat_key];
         const isBase = cat_key === 'base';
-
         return {
             type: 'scatter3d',
             x: cat.x, y: cat.y, z: cat.z,
             mode: 'markers',
             marker: {
-                size: cat.size,
-                color: cat.color,
-                symbol: cat.symbol,
-                line: { color: isBase ? '#000000' : '#FFFFFF', width: isBase ? 0.5 : 1 }
+                size: cat.size, color: cat.color, symbol: cat.symbol,
+                line: { color: isBase ? '#E2E8F0' : '#0F172A', width: isBase ? 0.5 : 1 }
             },
             text: currentRepresentation === 'numeros' ? cat.text_num : cat.text_img,
             textposition: 'top center',
-            textfont: { color: '#94A3B8', size: 10, family: 'Arial, sans-serif' },
+            textfont: { color: '#334155', size: 10, family: 'Arial, sans-serif' },
             hovertext: cat.hover,
             customdata: cat.n,
             name: cat.name
@@ -194,134 +339,75 @@ const Toro = () => {
 
     // --- TRAZO 7: RASTRO (TRAIL) ANIMADO ---
     // CORRECCIÓN: Garantizar que tengan arrays con el origen inicial estructurado desde el día 1
-    const currentSampleIndex = currentDayRef.current;
-    const activeTrajectorySlice = toroData.trajectory.slice(0, currentSampleIndex);
-    const lastActivePos = toroData.trajectory[currentSampleIndex - 1] || toroData.trajectory[0];
-    const lastActiveMeta = toroData.points[lastActivePos.n];
-    const trailTrace = {
-        type: 'scatter3d',
-        x: activeTrajectorySlice.map(s => s.x),
-        y: activeTrajectorySlice.map(s => s.y),
-        z: activeTrajectorySlice.map(s => s.z),
-        mode: 'lines',
-        line: { color: '#F1C40F', width: 4.5 }, // Amarillo de alta visibilidad continuo
-        opacity: 0.9,
-        name: 'Trayectoria',
-        hoverinfo: 'skip'
-    };
+    // --- CONFIGURACIÓN DE TRAZA DE RECORRIDO MULTICOLOR ---
+    // Carga inicial estática de las 4 trazas independientes de rumbo
+    const initialSegments = getRumboSegments(currentDayRef.current);
+    const initialPt = toroData.trajectory[currentDayRef.current - 1] || toroData.trajectory[0];
+    const initialMeta = toroData.points[initialPt.n];
+
+    const trailTraces = [
+        {
+            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Oriente', hoverinfo: 'skip', opacity: 1.0,
+            x: initialSegments.tlahuiztlanpa.map(s => s.x), y: initialSegments.tlahuiztlanpa.map(s => s.y), z: initialSegments.tlahuiztlanpa.map(s => s.z),
+            line: { color: RUMBO_COLORS.tlahuiztlanpa, width: 5.5 }
+        },
+        {
+            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Sur', hoverinfo: 'skip', opacity: 1.0,
+            x: initialSegments.huitztlanpa.map(s => s.x), y: initialSegments.huitztlanpa.map(s => s.y), z: initialSegments.huitztlanpa.map(s => s.z),
+            line: { color: RUMBO_COLORS.huitztlanpa, width: 5.5 }
+        },
+        {
+            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Poniente', hoverinfo: 'skip', opacity: 1.0,
+            x: initialSegments.cihuatlanpa.map(s => s.x), y: initialSegments.cihuatlanpa.map(s => s.y), z: initialSegments.cihuatlanpa.map(s => s.z),
+            line: { color: RUMBO_COLORS.cihuatlanpa, width: 5.5 }
+        },
+        {
+            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Norte', hoverinfo: 'skip', opacity: 1.0,
+            x: initialSegments.mictlanpa.map(s => s.x), y: initialSegments.mictlanpa.map(s => s.y), z: initialSegments.mictlanpa.map(s => s.z),
+            line: { color: RUMBO_COLORS.mictlanpa, width: 5.5 }
+        }
+    ];
 
     // --- TRAZO 8: GENERADOR ACTIVO (TRACER) ANIMADO ---
     const tracerTrace = {
         type: 'scatter3d',
-        x: [lastActivePos.x],
-        y: [lastActivePos.y],
-        z: [lastActivePos.z],
+        x: [initialPt.x], y: [initialPt.y], z: [initialPt.z],
         mode: 'markers+text',
-        marker: { size: 10, color: '#EF4444', symbol: 'circle', line: { color: 'black', width: 1.5 } },
-        text: [currentRepresentation === 'numeros' ? `(${lastActiveMeta.q},${lastActiveMeta.r})` : `${lastActiveMeta.numeral}-${lastActiveMeta.symName}`],
+        marker: { size: 10, color: '#EF4444', symbol: 'circle', line: { color: '#FFFFFF', width: 1.5 } },
+        text: [currentRepresentation === 'numeros' ? `(${initialMeta.q},${initialMeta.r})` : `${initialMeta.numeral}-${initialMeta.symName}`],
         textposition: 'top center',
-        textfont: { color: '#EF4444', size: 12, family: 'Arial Black' },
+        textfont: { color: '#D97706', size: 12, family: 'Arial Black' },
         name: 'Generador Activo',
         hoverinfo: 'skip'
     };
 
     // --- CONSTRUCCIÓN COMPLETA DE ANIMACIÓN DE FRAMES CON RASTRO MULTICOLOR ---
-    const steps = [];
-    const frames = [];
-    const totalPoints = toroData.trajectory.length;
-
-    for (let k = 1; k <= totalPoints; k++) {
-        const currentSample = toroData.trajectory.slice(0, k);
-        const currentPt = toroData.trajectory[k - 1];
-        const ptMeta = toroData.points[currentPt.n];
-
-        steps.push({
-            label: k.toString(),
-            method: 'animate',
-            args: [[k.toString()], {
-                frame: { duration: 0, redraw: false },
-                mode: 'immediate',
-                transition: { duration: 0 }
-            }]
-        });
-
-        frames.push({
-            name: k.toString(),
-            data: [
-                {
-                    type: 'scatter3d',
-                    x: currentSample.map(s => s.x),
-                    y: currentSample.map(s => s.y),
-                    z: currentSample.map(s => s.z),
-                    line: { color: '#F1C40F', width: 4.5 } // Mantiene la consistencia del color durante el Play
-                },
-                {
-                    type: 'scatter3d',
-                    x: [currentPt.x], y: [currentPt.y], z: [currentPt.z],
-                    text: [currentRepresentation === 'numeros' ? `(${ptMeta.q},${ptMeta.r})` : `${ptMeta.numeral}-${ptMeta.symName}`]
-                }
-            ],
-            traces: [7, 8]
-        });
-    }
+    const steps = toroData.trajectory.map((_, i) => ({
+        label: (i + 1).toString(),
+        method: 'skip'
+    }));
     // --- CONTROLES DE INTERFAZ INTEGRADOS DIRECTAMENTE AL CONTENEDOR LAYOUT DARK ---
     const layout = {
-        paper_bgcolor: '#0F172A',
-        plot_bgcolor: '#0F172A',
+        // CORRECCIÓN CLAVE: Al asignarle un valor único fijo como 'toro-view', Plotly entiende 
+        // que bajo ningún concepto (sea hover, clic o animación) debe resetear la cámara del usuario.
+        uirevision: 'toro-view', // Conservación absoluta de la cámara, zoom y paneo del usuario
+        paper_bgcolor: '#F8FAFC',
+        plot_bgcolor: '#F8FAFC',
         margin: { l: 10, r: 10, b: 10, t: 70 },
         scene: {
-            xaxis: { visible: false },
-            yaxis: { visible: false },
-            zaxis: { visible: false },
-            bgcolor: '#0F172A',
-            aspectmode: 'data'
+            xaxis: { visible: false }, yaxis: { visible: false }, zaxis: { visible: false },
+            bgcolor: '#FFFFFF', aspectmode: 'data',
+            // Opcional: puedes asegurar que la escena mantenga su revisión de interfaz interna
+            uirevision: 'toro-view'
         },
-        updatemenus: [
-            // 1. Botones nativos de Play/Pause alineados en zona izquierda superior
-            {
-                type: 'buttons',
-                direction: 'left',
-                pad: { r: 10, t: 10 },
-                showactive: false,
-                x: 0.15, y: 1.15, xanchor: 'right', yanchor: 'top',
-                font: { color: '#E2E8F0', size: 12 },
-                bgcolor: '#1E293B',
-                bordercolor: '#334155',
-                buttons: [
-                    {
-                        label: '► Play',
-                        method: 'animate',
-                        args: [null, {
-                            frame: { duration: speed, redraw: false },
-                            fromcurrent: true, // Crucial: continúa exactamente en el frame pausado
-                            transition: { duration: 0 },
-                            mode: 'immediate'
-                        }]
-                    },
-                    {
-                        label: '⏸ Pause',
-                        method: 'animate',
-                        args: [[null], {
-                            frame: { duration: 0, redraw: false },
-                            mode: 'immediate',
-                            transition: { duration: 0 }
-                        }]
-                    }
-                ]
-            }
-        ],
+        showlegend: false,
         sliders: [{
-            active: currentSampleIndex - 1,
-            yanchor: 'top',
-            xanchor: 'left',
-            currentvalue: { font: { size: 13, color: '#38BDF8' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
+            active: currentDayRef.current - 1,
+            yanchor: 'top', xanchor: 'left',
+            currentvalue: { font: { size: 13, color: '#0284C7' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
             transition: { duration: 0 },
-            pad: { b: 10, t: 40 },
-            len: 0.9,
-            x: 0.05, y: 0,
-            font: { color: '#94A3B8', size: 10 },
-            bgcolor: '#1E293B',
-            bordercolor: '#334155',
+            pad: { b: 10, t: 40 }, len: 0.9, x: 0.05, y: 0,
+            font: { color: '#475569', size: 10 }, bgcolor: '#E2E8F0', bordercolor: '#CBD5E1',
             steps: steps
         }]
     };
@@ -333,10 +419,17 @@ const Toro = () => {
         if (!plotDiv) return;
 
         const textMatrix = trace_keys.map((key) => catContainers[key][mode === 'numeros' ? 'text_num' : 'text_img']);
+        // Cambiar etiquetas de fondo
         Plotly.restyle(plotDiv, {
             text: textMatrix,
             'textfont.size': mode === 'numeros' ? 10 : 13
         }, [1, 2, 3, 4, 5, 6]);
+        // Cambiar la etiqueta del generador dinámico actual inmediatamente sin frenar el intervalo
+        const currentPtData = toroData.trajectory[currentDayRef.current - 1];
+        const currentMeta = toroData.points[currentPtData.n];
+        const updatedLabel = mode === 'numeros' ? `(${currentMeta.q},${currentMeta.r})` : `${currentMeta.numeral}-${currentMeta.symName}`;
+
+        Plotly.restyle(plotDiv, { text: [[updatedLabel]] }, [11]); // Índice 11 ajustado
     };
 
     const toggleLabelsVisibility = (visibilityMode) => {
@@ -344,13 +437,9 @@ const Toro = () => {
         if (!plotDiv) return;
 
         let modesArray = [];
-        if (visibilityMode === 'none') {
-            modesArray = Array(6).fill('markers');
-        } else if (visibilityMode === 'highlights') {
-            modesArray = ['markers', 'markers', 'markers+text', 'markers+text', 'markers+text', 'markers+text'];
-        } else {
-            modesArray = Array(6).fill('markers+text');
-        }
+        if (visibilityMode === 'none') modesArray = Array(6).fill('markers');
+        else if (visibilityMode === 'highlights') modesArray = ['markers', 'markers', 'markers+text', 'markers+text', 'markers+text', 'markers+text'];
+        else modesArray = Array(6).fill('markers+text');
 
         Plotly.restyle(plotDiv, { mode: modesArray }, [1, 2, 3, 4, 5, 6]);
     };
@@ -358,52 +447,53 @@ const Toro = () => {
     const updatePlaySpeed = (val) => {
         const newSpeed = parseInt(val);
         setSpeed(newSpeed);
-        const plotDiv = plotRef.current?.el;
-        if (plotDiv) {
-            Plotly.relayout(plotDiv, {
-                'updatemenus[0].buttons[0].args[1].frame.duration': newSpeed
-            });
+        if (isAnimatingRef.current) {
+            // Si está reproduciendo, reinicia el intervalo al vuelo con el nuevo tiempo para evitar cortes
+            clearInterval(animationIntervalRef.current);
+            animationIntervalRef.current = setInterval(runFrameStep, newSpeed);
         }
     };
     // CORRECCIÓN: Manejar el cambio de modo asegurando la conmutación de estado en React
-    const handleFollowModeChange = (mode) => {
-        setFollowMode(mode);
-        if (mode === 'trayectoria') {
-            const plotDiv = plotRef.current?.el;
-            if (plotDiv?.layout?.sliders?.[0]) {
-                const activeStep = plotDiv.layout.sliders[0].active || 0;
-                updateSidebar(activeStep + 1);
-            }
-        }
-    };
-
+    /*  const handleFollowModeChange = (mode) => {
+         setFollowMode(mode);
+         if (mode === 'trayectoria') {
+             const plotDiv = plotRef.current?.el;
+             if (plotDiv?.layout?.sliders?.[0]) {
+                 const activeStep = plotDiv.layout.sliders[0].active || 0;
+                 updateSidebar(activeStep + 1);
+             }
+         }
+     };
+  */
     return (
         <div id="app-container" style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#0F172A', color: '#F8FAFC', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
 
-            {/* ÁREA DEL GRÁFICO */}
-            <div id="plot-area" style={{ flex: 1, height: '100%', position: 'relative', backgroundColor: '#0F172A' }}>
+            {/* CANVAS INTERACTIVO CLARO */}
+            <div id="plot-area" style={{ flex: 1, height: '100%', position: 'relative', backgroundColor: '#F8FAFC' }}>
                 <Plot
                     ref={plotRef}
-                    data={[surfaceTrace, ...categoryTraces, trailTrace, tracerTrace]}
+                    data={[surfaceTrace, ...categoryTraces, ...trailTraces, tracerTrace]}
                     layout={layout}
-                    frames={frames}
                     config={{ responsive: true, displayModeBar: false }}
                     style={{ width: '100%', height: '100%' }}
                     onInitialized={(figure, el) => bindPlotlyEvents(el)}
                     onUpdate={(figure, el) => bindPlotlyEvents(el)}
-                    onStartAnimating={() => { isAnimatingRef.current = true; }}
-                    onStopAnimating={() => { isAnimatingRef.current = false; }}
                 />
             </div>
 
-            {/* BARRA LATERAL */}
+            {/* SIDEBAR TEMA OSCURO */}
             <div id="sidebar" style={{ width: '340px', minWidth: '340px', height: '100%', backgroundColor: '#1E293B', borderLeft: '1px solid #334155', padding: '24px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflowY: 'auto' }}>
                 <h1 style={{ margin: '0 0 2px 0', fontSize: '26px', fontWeight: 800, color: '#F8FAFC' }}>Tonalpohualli</h1>
                 <h1 style={{ margin: '2px 0 5px 0', fontSize: '20px', fontWeight: 600, color: '#38BDF8' }}>Toro Interactivo 3D</h1>
                 <div className="subtitle" style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>Modelo Z₁₃ ⊕ Z₂₀</div>
 
-                {/* REPRESENTACIÓN */}
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px', marginTop: '5px' }}>Representación</div>
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Controles de Reproducción</div>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
+                    <button onClick={handlePlay} style={{ flex: 1, padding: '10px', backgroundColor: '#10B981', color: '#0F172A', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>► Play</button>
+                    <button onClick={handlePause} style={{ flex: 1, padding: '10px', backgroundColor: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>⏸ Pause</button>
+                </div>
+
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Representación</div>
                 <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '15px' }}>
                     <button className={`selector-btn ${currentRepresentation === 'numeros' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('numeros')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'numeros' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'numeros' ? '#0F172A' : '#94A3B8' }}>
                         Números (q, r)
@@ -413,18 +503,16 @@ const Toro = () => {
                     </button>
                 </div>
 
-                {/* MODO DE SEGUIMIENTO */}
                 <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Modo de Seguimiento</div>
                 <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '15px' }}>
-                    <button className={`selector-btn ${followMode === 'cursor' ? 'active' : ''}`} onClick={() => handleFollowModeChange('cursor')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'cursor' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
+                    <button className={`selector-btn ${followMode === 'cursor' ? 'active' : ''}`} onClick={() => setFollowMode('cursor')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'cursor' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
                         Al Señalar
                     </button>
-                    <button className={`selector-btn ${followMode === 'trayectoria' ? 'active' : ''}`} onClick={() => handleFollowModeChange('trayectoria')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'trayectoria' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
+                    <button className={`selector-btn ${followMode === 'trayectoria' ? 'active' : ''}`} onClick={() => setFollowMode('trayectoria')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'trayectoria' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
                         Al Animar
                     </button>
                 </div>
 
-                {/* ETIQUETAS EN EL TORO */}
                 <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Etiquetas en el Toro</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '20px' }}>
                     <button className="btn-vis" onClick={() => toggleLabelsVisibility('none')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#94A3B8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Ocultar Coordenadas</button>
@@ -432,22 +520,20 @@ const Toro = () => {
                     <button className="btn-vis" onClick={() => toggleLabelsVisibility('all')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#F8FAFC', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Todas</button>
                 </div>
 
-                {/* VELOCIDAD */}
                 <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Velocidad de Animación</div>
                 <div style={{ backgroundColor: '#0F172A', border: '1px solid #334155', borderRadius: '12px', padding: '12px', marginBottom: '25px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Intervalo:</span>
                         <span style={{ fontSize: '12px', color: '#38BDF8', fontWeight: 800 }}>{speed} ms</span>
                     </div>
-                    <input type="range" id="speed-slider" min="100" max="1500" step="50" value={speed} onChange={(e) => updatePlaySpeed(e.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: '#38BDF8' }} />
+                    <input type="range" id="speed-slider" min="50" max="1000" step="50" value={speed} onChange={(e) => updatePlaySpeed(e.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: '#38BDF8' }} />
                 </div>
 
-                {/* TARJETA DINÁMICA DE DETALLES */}
                 <div id="details-card" style={{ backgroundColor: '#0F172A', borderRadius: '16px', padding: '20px', border: '1px solid #334155', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {activeDayData ? (
                         <div id="details-content" style={{ width: '100%' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#334155', padding: '3px 9px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
+                                <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#334155', padding: '3px 99px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
                                 <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '3px 9px', borderRadius: '12px', color: '#0F172A', backgroundColor: RUMBO_COLORS[activeDayData.classKey] || '#FFF' }}>{activeDayData.className}</span>
                             </div>
 
@@ -484,14 +570,13 @@ const Toro = () => {
                         </div>
                     ) : (
                         <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center' }}>
-                            Pasa el cursor o haz clic sobre cualquier punto en el toro 3D para explorar su coordenada, día y glifo tradicional.
+                            Usa los controles o interactúa con el modelo 3D para ver su recorrido.
                         </div>
                     )}
                 </div>
             </div>
         </div>
     );
-
     /*  const [data, setData] = useState(null);
      const [loading, setLoading] = useState(true);
      const [currentDay, setCurrentDay] = useState(1);
