@@ -474,7 +474,20 @@ const Toro = () => {
                     ref={plotRef}
                     data={[surfaceTrace, ...categoryTraces, ...trailTraces, tracerTrace]}
                     layout={layout}
-                    config={{ responsive: true, displayModeBar: false }}
+                    //config={{ responsive: true, displayModeBar: false }}
+                    config={{
+                        responsive: true,
+                        displayModeBar: true, // Cambiado de false a true para activar la barra
+                        displaylogo: false,   // Opcional: oculta el logotipo de Plotly para una UI más limpia
+                        modeBarButtonsToAdd: [
+                            'orbitRotation',
+                            'turntableRotation',
+                            'pan3d',
+                            'zoom3d',
+                            'resetCameraDefault',
+                            'resetCameraLastSave'
+                        ]
+                    }}
                     style={{ width: '100%', height: '100%' }}
                     onInitialized={(figure, el) => bindPlotlyEvents(el)}
                     onUpdate={(figure, el) => bindPlotlyEvents(el)}
