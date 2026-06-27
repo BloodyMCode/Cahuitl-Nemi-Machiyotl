@@ -28,6 +28,39 @@ const RUMBO_COLORS = {
     mictlanpa: '#7F8C8D',      // Norte / Gris
     base: '#64748B'            // Regular / Gris Base'
 };
+const TRACE_KEYS = ['base', 'familia_q_1', 'tlahuiztlanpa', 'huitztlanpa', 'cihuatlanpa', 'mictlanpa'];
+
+// Generación estática de la superficie del Toro (Traza 0)
+const R_major = 5;
+const r_minor = 1.5;
+const u_arr = Array.from({ length: 40 }, (_, i) => (2 * Math.PI * i) / 39);
+const v_arr = Array.from({ length: 40 }, (_, i) => (2 * Math.PI * i) / 39);
+
+let x_surf = [], y_surf = [], z_surf = [];
+for (let i = 0; i < v_arr.length; i++) {
+    let x_row = [], y_row = [], z_row = [];
+    for (let j = 0; j < u_arr.length; j++) {
+        x_row.push((R_major + r_minor * Math.cos(u_arr[j])) * Math.cos(v_arr[i]));
+        y_row.push((R_major + r_minor * Math.cos(u_arr[j])) * Math.sin(v_arr[i]));
+        z_row.push(r_minor * Math.sin(u_arr[j]));
+    }
+    x_surf.push(x_row); y_surf.push(y_row); z_surf.push(z_row);
+}
+
+const surfaceTrace = {
+    type: 'surface',
+    x: x_surf, y: y_surf, z: z_surf,
+    opacity: 0.12,
+    colorscale: 'Jet',
+    showscale: false,
+    hoverinfo: 'skip'
+};
+
+// Pasos estáticos para el slider inferior de Plotly
+const slidersSteps = toroData.trajectory.map((_, i) => ({
+    label: (i + 1).toString(),
+    method: 'skip'
+}));
 // --- COMPONENTE LÓGICO CON CAMBIO DE COLOR EXACTO EN EL VÉRTICE ---
 // --- NUEVA LOGICA: TRAZAS DE TRAYECTORIA SEPARADAS POR RUMBO (ELIMINA DEGRADADOS) ---
 const getRumboSegments = (maxDay) => {
@@ -96,6 +129,32 @@ const Toro = () => {
     const animationIntervalRef = useRef(null);
     // Guardamos la revisión de la interfaz para persistir la cámara
     //const [uiRevision, setUiRevision] = useState('true');
+    // --- REFERENCIA PERSISTENTE PARA DETENER EL MOVIMIENTO DE CÁMARA DE PLOTLY ---
+    const layoutRef = useRef({
+        uirevision: 'toro-view', // Firma inmutable global
+        paper_bgcolor: '#F8FAFC',
+        plot_bgcolor: '#F8FAFC',
+        margin: { l: 10, r: 10, b: 10, t: 70 },
+        scene: {
+            xaxis: { visible: false },
+            yaxis: { visible: false },
+            zaxis: { visible: false },
+            bgcolor: '#FFFFFF',
+            aspectmode: 'data',
+            uirevision: 'toro-view', // Firma inmutable de la escena 3D
+            camera: {} // Aquí Plotly almacenará dinámicamente tu rotación/zoom
+        },
+        showlegend: false,
+        sliders: [{
+            active: 0,
+            yanchor: 'top', xanchor: 'left',
+            currentvalue: { font: { size: 13, color: '#0284C7' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
+            transition: { duration: 0 },
+            pad: { b: 10, t: 40 }, len: 0.9, x: 0.05, y: 0,
+            font: { color: '#475569', size: 10 }, bgcolor: '#E2E8F0', bordercolor: '#CBD5E1',
+            steps: slidersSteps
+        }]
+    });
     // Sincronizar la referencia del modo de seguimiento para los eventos nativos de Plotly
     useEffect(() => {
         followModeRef.current = followMode;
@@ -135,51 +194,51 @@ const Toro = () => {
             setActiveDayData({ day, ...data });
         }
     };
-    // --- MOTOR NATIVO ULTRA FLUIDO PUNTO A PUNTO (PLAY/PAUSE CONTROLADO) ---
+    // ============================================================================
+    // 3. MOTOR NATIVO ULTRA FLUIDO CON PLOTLY.REACT (PRESERVA CÁMÁRA TOTAL)
+    // ============================================================================
     const runFrameStep = () => {
         const plotDiv = plotRef.current?.el;
         if (!plotDiv) return;
 
         const totalPoints = toroData.trajectory.length;
         if (currentDayRef.current >= totalPoints) {
-            // Llegó al final del trayecto (Día 260)
             handlePause();
             return;
         }
 
-        // Avanzar al siguiente punto en el recorrido
         currentDayRef.current += 1;
         const targetDay = currentDayRef.current;
 
-        // Construir la muestra exacta acumulada sin retrasos
-        //const sample = toroData.trajectory.slice(0, targetDay);
         const currentPt = toroData.trajectory[targetDay - 1];
         const ptMeta = toroData.points[currentPt.n];
 
         const textLabel = representationRef.current === 'numeros'
             ? `(${ptMeta.q},${ptMeta.r})`
             : `${ptMeta.numeral}-${ptMeta.symName}`;
-        // Mapeamos el color de cada punto en el trayecto recorrido hasta ahora según su trecena real
-        // const sampleColors = sample.map(s => trecenaColorsMap[s.n]);
-        // Obtener segmentos tridimensionales independientes
+
         const segments = getRumboSegments(targetDay);
 
-        // Inyección directa en el hilo WebGL (Evita recargar la escena completa del Toro)
-        Plotly.animate(plotDiv, {
-            data: [
-                { x: segments.tlahuiztlanpa.map(s => s.x), y: segments.tlahuiztlanpa.map(s => s.y), z: segments.tlahuiztlanpa.map(s => s.z) }, // Traza 7
-                { x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) },     // Traza 8
-                { x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) },     // Traza 9
-                { x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) },         // Traza 10
-                { x: [currentPt.x], y: [currentPt.y], z: [currentPt.z], text: [textLabel] }                                                 // Traza 11  
-            ],
-            traces: [7, 8, 9, 10, 11],
-            layout: { 'sliders[0].active': targetDay - 1 }
-        }, {
-            frame: { duration: 0, redraw: false },
-            transition: { duration: 0 },
-            mode: 'immediate'
-        });
+        // EXTRAER LA CÁMARA ACTUAL MODIFICADA POR EL USUARIO (EVITA EL RESETEO)
+        if (plotDiv.layout && plotDiv.layout.scene && plotDiv.layout.scene.camera) {
+            layoutRef.current.scene.camera = plotDiv.layout.scene.camera;
+        }
+
+        // Actualizar la posición del slider nativo en la referencia
+        layoutRef.current.sliders[0].active = targetDay - 1;
+
+        // Clonamos superficialmente las trazas actuales en memoria de Plotly
+        const updatedData = [...plotDiv.data];
+
+        // Reemplazo directo de vectores WebGL (Trazas de trayectoria 7 a 10 y tracer 11)
+        updatedData[7] = { ...updatedData[7], x: segments.tlahuiztlanpa.map(s => s.x), y: segments.tlahuiztlanpa.map(s => s.y), z: segments.tlahuiztlanpa.map(s => s.z) };
+        updatedData[8] = { ...updatedData[8], x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) };
+        updatedData[9] = { ...updatedData[9], x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) };
+        updatedData[10] = { ...updatedData[10], x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) };
+        updatedData[11] = { ...updatedData[11], x: [currentPt.x], y: [currentPt.y], z: [currentPt.z], text: [textLabel] };
+
+        // Plotly.react refresca las coordenadas WebGL respetando la posición exacta guardada en layoutRef
+        Plotly.react(plotDiv, updatedData, layoutRef.current);
 
         if (isAnimatingRef.current || followModeRef.current === 'trayectoria') {
             updateSidebar(targetDay);
@@ -228,76 +287,31 @@ const Toro = () => {
                     currentDayRef.current = day;
                     updateSidebar(day);
 
-                    // Actualizar traza visual tras movimiento manual del slider
                     const currentPt = toroData.trajectory[day - 1];
                     const ptMeta = toroData.points[currentPt.n];
                     const textLabel = representationRef.current === 'numeros' ? `(${ptMeta.q},${ptMeta.r})` : `${ptMeta.numeral}-${ptMeta.symName}`;
-
                     const segments = getRumboSegments(day);
 
-                    // Usamos un único Plotly.update para enviar datos y mantener la uirevision intacta
-                    Plotly.update(el, {
-                        x: [
-                            segments.tlahuiztlanpa.map(s => s.x),
-                            segments.huitztlanpa.map(s => s.x),
-                            segments.cihuatlanpa.map(s => s.x),
-                            segments.mictlanpa.map(s => s.x)
-                        ],
-                        y: [
-                            segments.tlahuiztlanpa.map(s => s.y),
-                            segments.huitztlanpa.map(s => s.y),
-                            segments.cihuatlanpa.map(s => s.y),
-                            segments.mictlanpa.map(s => s.y)
-                        ],
-                        z: [
-                            segments.tlahuiztlanpa.map(s => s.z),
-                            segments.huitztlanpa.map(s => s.z),
-                            segments.cihuatlanpa.map(s => s.z),
-                            segments.mictlanpa.map(s => s.z)
-                        ]
-                    }, {
-                        // Esto le dice a Plotly que preserve el estado de la cámara (zoom/rotación) que tiene el usuario
-                        uirevision: 'toro-view'
-                    }, [7, 8, 9, 10]);
+                    if (el.layout && el.layout.scene && el.layout.scene.camera) {
+                        layoutRef.current.scene.camera = el.layout.scene.camera;
+                    }
+                    layoutRef.current.sliders[0].active = day - 1;
 
-                    Plotly.update(el, {
-                        x: [[currentPt.x]], y: [[currentPt.y]], z: [[currentPt.z]], text: [[textLabel]]
-                    }, {
-                        uirevision: 'toro-view'
-                    }, [11]);
+                    const updatedData = [...el.data];
+                    updatedData[7] = { ...updatedData[7], x: segments.tlahuiztlanpa.map(s => s.x), y: segments.tlahuiztlanpa.map(s => s.y), z: segments.tlahuiztlanpa.map(s => s.z) };
+                    updatedData[8] = { ...updatedData[8], x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) };
+                    updatedData[9] = { ...updatedData[9], x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) };
+                    updatedData[10] = { ...updatedData[10], x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) };
+                    updatedData[11] = { ...updatedData[11], x: [[currentPt.x]], y: [[currentPt.y]], z: [[currentPt.z]], text: [[textLabel]] };
+
+                    Plotly.react(el, updatedData, layoutRef.current);
                 }
             }
         });
     };
-    // --- CONSTRUCCIÓN DE LA MALLA GEOMÉTRICA (TRAZA 0) ---
-    const R_major = 5;
-    const r_minor = 1.5;
-    const u_arr = Array.from({ length: 40 }, (_, i) => (2 * Math.PI * i) / 39);
-    const v_arr = Array.from({ length: 40 }, (_, i) => (2 * Math.PI * i) / 39);
-
-    let x_surf = [], y_surf = [], z_surf = [];
-    for (let i = 0; i < v_arr.length; i++) {
-        let x_row = [], y_row = [], z_row = [];
-        for (let j = 0; j < u_arr.length; j++) {
-            x_row.push((R_major + r_minor * Math.cos(u_arr[j])) * Math.cos(v_arr[i]));
-            y_row.push((R_major + r_minor * Math.cos(u_arr[j])) * Math.sin(v_arr[i]));
-            z_row.push(r_minor * Math.sin(u_arr[j]));
-        }
-        x_surf.push(x_row); y_surf.push(y_row); z_surf.push(z_row);
-    }
-
-    const surfaceTrace = {
-        type: 'surface',
-        x: x_surf, y: y_surf, z: z_surf,
-        opacity: 0.12,
-        colorscale: 'Jet',
-        showscale: false,
-        hoverinfo: 'skip'
-    };
-
-    // --- MAPEO DE LAS TRAZAS ESTÁTICAS DE PUNTOS POR CATEGORÍA (TRAZAS 1 A 6) ---
-    const trace_keys = ['base', 'familia_q_1', 'tlahuiztlanpa', 'huitztlanpa', 'cihuatlanpa', 'mictlanpa'];
-    // Diccionario de inicialización para segmentar por coordenadas
+    // ============================================================================
+    // 4. CONSTRUCCIÓN DE LAS TRAZAS ESTRUCTURALES DEL ENTORNO
+    // ============================================================================
     const catContainers = {
         base: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 5, color: '#94A3B8', symbol: 'circle', name: 'Día Regular' },
         familia_q_1: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 7, color: '#00B5B5', symbol: 'diamond', name: 'Inicio Veintena' },
@@ -317,7 +331,7 @@ const Toro = () => {
         container.hover.push(`Día n=${t.n}<br>Tonal: ${pt.numeral} ${pt.symName}<br>Coord: (${pt.q},${pt.r})`);
     });
 
-    const categoryTraces = trace_keys.map((cat_key) => {
+    const categoryTraces = TRACE_KEYS.map((cat_key) => {
         const cat = catContainers[cat_key];
         const isBase = cat_key === 'base';
         return {
@@ -346,26 +360,10 @@ const Toro = () => {
     const initialMeta = toroData.points[initialPt.n];
 
     const trailTraces = [
-        {
-            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Oriente', hoverinfo: 'skip', opacity: 1.0,
-            x: initialSegments.tlahuiztlanpa.map(s => s.x), y: initialSegments.tlahuiztlanpa.map(s => s.y), z: initialSegments.tlahuiztlanpa.map(s => s.z),
-            line: { color: RUMBO_COLORS.tlahuiztlanpa, width: 5.5 }
-        },
-        {
-            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Sur', hoverinfo: 'skip', opacity: 1.0,
-            x: initialSegments.huitztlanpa.map(s => s.x), y: initialSegments.huitztlanpa.map(s => s.y), z: initialSegments.huitztlanpa.map(s => s.z),
-            line: { color: RUMBO_COLORS.huitztlanpa, width: 5.5 }
-        },
-        {
-            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Poniente', hoverinfo: 'skip', opacity: 1.0,
-            x: initialSegments.cihuatlanpa.map(s => s.x), y: initialSegments.cihuatlanpa.map(s => s.y), z: initialSegments.cihuatlanpa.map(s => s.z),
-            line: { color: RUMBO_COLORS.cihuatlanpa, width: 5.5 }
-        },
-        {
-            type: 'scatter3d', mode: 'lines', name: 'Trayectoria Norte', hoverinfo: 'skip', opacity: 1.0,
-            x: initialSegments.mictlanpa.map(s => s.x), y: initialSegments.mictlanpa.map(s => s.y), z: initialSegments.mictlanpa.map(s => s.z),
-            line: { color: RUMBO_COLORS.mictlanpa, width: 5.5 }
-        }
+        { type: 'scatter3d', mode: 'lines', name: 'Trayectoria Oriente', hoverinfo: 'skip', opacity: 1.0, x: initialSegments.tlahuiztlanpa.map(s => s.x), y: initialSegments.tlahuiztlanpa.map(s => s.y), z: initialSegments.tlahuiztlanpa.map(s => s.z), line: { color: RUMBO_COLORS.tlahuiztlanpa, width: 5.5 } },
+        { type: 'scatter3d', mode: 'lines', name: 'Trayectoria Sur', hoverinfo: 'skip', opacity: 1.0, x: initialSegments.huitztlanpa.map(s => s.x), y: initialSegments.huitztlanpa.map(s => s.y), z: initialSegments.huitztlanpa.map(s => s.z), line: { color: RUMBO_COLORS.huitztlanpa, width: 5.5 } },
+        { type: 'scatter3d', mode: 'lines', name: 'Trayectoria Poniente', hoverinfo: 'skip', opacity: 1.0, x: initialSegments.cihuatlanpa.map(s => s.x), y: initialSegments.cihuatlanpa.map(s => s.y), z: initialSegments.cihuatlanpa.map(s => s.z), line: { color: RUMBO_COLORS.cihuatlanpa, width: 5.5 } },
+        { type: 'scatter3d', mode: 'lines', name: 'Trayectoria Norte', hoverinfo: 'skip', opacity: 1.0, x: initialSegments.mictlanpa.map(s => s.x), y: initialSegments.mictlanpa.map(s => s.y), z: initialSegments.mictlanpa.map(s => s.z), line: { color: RUMBO_COLORS.mictlanpa, width: 5.5 } }
     ];
 
     // --- TRAZO 8: GENERADOR ACTIVO (TRACER) ANIMADO ---
@@ -381,36 +379,6 @@ const Toro = () => {
         hoverinfo: 'skip'
     };
 
-    // --- CONSTRUCCIÓN COMPLETA DE ANIMACIÓN DE FRAMES CON RASTRO MULTICOLOR ---
-    const steps = toroData.trajectory.map((_, i) => ({
-        label: (i + 1).toString(),
-        method: 'skip'
-    }));
-    // --- CONTROLES DE INTERFAZ INTEGRADOS DIRECTAMENTE AL CONTENEDOR LAYOUT DARK ---
-    const layout = {
-        // CORRECCIÓN CLAVE: Al asignarle un valor único fijo como 'toro-view', Plotly entiende 
-        // que bajo ningún concepto (sea hover, clic o animación) debe resetear la cámara del usuario.
-        uirevision: 'toro-view', // Conservación absoluta de la cámara, zoom y paneo del usuario
-        paper_bgcolor: '#F8FAFC',
-        plot_bgcolor: '#F8FAFC',
-        margin: { l: 10, r: 10, b: 10, t: 70 },
-        scene: {
-            xaxis: { visible: false }, yaxis: { visible: false }, zaxis: { visible: false },
-            bgcolor: '#FFFFFF', aspectmode: 'data',
-            // Opcional: puedes asegurar que la escena mantenga su revisión de interfaz interna
-            uirevision: 'toro-view'
-        },
-        showlegend: false,
-        sliders: [{
-            active: currentDayRef.current - 1,
-            yanchor: 'top', xanchor: 'left',
-            currentvalue: { font: { size: 13, color: '#0284C7' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
-            transition: { duration: 0 },
-            pad: { b: 10, t: 40 }, len: 0.9, x: 0.05, y: 0,
-            font: { color: '#475569', size: 10 }, bgcolor: '#E2E8F0', bordercolor: '#CBD5E1',
-            steps: steps
-        }]
-    };
     // --- ACCIONES UI ---
     // Métodos dinámicos para acoplar selectores de HTML con los métodos nativos de Plotly Restyle
     const toggleLabelsRepresentation = (mode) => {
@@ -418,29 +386,23 @@ const Toro = () => {
         const plotDiv = plotRef.current?.el;
         if (!plotDiv) return;
 
-        const textMatrix = trace_keys.map((key) => catContainers[key][mode === 'numeros' ? 'text_num' : 'text_img']);
+        const textMatrix = TRACE_KEYS.map((key) => catContainers[key][mode === 'numeros' ? 'text_num' : 'text_img']);
         // Cambiar etiquetas de fondo
-        Plotly.restyle(plotDiv, {
-            text: textMatrix,
-            'textfont.size': mode === 'numeros' ? 10 : 13
-        }, [1, 2, 3, 4, 5, 6]);
+        Plotly.restyle(plotDiv, { text: textMatrix, 'textfont.size': mode === 'numeros' ? 10 : 13 }, [1, 2, 3, 4, 5, 6]);
         // Cambiar la etiqueta del generador dinámico actual inmediatamente sin frenar el intervalo
         const currentPtData = toroData.trajectory[currentDayRef.current - 1];
         const currentMeta = toroData.points[currentPtData.n];
         const updatedLabel = mode === 'numeros' ? `(${currentMeta.q},${currentMeta.r})` : `${currentMeta.numeral}-${currentMeta.symName}`;
-
-        Plotly.restyle(plotDiv, { text: [[updatedLabel]] }, [11]); // Índice 11 ajustado
-    };
+        Plotly.restyle(plotDiv, { text: [[updatedLabel]] }, [11]);
+    };/*  */
 
     const toggleLabelsVisibility = (visibilityMode) => {
         const plotDiv = plotRef.current?.el;
         if (!plotDiv) return;
-
         let modesArray = [];
         if (visibilityMode === 'none') modesArray = Array(6).fill('markers');
         else if (visibilityMode === 'highlights') modesArray = ['markers', 'markers', 'markers+text', 'markers+text', 'markers+text', 'markers+text'];
         else modesArray = Array(6).fill('markers+text');
-
         Plotly.restyle(plotDiv, { mode: modesArray }, [1, 2, 3, 4, 5, 6]);
     };
 
@@ -473,20 +435,12 @@ const Toro = () => {
                 <Plot
                     ref={plotRef}
                     data={[surfaceTrace, ...categoryTraces, ...trailTraces, tracerTrace]}
-                    layout={layout}
-                    //config={{ responsive: true, displayModeBar: false }}
+                    layout={layoutRef.current} // Pasamos la referencia persistente directa
                     config={{
                         responsive: true,
-                        displayModeBar: true, // Cambiado de false a true para activar la barra
-                        displaylogo: false,   // Opcional: oculta el logotipo de Plotly para una UI más limpia
-                        modeBarButtonsToAdd: [
-                            'orbitRotation',
-                            'turntableRotation',
-                            'pan3d',
-                            'zoom3d',
-                            'resetCameraDefault',
-                            'resetCameraLastSave'
-                        ]
+                        displayModeBar: true,
+                        displaylogo: false,
+                        modeBarButtonsToAdd: ['orbitRotation', 'turntableRotation', 'pan3d', 'zoom3d', 'resetCameraDefault']
                     }}
                     style={{ width: '100%', height: '100%' }}
                     onInitialized={(figure, el) => bindPlotlyEvents(el)}
@@ -546,7 +500,7 @@ const Toro = () => {
                     {activeDayData ? (
                         <div id="details-content" style={{ width: '100%' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#334155', padding: '3px 99px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
+                                <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#334155', padding: '3px 20px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
                                 <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '3px 9px', borderRadius: '12px', color: '#0F172A', backgroundColor: RUMBO_COLORS[activeDayData.classKey] || '#FFF' }}>{activeDayData.className}</span>
                             </div>
 
