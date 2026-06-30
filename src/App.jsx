@@ -8,11 +8,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import './App.css'
 import Menu from './components/pages/Menu'
+import Inicio from './components/pages/Inicio'
 import Conversor from './components/pages/Conversor'
 import Inverso from './components/pages/Inverso'
 import Tablero from './components/pages/Tablero'
 import Toro from './components/pages/Toro'
-import Engranajes from './components/pages/Engranajes'
 import Calculadora from './components/pages/Calculadora'
 import { getImagePath } from './components/funtions/funtions'
 
@@ -24,15 +24,16 @@ function App() {
       <Router>
         <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center' }}>
           {/* <img src={new URL('./components/images/logo-tlacua.png', import.meta.url).href} alt="Logo TLACUATZIN" style={{ width: '100%', maxWidth: '120px', minWidth: '30px', height: 'auto', objectFit: 'contain', objectPosition: 'right' }} /> */}
-          <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  */ }} />
+          {/* <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  * /> */}
+          <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'center'/* , marginLeft: '15px'  */ }} />
         </div>
         <Menu />
         <Routes>
-          <Route path="/" element={<Conversor />} />
+          <Route path='/' element={<Inicio />} />
+          <Route path="/conversor" element={<Conversor />} />
           <Route path="/inverso" element={<Inverso />} />
           <Route path="/tablero" element={<Tablero />} />
           <Route path="/toro" element={<Toro />} />
-          <Route path="/engranajes" element={<Engranajes />} />
           <Route path="/calculadora" element={<Calculadora />} />
         </Routes>
         <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>

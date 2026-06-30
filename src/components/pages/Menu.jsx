@@ -22,7 +22,10 @@ const Menu = () => {
             <Nav className='me-auto'>
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <Link class={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" to="/">Conversor{isActive('/') && <span class="visually-hidden">(actual)</span>}</      Link>
+                  <Link class={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" to="/">Inicio{isActive('/') && <span class="visually-hidden">(actual)</span>}</Link>
+                </li>
+                <li class="nav-item">
+                  <Link class={`nav-link ${isActive('/conversor') ? 'active' : ''}`} to="/conversor">Conversor{isActive('/conversor') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li class="nav-item">
                   <Link class={`nav-link ${isActive('/inverso') ? 'active' : ''}`} to="/inverso">Inverso{isActive('/inverso') && <span class="visually-hidden">(actual)</span>}</Link>
@@ -32,9 +35,6 @@ const Menu = () => {
                 </li>
                 <li class="nav-item">
                   <Link class={`nav-link ${isActive('/toro') ? 'active' : ''}`} to="/toro">Toro{isActive('/toro') && <span class="visually-hidden">(actual)</span>}</Link>
-                </li>
-                <li class="nav-item">
-                  <Link class={`nav-link ${isActive('/engranajes') ? 'active' : ''}`} to="/engranajes">Engranajes{isActive('/engranajes') && <span class="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li class="nav-item">
                   <Link class={`nav-link ${isActive('/calculadora') ? 'active' : ''}`} to="/calculadora">Calculadora{isActive('/calculadora') && <span class="visually-hidden">(actual)</span>}</Link>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { getImagePath } from '../funtions/funtions'
 
@@ -41,6 +41,7 @@ const Tablero = () => {
   })
   const [board, setBoard] = useState([])
   const [featuredCells, setFeaturedCells] = useState(new Set())
+  const tableContainerRef = useRef(null)
   //Inicializar tablero
   useEffect(() => {
     const initializeBoard = () => {
@@ -114,6 +115,19 @@ const Tablero = () => {
     }
     updateFeaturedCells()
   }, [selectedCategories, board])
+
+  // Scroll to the rightmost column when the board data is loaded
+  useEffect(() => {
+    if (board.length > 0 && tableContainerRef.current) {
+      const timer = setTimeout(() => {
+        if (tableContainerRef.current) {
+          tableContainerRef.current.scrollLeft = tableContainerRef.current.scrollWidth;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [board]);
+
   // Función para destacar celda CSS según la categoría
   const getCellClass = (cell) => {
     const cellId = `${cell.row}-${cell.col}`
@@ -133,6 +147,10 @@ const Tablero = () => {
         default:
           return ''
       }
+    }
+    const isColOne = revNumbers[cell.col % revNumbers.length] === '1'
+    if (isColOne) {
+      return 'bg-column-one'
     }
     return ''
   }
@@ -178,42 +196,44 @@ const Tablero = () => {
         <h5 className="text-center mb-4">Tablero</h5>
         <div className="row mb-4">
           <div className="col-12">
-            <table className="table">
-              <thead>
-                <tr>
-                  {Array.from({ length: 52 }).map((_, index) => {
-                    const cardinality = revOrientation[index % revOrientation.length]/* revOrientation[ ... ]acceso al elemento del array, .length obtiene el número de elementos en el array, % operador módulo en ciclos repetitivos funciona como un contador cíclico o un detector de múltiplos, Ejecutar código cada N iteraciones, en este caso repetir bucle ENOS en array de 52 posiciones*/
-                    if (cardinality === 'Este') { //condicional para marcar inicio de cardinalidad
-                      return (<th key={index} scope="col" style={{ color: '#047ff3' }}>{cardinality}</th>)
-                    }
-                    return (<th key={index} scope="col">{cardinality}</th>)
-                  })}
-                </tr>
-                <tr>
-                  {Array.from({ length: 52 }).map((_, index) => {
-                    const digit = revNumbers[index % revNumbers.length]
-                    if (digit === '1') {//condicional para marcar inicio de trecena
-                      return (<th key={index} scope="col" style={{ backgroundColor: '#015223', color: '#f6f7f6' }}>{digit}</th>)
-                    }
-                    return (<th key={index} scope="col">{digit}</th>)
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {board.map((row, rowIndex) => (//generar tablero
-                  <tr key={rowIndex}>
-                    {row.map((cell, colIndex) => (
-                      <td key={`${rowIndex}-${colIndex}`} className={`text-center ${getCellClass(cell)}`}>
-                        <div><img src={getImagePath(cell.image)} alt={cell.image} className="card-img-top img-com" /></div>
-                        {/* condicional en el nombre para diferenciar el inicio de veintena */}
-                        {cell.name === 'Lagarto' ? <small className="d-block" style={{ fontSize: '0.6rem', color: '#a30101', fontWeight: 'bold' }}>{cell.name}</small> : <small className="d-block" style={{ fontSize: '0.5rem' }}>{cell.name}</small>}
-                        {/* <small className="d-block" style={{fontSize:'0.5rem'}}>{cell.name}</small> */}
-                      </td>
-                    ))}
+            <div className="table-responsive" ref={tableContainerRef} style={{ overflowX: 'auto' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    {Array.from({ length: 52 }).map((_, index) => {
+                      const cardinality = revOrientation[index % revOrientation.length]/* revOrientation[ ... ]acceso al elemento del array, .length obtiene el número de elementos en el array, % operador módulo en ciclos repetitivos funciona como un contador cíclico o un detector de múltiplos, Ejecutar código cada N iteraciones, en este caso repetir bucle ENOS en array de 52 posiciones*/
+                      if (cardinality === 'Este') { //condicional para marcar inicio de cardinalidad
+                        return (<th key={index} scope="col" style={{ color: '#047ff3' }}>{cardinality}</th>)
+                      }
+                      return (<th key={index} scope="col">{cardinality}</th>)
+                    })}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                  <tr>
+                    {Array.from({ length: 52 }).map((_, index) => {
+                      const digit = revNumbers[index % revNumbers.length]
+                      if (digit === '1') {//condicional para marcar inicio de trecena
+                        return (<th key={index} scope="col" style={{ backgroundColor: '#015223', color: '#f6f7f6' }}>{digit}</th>)
+                      }
+                      return (<th key={index} scope="col">{digit}</th>)
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {board.map((row, rowIndex) => (//generar tablero
+                    <tr key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <td key={`${rowIndex}-${colIndex}`} className={`text-center ${getCellClass(cell)}`}>
+                          <div><img src={getImagePath(cell.image)} alt={cell.image} className="card-img-top img-com" /></div>
+                          {/* condicional en el nombre para diferenciar el inicio de veintena */}
+                          {cell.name === 'Lagarto' ? <small className="d-block" style={{ fontSize: '0.6rem', color: '#a30101', fontWeight: 'bold' }}>{cell.name}</small> : <small className="d-block" style={{ fontSize: '0.5rem' }}>{cell.name}</small>}
+                          {/* <small className="d-block" style={{fontSize:'0.5rem'}}>{cell.name}</small> */}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
