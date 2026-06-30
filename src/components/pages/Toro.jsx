@@ -134,6 +134,35 @@ const Toro = () => {
         uirevision: 'toro-view', // Firma inmutable global
         paper_bgcolor: '#F8FAFC',
         plot_bgcolor: '#F8FAFC',
+        margin: { l: 10, r: 10, b: 10, t: 120 }, // ↑ Aumentado de 70 a 120 para dar espacio arriba
+        scene: {
+            xaxis: { visible: false },
+            yaxis: { visible: false },
+            zaxis: { visible: false },
+            bgcolor: '#FFFFFF',
+            aspectmode: 'data',
+            uirevision: 'toro-view', // Firma inmutable de la escena 3D
+            camera: {} // Aquí Plotly almacenará dinámicamente tu rotación/zoom
+        },
+        showlegend: false,
+        sliders: [{
+            active: 0,
+            yanchor: 'bottom', // ↑ Cambiado de 'top' a 'bottom' para alineación superior
+            xanchor: 'left',
+            currentvalue: { font: { size: 13, color: '#0284C7' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
+            transition: { duration: 0 },
+            pad: { b: 10, t: 10 }, // Ajustado el espaciado
+            len: 0.9,
+            x: 0.05,
+            y: 1.12, // ↑ Cambiado de 0 a 1.12 para posicionarlo por encima del área de renderizado
+            font: { color: '#475569', size: 10 }, bgcolor: '#E2E8F0', bordercolor: '#CBD5E1',
+            steps: slidersSteps
+        }]
+    });
+    /* const layoutRef = useRef({
+        uirevision: 'toro-view', // Firma inmutable global
+        paper_bgcolor: '#F8FAFC',
+        plot_bgcolor: '#F8FAFC',
         margin: { l: 10, r: 10, b: 10, t: 70 },
         scene: {
             xaxis: { visible: false },
@@ -154,7 +183,7 @@ const Toro = () => {
             font: { color: '#475569', size: 10 }, bgcolor: '#E2E8F0', bordercolor: '#CBD5E1',
             steps: slidersSteps
         }]
-    });
+    }); */
     // Sincronizar la referencia del modo de seguimiento para los eventos nativos de Plotly
     useEffect(() => {
         followModeRef.current = followMode;
@@ -194,71 +223,189 @@ const Toro = () => {
             setActiveDayData({ day, ...data });
         }
     };
+    // --- REFERENCIAS DE CONTROL DE ALTA VELOCIDAD Y RELOJ DE GPU ---
+    const lastFrameTimeRef = useRef(0);
+    const animationFrameIdRef = useRef(null);
+    const isUserInteractingRef = useRef(false); // <-- Detecta si el usuario está moviendo el Toro
     // ============================================================================
     // 3. MOTOR NATIVO ULTRA FLUIDO CON PLOTLY.REACT (PRESERVA CÁMÁRA TOTAL)
     // ============================================================================
-    const runFrameStep = () => {
-        const plotDiv = plotRef.current?.el;
-        if (!plotDiv) return;
+    const runFrameStep = (timestamp) => {
+        if (!isAnimatingRef.current) return;
 
-        const totalPoints = toroData.trajectory.length;
-        if (currentDayRef.current >= totalPoints) {
-            handlePause();
+        const plotDiv = plotRef.current?.el;
+        if (!plotDiv) {
+            animationFrameIdRef.current = requestAnimationFrame(runFrameStep);
             return;
         }
 
-        currentDayRef.current += 1;
-        const targetDay = currentDayRef.current;
-
-        const currentPt = toroData.trajectory[targetDay - 1];
-        const ptMeta = toroData.points[currentPt.n];
-
-        const textLabel = representationRef.current === 'numeros'
-            ? `(${ptMeta.q},${ptMeta.r})`
-            : `${ptMeta.numeral}-${ptMeta.symName}`;
-
-        const segments = getRumboSegments(targetDay);
-
-        // EXTRAER LA CÁMARA ACTUAL MODIFICADA POR EL USUARIO (EVITA EL RESETEO)
-        if (plotDiv.layout && plotDiv.layout.scene && plotDiv.layout.scene.camera) {
-            layoutRef.current.scene.camera = plotDiv.layout.scene.camera;
+        // ====================================================================
+        // OPTIMIZACIÓN SUPREMA: SI EL USUARIO MUEVE EL MOUSE, LE DAMOS PRIORIDAD ABSOLUTA
+        // ====================================================================
+        if (isUserInteractingRef.current) {
+            // No hacemos ningún cálculo matemático ni restyle, dejamos que WebGL rote a máxima velocidad
+            lastFrameTimeRef.current = timestamp; // Reseteamos el reloj para que no dé un brinco al soltarlo
+            animationFrameIdRef.current = requestAnimationFrame(runFrameStep);
+            return;
         }
 
-        // Actualizar la posición del slider nativo en la referencia
-        layoutRef.current.sliders[0].active = targetDay - 1;
+        if (!lastFrameTimeRef.current) lastFrameTimeRef.current = timestamp;
+        const elapsed = timestamp - lastFrameTimeRef.current;
 
-        // Clonamos superficialmente las trazas actuales en memoria de Plotly
-        const updatedData = [...plotDiv.data];
+        if (elapsed >= speed) {
+            lastFrameTimeRef.current = timestamp;
 
-        // Reemplazo directo de vectores WebGL (Trazas de trayectoria 7 a 10 y tracer 11)
-        updatedData[7] = { ...updatedData[7], x: segments.tlahuiztlanpa.map(s => s.x), y: segments.tlahuiztlanpa.map(s => s.y), z: segments.tlahuiztlanpa.map(s => s.z) };
-        updatedData[8] = { ...updatedData[8], x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) };
-        updatedData[9] = { ...updatedData[9], x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) };
-        updatedData[10] = { ...updatedData[10], x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) };
-        updatedData[11] = { ...updatedData[11], x: [currentPt.x], y: [currentPt.y], z: [currentPt.z], text: [textLabel] };
+            const totalPoints = toroData.trajectory.length;
+            if (currentDayRef.current >= totalPoints) {
+                handlePause();
+                return;
+            }
 
-        // Plotly.react refresca las coordenadas WebGL respetando la posición exacta guardada en layoutRef
-        Plotly.react(plotDiv, updatedData, layoutRef.current);
+            currentDayRef.current += 1;
+            const targetDay = currentDayRef.current;
 
-        if (isAnimatingRef.current || followModeRef.current === 'trayectoria') {
-            updateSidebar(targetDay);
+            const currentPt = toroData.trajectory[targetDay - 1];
+            const ptMeta = toroData.points[currentPt.n];
+
+            const textLabel = representationRef.current === 'numeros'
+                ? `(${ptMeta.q},${ptMeta.r})`
+                : `${ptMeta.numeral}-${ptMeta.symName}`;
+
+            const segments = getRumboSegments(targetDay);
+
+            // Capturar cámara actual para mantener consistencia
+            const currentCamera = plotDiv._fullLayout?.scene?.camera || plotDiv.layout?.scene?.camera;
+            if (currentCamera) {
+                layoutRef.current.scene.camera = {
+                    up: { x: currentCamera.up.x, y: currentCamera.up.y, z: currentCamera.up.z },
+                    center: { x: currentCamera.center.x, y: currentCamera.center.y, z: currentCamera.center.z },
+                    eye: { x: currentCamera.eye.x, y: currentCamera.eye.y, z: currentCamera.eye.z }
+                };
+            }
+
+            // Inyección ultra rápida de coordenadas en VRAM
+            Plotly.restyle(plotDiv, {
+                x: [
+                    segments.tlahuiztlanpa.map(s => s.x),
+                    segments.huitztlanpa.map(s => s.x),
+                    segments.cihuatlanpa.map(s => s.x),
+                    segments.mictlanpa.map(s => s.x),
+                    [currentPt.x]
+                ],
+                y: [
+                    segments.tlahuiztlanpa.map(s => s.y),
+                    segments.huitztlanpa.map(s => s.y),
+                    segments.cihuatlanpa.map(s => s.y),
+                    segments.mictlanpa.map(s => s.y),
+                    [currentPt.y]
+                ],
+                z: [
+                    segments.tlahuiztlanpa.map(s => s.z),
+                    segments.huitztlanpa.map(s => s.z),
+                    segments.cihuatlanpa.map(s => s.z),
+                    segments.mictlanpa.map(s => s.z),
+                    [currentPt.z]
+                ],
+                text: [null, null, null, null, [textLabel]]
+            }, [7, 8, 9, 10, 11]);
+
+            layoutRef.current.sliders[0].active = targetDay - 1;
+            Plotly.relayout(plotDiv, {
+                'sliders[0].active': targetDay - 1,
+                'scene.camera': layoutRef.current.scene.camera
+            });
+
+            if (followModeRef.current === 'trayectoria') {
+                updateSidebar(targetDay);
+            }
         }
+
+        animationFrameIdRef.current = requestAnimationFrame(runFrameStep);
     };
 
     const handlePlay = () => {
         if (isAnimatingRef.current) return;
         isAnimatingRef.current = true;
-        // Bucle de temporización de alta precisión basado en la velocidad (speed) seleccionada
-        animationIntervalRef.current = setInterval(runFrameStep, speed);
+        lastFrameTimeRef.current = 0;
+        animationFrameIdRef.current = requestAnimationFrame(runFrameStep);
     };
 
     const handlePause = () => {
         isAnimatingRef.current = false;
-        if (animationIntervalRef.current) {
-            clearInterval(animationIntervalRef.current);
-            animationIntervalRef.current = null;
+        if (animationFrameIdRef.current) {
+            cancelAnimationFrame(animationFrameIdRef.current);
+            animationFrameIdRef.current = null;
+        }
+
+        // Al pausar, sincronizamos forzadamente el slider en su posición exacta final
+        const plotDiv = plotRef.current?.el;
+        if (plotDiv) {
+            layoutRef.current.sliders[0].active = currentDayRef.current - 1;
+            Plotly.relayout(plotDiv, { 'sliders[0].active': currentDayRef.current - 1 });
         }
     };
+    /*  const runFrameStep = () => {
+         const plotDiv = plotRef.current?.el;
+         if (!plotDiv) return;
+ 
+         const totalPoints = toroData.trajectory.length;
+         if (currentDayRef.current >= totalPoints) {
+             handlePause();
+             return;
+         }
+ 
+         currentDayRef.current += 1;
+         const targetDay = currentDayRef.current;
+ 
+         const currentPt = toroData.trajectory[targetDay - 1];
+         const ptMeta = toroData.points[currentPt.n];
+ 
+         const textLabel = representationRef.current === 'numeros'
+             ? `(${ptMeta.q},${ptMeta.r})`
+             : `${ptMeta.numeral}-${ptMeta.symName}`;
+ 
+         const segments = getRumboSegments(targetDay);
+ 
+         // EXTRAER LA CÁMARA ACTUAL MODIFICADA POR EL USUARIO (EVITA EL RESETEO)
+         if (plotDiv.layout && plotDiv.layout.scene && plotDiv.layout.scene.camera) {
+             layoutRef.current.scene.camera = plotDiv.layout.scene.camera;
+         }
+ 
+         // Actualizar la posición del slider nativo en la referencia
+         layoutRef.current.sliders[0].active = targetDay - 1;
+ 
+         // Clonamos superficialmente las trazas actuales en memoria de Plotly
+         const updatedData = [...plotDiv.data];
+ 
+         // Reemplazo directo de vectores WebGL (Trazas de trayectoria 7 a 10 y tracer 11)
+         updatedData[7] = { ...updatedData[7], x: segments.tlahuiztlanpa.map(s => s.x), y: segments.tlahuiztlanpa.map(s => s.y), z: segments.tlahuiztlanpa.map(s => s.z) };
+         updatedData[8] = { ...updatedData[8], x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) };
+         updatedData[9] = { ...updatedData[9], x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) };
+         updatedData[10] = { ...updatedData[10], x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) };
+         updatedData[11] = { ...updatedData[11], x: [currentPt.x], y: [currentPt.y], z: [currentPt.z], text: [textLabel] };
+ 
+         // Plotly.react refresca las coordenadas WebGL respetando la posición exacta guardada en layoutRef
+         Plotly.react(plotDiv, updatedData, layoutRef.current);
+ 
+         if (isAnimatingRef.current || followModeRef.current === 'trayectoria') {
+             updateSidebar(targetDay);
+         }
+     };
+ 
+     const handlePlay = () => {
+         if (isAnimatingRef.current) return;
+         isAnimatingRef.current = true;
+         // Bucle de temporización de alta precisión basado en la velocidad (speed) seleccionada
+         animationIntervalRef.current = setInterval(runFrameStep, speed);
+     };
+ 
+     const handlePause = () => {
+         isAnimatingRef.current = false;
+         if (animationIntervalRef.current) {
+             clearInterval(animationIntervalRef.current);
+             animationIntervalRef.current = null;
+         }
+     }; */
 
     // --- ESCUCHA DE EVENTOS NATIVOS MEJORADA ---
     // Vincular detectores de eventos nativos de Plotly.js para interactividad sin lag
@@ -308,6 +455,32 @@ const Toro = () => {
                 }
             }
         });
+        // === CAPTURA DE INTERACCIÓN DE ALTA SENSIBILIDAD ===
+        const glContainer = el.querySelector('.glcontainer');
+        if (glContainer) {
+            // Captura inicio de rotación o arrastre
+            glContainer.onmousedown = () => {
+                isUserInteractingRef.current = true;
+            };
+
+            // Captura zoom con la rueda del mouse de forma inmediata
+            glContainer.onwheel = () => {
+                isUserInteractingRef.current = true;
+                // Pequeño timeout para volver a habilitar la animación cuando dejes de usar la rueda
+                clearTimeout(glContainer.wheelTimeout);
+                glContainer.wheelTimeout = setTimeout(() => {
+                    isUserInteractingRef.current = false;
+                }, 150);
+            };
+
+            // Liberación del control
+            glContainer.onmouseup = () => {
+                isUserInteractingRef.current = false;
+            };
+            glContainer.onmouseleave = () => {
+                isUserInteractingRef.current = false;
+            };
+        }
     };
     // ============================================================================
     // 4. CONSTRUCCIÓN DE LAS TRAZAS ESTRUCTURALES DEL ENTORNO
@@ -479,23 +652,6 @@ const Toro = () => {
                         Al Animar
                     </button>
                 </div>
-
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Etiquetas en el Toro</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '20px' }}>
-                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('none')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#94A3B8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Ocultar Coordenadas</button>
-                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('highlights')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#38BDF8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Solo Destacados</button>
-                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('all')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#F8FAFC', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Todas</button>
-                </div>
-
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Velocidad de Animación</div>
-                <div style={{ backgroundColor: '#0F172A', border: '1px solid #334155', borderRadius: '12px', padding: '12px', marginBottom: '25px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Intervalo:</span>
-                        <span style={{ fontSize: '12px', color: '#38BDF8', fontWeight: 800 }}>{speed} ms</span>
-                    </div>
-                    <input type="range" id="speed-slider" min="50" max="1000" step="50" value={speed} onChange={(e) => updatePlaySpeed(e.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: '#38BDF8' }} />
-                </div>
-
                 <div id="details-card" style={{ backgroundColor: '#0F172A', borderRadius: '16px', padding: '20px', border: '1px solid #334155', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {activeDayData ? (
                         <div id="details-content" style={{ width: '100%' }}>
@@ -541,6 +697,24 @@ const Toro = () => {
                         </div>
                     )}
                 </div>
+
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Etiquetas en el Toro</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '20px' }}>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('none')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#94A3B8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Ocultar Coordenadas</button>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('highlights')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#38BDF8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Solo Destacados</button>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('all')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#F8FAFC', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Todas</button>
+                </div>
+
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Velocidad de Animación</div>
+                <div style={{ backgroundColor: '#0F172A', border: '1px solid #334155', borderRadius: '12px', padding: '12px', marginBottom: '25px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Intervalo:</span>
+                        <span style={{ fontSize: '12px', color: '#38BDF8', fontWeight: 800 }}>{speed} ms</span>
+                    </div>
+                    <input type="range" id="speed-slider" min="50" max="1000" step="50" value={speed} onChange={(e) => updatePlaySpeed(e.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: '#38BDF8' }} />
+                </div>
+
+
             </div>
         </div>
     );
