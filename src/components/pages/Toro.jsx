@@ -517,7 +517,7 @@ const Toro = () => {
             },
             text: currentRepresentation === 'numeros' ? cat.text_num : cat.text_img,
             textposition: 'top center',
-            textfont: { color: '#334155', size: 10, family: 'Arial, sans-serif' },
+            textfont: { color: '#334155', size: 13, family: 'Arial, sans-serif' },
             hovertext: cat.hover,
             customdata: cat.n,
             name: cat.name
@@ -547,7 +547,7 @@ const Toro = () => {
         marker: { size: 10, color: '#EF4444', symbol: 'circle', line: { color: '#FFFFFF', width: 1.5 } },
         text: [currentRepresentation === 'numeros' ? `(${initialMeta.q},${initialMeta.r})` : `${initialMeta.numeral}-${initialMeta.symName}`],
         textposition: 'top center',
-        textfont: { color: '#D97706', size: 12, family: 'Arial Black' },
+        textfont: { color: '#022249ff', size: 13, family: 'Arial, sans-serif' },
         name: 'Generador Activo',
         hoverinfo: 'skip'
     };

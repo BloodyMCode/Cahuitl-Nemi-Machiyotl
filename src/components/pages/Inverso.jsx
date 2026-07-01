@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { tonalliSimbolos, xihuitlSimbolos, encuentraCoincidence, buscarXihuitl, buscarAmbos, formatDate } from '../funtions/funtions';
+import { tonalliSimbolos, xihuitlSimbolos, encuentraCoincidence, buscarXihuitl, buscarAmbos, formatDate, convertirXihuitl, convertirXihuitlMeza } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -30,6 +30,10 @@ const Inverso = () => {
     // Resultados filtrados de la búsqueda "ambos" (tonalli + xihuitl combinados)
     const [ambosResults, setAmbosResults] = useState([])
     const [ambosMessage, setAmbosMessage] = useState("")
+
+    // Estado para el modo civil
+    const [civilResults, setCivilResults] = useState([])
+    const [civilMessage, setCivilMessage] = useState("")
 
     // Mensaje de validación de campos
     const [validationMessage, setValidationMessage] = useState("")
@@ -97,6 +101,42 @@ const Inverso = () => {
             setXihuitlResults([])
             setXihuitlMessage("")
             buscarAmbos(selectedStartDate, selectedEndDate, modoAmbos, yearStart, yearEnd, numero, simbolo, numeroX, simboloX, setAmbosResults, setAmbosMessage, setLoadingAmbos)
+        } else if (modo === 'civil') {
+            if (!yearStart || isNaN(yearStart)) {
+                setValidationMessage("Por favor rellena el Año para la búsqueda Civil.")
+                return
+            }
+            setResults([])
+            setTonalliMessage("")
+            setXihuitlResults([])
+            setXihuitlMessage("")
+            setAmbosResults([])
+            setAmbosMessage("")
+            setCivilMessage("")
+            setCivilResults([])
+
+            setLoading(true)
+
+            setTimeout(() => {
+                if (yearStart === 0) {
+                    setCivilMessage("El año 0 no existe en el calendario civil.")
+                    setLoading(false)
+                    return
+                }
+                const date = new Date(yearStart, 0, 1) // 1 de enero del año civil
+                const dateMezaStr = `${yearStart}-01-01`
+                const xihuitlCaso = convertirXihuitl(date)
+                const xihuitlMeza = convertirXihuitlMeza(dateMezaStr)
+                const calendar = yearStart < 1582 ? 'Juliano' : 'Gregoriano'
+
+                setCivilResults([{
+                    year: yearStart,
+                    calendar: calendar,
+                    xihuitlCaso,
+                    xihuitlMeza
+                }])
+                setLoading(false)
+            }, 100)
         }
     }
 
@@ -108,6 +148,8 @@ const Inverso = () => {
         setXihuitlMessage("")
         setAmbosResults([])
         setAmbosMessage("")
+        setCivilResults([])
+        setCivilMessage("")
         setValidationMessage("")
     }
 
@@ -140,6 +182,7 @@ const Inverso = () => {
                             <option value="tonalli">Buscar por Tonalli</option>
                             <option value="xihuitl">Buscar por Xihuitl</option>
                             <option value="ambos">Buscar por Tonalli y Xihuitl</option>
+                            <option value="civil">Buscar Año civil</option>
                         </select>
                     </div>
                 </div>
@@ -350,6 +393,16 @@ const Inverso = () => {
                         </div>
                     </div>
                 )}
+                {/* Bloque Civil — visible en modo 'civil' */}
+                {modo === 'civil' && (
+                    <div className="col-lg-6 p-4 card shadow-sm">
+                        <h4 className="text-center mb-4" style={{ color: '#4ade80' }}>Búsqueda Año civil</h4>
+                        <div className="mb-3">
+                            <label htmlFor="yearStart" className="form-label fw-bold">Introduce el año</label>
+                            <input type="number" id="yearStart" className="form-control" value={yearStart} onChange={(e) => setYearStart(parseInt(e.target.value))} style={{ colorScheme: 'dark' }} />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Botones Buscar y Limpiar */}
@@ -554,6 +607,54 @@ const Inverso = () => {
                                             <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
                                             <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                         </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+            </div>
+            {/* Resultados Civil */}
+            <div className="mt-4">
+                {civilMessage && (
+                    <div className="alert alert-warning text-center mx-auto" style={{ maxWidth: '800px' }}>
+                        {civilMessage}
+                    </div>
+                )}
+                {civilResults.length > 0 && (
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-header text-white" style={{ backgroundColor: '#059669' }}>
+                            <h5 className="mb-0">Resultados Año civil: {civilResults[0].year}</h5>
+                        </div>
+                        <div className="table-responsive">
+                            <table className="table table-hover mb-0">
+                                <thead className="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Año</th>
+                                        <th>Calendario</th>
+                                        <th>Xihuitl (Caso)</th>
+                                        <th>Xihuitl (Meza)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {civilResults.map((result, index) => (
+                                        <React.Fragment key={index}>
+                                            <tr>
+                                                <td>{index + 1}</td>
+                                                <td>{result.year}</td>
+                                                <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                                <td>{result.xihuitlCaso.numeroX.español} - {result.xihuitlCaso.simboloX.español}</td>
+                                                <td>{result.xihuitlCaso.numeroX.español} - {result.xihuitlCaso.simboloX.español}</td>
+                                            </tr>
+                                            {result.xihuitlMeza && result.xihuitlMeza.startTime && (
+                                                <tr>
+                                                    <td colSpan={5} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>
+                                                        <span style={{ color: '#059669' }}>📅 Nota: </span> De acuerdo a la conversión de Caso, el año comienza el <strong>{result.xihuitlMeza.startTime.split(',')[0]}</strong>,<strong>{result.xihuitlMeza.startTime.split(',')[1]}</strong>.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>
