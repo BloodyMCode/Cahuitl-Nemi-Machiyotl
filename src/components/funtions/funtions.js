@@ -667,6 +667,49 @@ export const buscarXihuitl = (
     }, 100)
 }
 
+/**
+ * Busca el Xihuitl de un año civil dado.
+ * - Usa convertirXihuitl con el 1 de enero del año para la cuenta Caso.
+ * - Usa convertirXihuitlMeza con el 12 de marzo del año para la cuenta Meza.
+ * @param {number} year - Año civil a consultar
+ * @param {Function} setCivilResults - Setter del estado de resultados
+ * @param {Function} setCivilMessage - Setter del estado de mensaje
+ * @param {Function} setLoading - Setter del estado de carga
+ */
+export const buscarAnioCivil = (year, setCivilResults, setCivilMessage, setLoading) => {
+    setCivilResults([])
+    setCivilMessage("")
+    setLoading(true)
+
+    setTimeout(() => {
+        if (year === 0) {
+            setCivilMessage("El año 0 no existe en el calendario civil.")
+            setLoading(false)
+            return
+        }
+
+        // Xihuitl Caso: 1 de enero del año civil
+        const dateEnero = new Date(year, 0, 1)
+        const xihuitlCaso = convertirXihuitl(dateEnero)
+
+        // Xihuitl Meza: 12 de marzo del año civil (inicio del año ritual Meza)
+        const dateMarzoStr = `${year}-03-12`
+        const xihuitlMeza = convertirXihuitlMeza(dateMarzoStr)
+
+        const calendar = year < 1582 ? 'Juliano' : 'Gregoriano'
+
+        setCivilResults([{
+            year: year,
+            calendar: calendar,
+            xihuitl: xihuitlCaso,
+            xihuitlMeza: xihuitlMeza,
+            xihuitlMezaStartTime: xihuitlMeza ? xihuitlMeza.startTime : null,
+            xihuitlMezaCal: xihuitlMeza ? (year <= 1582 ? 'Juliano' : 'Gregoriano') : null
+        }])
+        setLoading(false)
+    }, 100)
+}
+
 // Formatear fecha para mostrar
 export const formatDate = (date) => {
     return date.toLocaleDateString('es-ES', {

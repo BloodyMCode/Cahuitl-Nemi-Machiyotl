@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { tonalliSimbolos, xihuitlSimbolos, encuentraCoincidence, buscarXihuitl, buscarAmbos, formatDate, convertirXihuitl, convertirXihuitlMeza } from '../funtions/funtions';
+import { tonalliSimbolos, xihuitlSimbolos, encuentraCoincidence, buscarXihuitl, buscarAmbos, buscarAnioCivil, formatDate } from '../funtions/funtions';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
 
@@ -115,28 +115,7 @@ const Inverso = () => {
             setCivilMessage("")
             setCivilResults([])
 
-            setLoading(true)
-
-            setTimeout(() => {
-                if (yearStart === 0) {
-                    setCivilMessage("El año 0 no existe en el calendario civil.")
-                    setLoading(false)
-                    return
-                }
-                const date = new Date(yearStart, 0, 1) // 1 de enero del año civil
-                const dateMezaStr = `${yearStart}-01-01`
-                const xihuitlCaso = convertirXihuitl(date)
-                const xihuitlMeza = convertirXihuitlMeza(dateMezaStr)
-                const calendar = yearStart < 1582 ? 'Juliano' : 'Gregoriano'
-
-                setCivilResults([{
-                    year: yearStart,
-                    calendar: calendar,
-                    xihuitlCaso,
-                    xihuitlMeza
-                }])
-                setLoading(false)
-            }, 100)
+            buscarAnioCivil(yearStart, setCivilResults, setCivilMessage, setLoading)
         }
     }
 
@@ -624,7 +603,7 @@ const Inverso = () => {
                 {civilResults.length > 0 && (
                     <div className="card shadow-sm mb-4">
                         <div className="card-header text-white" style={{ backgroundColor: '#059669' }}>
-                            <h5 className="mb-0">Resultados Año civil: {civilResults[0].year}</h5>
+                            <h5 className="mb-0">Resultado Año civil: {civilResults[0].year}</h5>
                         </div>
                         <div className="table-responsive">
                             <table className="table table-hover mb-0">
@@ -644,13 +623,13 @@ const Inverso = () => {
                                                 <td>{index + 1}</td>
                                                 <td>{result.year}</td>
                                                 <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
-                                                <td>{result.xihuitlCaso.numeroX.español} - {result.xihuitlCaso.simboloX.español}</td>
-                                                <td>{result.xihuitlCaso.numeroX.español} - {result.xihuitlCaso.simboloX.español}</td>
+                                                <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
+                                                <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                             </tr>
-                                            {result.xihuitlMeza && result.xihuitlMeza.startTime && (
+                                            {result.xihuitlMezaStartTime && (
                                                 <tr>
                                                     <td colSpan={5} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>
-                                                        <span style={{ color: '#059669' }}>📅 Nota: </span> De acuerdo a la conversión de Caso, el año comienza el <strong>{result.xihuitlMeza.startTime.split(',')[0]}</strong>,<strong>{result.xihuitlMeza.startTime.split(',')[1]}</strong>.
+                                                        <span style={{ color: '#059669' }}>📅 Nota (Meza): </span> De acuerdo a la conversión de Meza, el año {result.year} inicia el <strong>{result.xihuitlMezaStartTime}</strong> ({result.xihuitlMezaCal}).
                                                     </td>
                                                 </tr>
                                             )}
