@@ -4,7 +4,7 @@ import reactLogo from './assets/react.svg'
 import heroImg from './assets/hero.png' */
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 
 import './App.css'
 import Menu from './components/pages/Menu'
@@ -16,18 +16,27 @@ import Toro from './components/pages/Toro'
 import Calculadora from './components/pages/Calculadora'
 import { getImagePath } from './components/funtions/funtions'
 
-function App() {
-  /* const [count, setCount] = useState(0) */
-
+function AppContent() {
+  // 1. Creamos un componente interno para poder usar el hook useLocation
+  const location = useLocation();
+  const esPaginaToro = location.pathname === '/toro';
+  // Render de la barra de imagen decorativa
+  const BarraDecorativa = (
+    <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center' }}>
+      {/* <img src={new URL('./components/images/logo-tlacua.png', import.meta.url).href} alt="Logo TLACUATZIN" style={{ width: '100%', maxWidth: '120px', minWidth: '30px', height: 'auto', objectFit: 'contain', objectPosition: 'right' }} /> */}
+      {/* <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  * /> */}
+      <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'center'/* , marginLeft: '15px'  */ }} />
+    </div>
+  );
   return (
     <>
-      <Router>
-        <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center' }}>
-          {/* <img src={new URL('./components/images/logo-tlacua.png', import.meta.url).href} alt="Logo TLACUATZIN" style={{ width: '100%', maxWidth: '120px', minWidth: '30px', height: 'auto', objectFit: 'contain', objectPosition: 'right' }} /> */}
-          {/* <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  * /> */}
-          <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'center'/* , marginLeft: '15px'  */ }} />
-        </div>
-        <Menu />
+      {/* SI NO es la página de Toro, la barra decorativa aparece ARRIBA */}
+      {!esPaginaToro && BarraDecorativa}
+
+      {/* SI NO es la página de Toro, se muestra el menú superior normal */}
+      {!esPaginaToro && <Menu />}
+      {/* Contenedor principal de las vistas */}
+      <div className={esPaginaToro ? "layout-toro-container" : ""}>
         <Routes>
           <Route path='/' element={<Inicio />} />
           <Route path="/conversor" element={<Conversor />} />
@@ -36,9 +45,25 @@ function App() {
           <Route path="/toro" element={<Toro />} />
           <Route path="/calculadora" element={<Calculadora />} />
         </Routes>
-        <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
-          <p className="mb-0">Creditos. © 2026 TLACUATZIN CODEX LAB Investigación Transdisciplinaria de la Matemática en los Códices Prehispánicos de México. Todos los derechos reservados.</p>
-        </footer>
+      </div>
+      {/* SI SÍ es la página de Toro, la barra decorativa aparece ABAJO */}
+      {esPaginaToro && BarraDecorativa}
+      <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
+        <p className="mb-0">Creditos. © 2026 TLACUATZIN CODEX LAB Investigación Transdisciplinaria de la Matemática en los Códices Prehispánicos de México. Todos los derechos reservados.</p>
+      </footer>
+    </>
+  )
+
+}
+
+function App() {
+  /* const [count, setCount] = useState(0) */
+
+
+  return (
+    <>
+      <Router>
+        <AppContent />
       </Router>
       {/* <section id="center">
         <div className="hero">

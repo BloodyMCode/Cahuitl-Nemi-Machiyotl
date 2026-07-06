@@ -123,6 +123,7 @@ const Toro = () => {
     const plotRef = useRef(null);
     const followModeRef = useRef('cursor');
     const representationRef = useRef('numeros');
+    const [labelsVisibility, setLabelsVisibility] = useState('none'); // O 'none'/'all' según tu valor inicial por defecto
     // --- ESTADOS DE CONTROL CRÍTICOS (SIN RETRASOS) ---
     const currentDayRef = useRef(1); // Siempre inicia en el día 1 al montar por primera vez (cambios de menú)
     const isAnimatingRef = useRef(false);
@@ -607,6 +608,34 @@ const Toro = () => {
     }; *//*  */
 
     const toggleLabelsVisibility = (visibilityMode) => {
+        setLabelsVisibility(visibilityMode); // Guarda el estado en React para el select
+
+        const plotDiv = plotRef.current?.el;
+        if (!plotDiv) return;
+
+        // Índices exactos de tus 6 categoryTraces en el array de Plotly
+        const targetIndices = [1, 2, 3, 4, 5, 6];
+
+        if (visibilityMode === 'none') {
+            // Un solo string 'markers' se aplica automáticamente a los 6 índices en VRAM
+            Plotly.restyle(plotDiv, { mode: 'markers' }, targetIndices);
+        }
+        else if (visibilityMode === 'highlights') {
+            // Enviamos un arreglo con la instrucción exacta para cada uno de los 6 índices:
+            // Índice 1 y 2 (Base y Veintena) -> 'markers'
+            // Índice 3, 4, 5 y 6 (Los 4 rumbos destacados) -> 'markers+text'
+            const modesArray = ['markers', 'markers', 'markers+text', 'markers+text', 'markers+text', 'markers+text'];
+            Plotly.restyle(plotDiv, { mode: [modesArray] }, targetIndices);
+            // Nota: En Plotly.restyle, el arreglo de configuraciones debe ir envuelto en otro arreglo [ [valores] ]
+        }
+        else if (visibilityMode === 'all') {
+            // Un solo string 'markers+text' activa el texto en las 6 trazas en un solo ciclo de reloj
+            Plotly.restyle(plotDiv, { mode: 'markers+text' }, targetIndices);
+        }
+    };
+
+    /* const toggleLabelsVisibility = (visibilityMode) => {
+        setLabelsVisibility(visibilityMode); // <-- Añade esto para actualizar el estado del select
         const plotDiv = plotRef.current?.el;
         if (!plotDiv) return;
 
@@ -628,7 +657,7 @@ const Toro = () => {
         // Al pasar un valor plano (ej: 'markers') y la lista de índices, 
         // Plotly lo aplica en VRAM a todas las trazas en paralelo en un solo ciclo de reloj.
         Plotly.restyle(plotDiv, { mode: targetMode }, targetIndices);
-    };
+    }; */
 
     /* const toggleLabelsVisibility = (visibilityMode) => {
         const plotDiv = plotRef.current?.el;
@@ -702,42 +731,42 @@ const Toro = () => {
             </div>
 
             {/* SIDEBAR TEMA OSCURO */}
-            <div id="sidebar" style={{ width: '340px', minWidth: '340px', height: '100%', backgroundColor: '#1E293B', borderLeft: '1px solid #334155', padding: '24px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflowY: 'auto' }}>
-                <h1 style={{ margin: '0 0 2px 0', fontSize: '26px', fontWeight: 800, color: '#F8FAFC' }}>Tonalpohualli</h1>
-                <h1 style={{ margin: '2px 0 5px 0', fontSize: '20px', fontWeight: 600, color: '#38BDF8' }}>Toro Interactivo 3D</h1>
-                <div className="subtitle" style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>Modelo Z₁₃ ⊕ Z₂₀</div>
+            <div id="sidebar" style={{ width: '340px', minWidth: '340px', height: '100%', backgroundColor: '#1E293B', borderLeft: '1px solid #334155', padding: '8px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflowY: 'auto' }}>
+                <h1 style={{ margin: '0 0 2px 0', fontSize: '24px', fontWeight: 800, color: '#F8FAFC' }}>Tonalpohualli</h1>
+                {/* <h1 style={{ margin: '2px 0 5px 0', fontSize: '14px', fontWeight: 600, color: '#38BDF8' }}>Toro Interactivo 3D - Modelo Z₁₃ ⊕ Z₂₀</h1> */}
+                <div className="subtitle" style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '3px' }}>Toro Interactivo 3D - Modelo Z₁₃ ⊕ Z₂₀</div>
 
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Controles de Reproducción</div>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
-                    <button onClick={handlePlay} style={{ flex: 1, padding: '10px', backgroundColor: '#10B981', color: '#0F172A', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>► Play</button>
-                    <button onClick={handlePause} style={{ flex: 1, padding: '10px', backgroundColor: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>⏸ Pause</button>
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '3px' }}>Controles de Reproducción</div>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+                    <button onClick={handlePlay} style={{ flex: 1, padding: '6px', backgroundColor: '#10B981', color: '#0F172A', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '12px' }}>► Play</button>
+                    <button onClick={handlePause} style={{ flex: 1, padding: '6px', backgroundColor: '#EF4444', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '12px' }}>⏸ Pause</button>
                 </div>
 
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Representación</div>
-                <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '15px' }}>
-                    <button className={`selector-btn ${currentRepresentation === 'numeros' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('numeros')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'numeros' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'numeros' ? '#0F172A' : '#94A3B8' }}>
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '4px' }}>Representación</div>
+                <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '4px' }}>
+                    <button className={`selector-btn ${currentRepresentation === 'numeros' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('numeros')} style={{ flex: 1, padding: '6px 3px', fontSize: '11px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'numeros' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'numeros' ? '#0F172A' : '#94A3B8' }}>
                         Números (q, r)
                     </button>
-                    <button className={`selector-btn ${currentRepresentation === 'imagenes' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('imagenes')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'imagenes' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'imagenes' ? '#0F172A' : '#94A3B8' }}>
+                    <button className={`selector-btn ${currentRepresentation === 'imagenes' ? 'active' : ''}`} onClick={() => toggleLabelsRepresentation('imagenes')} style={{ flex: 1, padding: '6px 3px', fontSize: '11px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: currentRepresentation === 'imagenes' ? '#38BDF8' : 'transparent', color: currentRepresentation === 'imagenes' ? '#0F172A' : '#94A3B8' }}>
                         (Numeral, Glifo)
                     </button>
                 </div>
 
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Modo de Seguimiento</div>
-                <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '15px' }}>
-                    <button className={`selector-btn ${followMode === 'cursor' ? 'active' : ''}`} onClick={() => setFollowMode('cursor')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'cursor' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '3px' }}>Modo de Seguimiento</div>
+                <div className="selector-container" style={{ display: 'flex', backgroundColor: '#0F172A', borderRadius: '8px', padding: '3px', marginBottom: '8px' }}>
+                    <button className={`selector-btn ${followMode === 'cursor' ? 'active' : ''}`} onClick={() => setFollowMode('cursor')} style={{ flex: 1, padding: '6px 3px', fontSize: '11px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'cursor' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
                         Al Señalar
                     </button>
-                    <button className={`selector-btn ${followMode === 'trayectoria' ? 'active' : ''}`} onClick={() => setFollowMode('trayectoria')} style={{ flex: 1, padding: '8px 4px', fontSize: '12px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'trayectoria' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
+                    <button className={`selector-btn ${followMode === 'trayectoria' ? 'active' : ''}`} onClick={() => setFollowMode('trayectoria')} style={{ flex: 1, padding: '6px 3px', fontSize: '11px', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: 'pointer', backgroundColor: followMode === 'trayectoria' ? '#2563EB' : 'transparent', color: '#F8FAFC' }}>
                         Al Animar
                     </button>
                 </div>
-                <div id="details-card" style={{ backgroundColor: '#0F172A', borderRadius: '16px', padding: '20px', border: '1px solid #334155', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div id="details-card" style={{ backgroundColor: '#0F172A', borderRadius: '16px', padding: '20px', border: '1px solid #334155', minHeight: '173px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {activeDayData ? (
                         <div id="details-content" style={{ width: '100%' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#334155', padding: '3px 20px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
-                                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '3px 9px', borderRadius: '12px', color: '#0F172A', backgroundColor: RUMBO_COLORS[activeDayData.classKey] || '#FFF' }}>{activeDayData.className}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '11px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: '#334155', padding: '2px 20px', borderRadius: '12px', color: '#38BDF8', fontFamily: 'monospace' }}>Día {activeDayData.day}</span>
+                                <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 9px', borderRadius: '12px', color: '#0F172A', backgroundColor: RUMBO_COLORS[activeDayData.classKey] || '#FFF' }}>{activeDayData.className}</span>
                             </div>
 
                             {currentRepresentation === 'numeros' ? (
@@ -755,19 +784,19 @@ const Toro = () => {
                                 <div className="visual-imagenes" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', width: '100%' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '95px' }}>
-                                            <div style={{ width: '95px', height: '80px', backgroundColor: '#334155', border: '1px solid #606772ff', borderRadius: '8px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: '95px', height: '70px', backgroundColor: '#334155', border: '1px solid #606772ff', borderRadius: '8px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <img src={getImagePath(activeDayData.q === 0 ? '13.png' : `${activeDayData.q}.png`)} alt={`Numeral ${activeDayData.numeral}`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                                             </div>
                                             <span style={{ fontSize: '11px', color: '#adb7c6ff', marginTop: '2px' }}>Num. {activeDayData.numeral}</span>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '95px' }}>
-                                            <div style={{ width: '95px', height: '80px', backgroundColor: '#334155', border: '1px solid #606772ff', borderRadius: '8px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: '95px', height: '70px', backgroundColor: '#334155', border: '1px solid #606772ff', borderRadius: '8px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <img src={getImagePath(activeDayData.symFile)} alt={`Signo ${activeDayData.symName}`} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                                             </div>
                                             <span style={{ fontSize: '11px', color: '#adb7c6ff', marginTop: '2px' }}>Signo: {activeDayData.symName}</span>
                                         </div>
                                     </div>
-                                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#38BDF8', marginTop: '8px', textTransform: 'capitalize' }}>{activeDayData.numeral} - {activeDayData.symName}</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#38BDF8', marginTop: '1px', textTransform: 'capitalize' }}>{activeDayData.numeral} - {activeDayData.symName}</div>
                                 </div>
                             )}
                         </div>
@@ -778,21 +807,45 @@ const Toro = () => {
                     )}
                 </div>
 
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Etiquetas en el Toro</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '20px' }}>
-                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('none')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#94A3B8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Ocultar Coordenadas</button>
-                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('highlights')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#38BDF8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Solo Destacados</button>
-                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('all')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#F8FAFC', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Todas</button>
-                </div>
-
-                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '6px' }}>Velocidad de Animación</div>
-                <div style={{ backgroundColor: '#0F172A', border: '1px solid #334155', borderRadius: '12px', padding: '12px', marginBottom: '25px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Intervalo:</span>
-                        <span style={{ fontSize: '12px', color: '#38BDF8', fontWeight: 800 }}>{speed} ms</span>
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '5px' }}>Velocidad de Animación</div>
+                <div style={{ backgroundColor: '#0F172A', border: '1px solid #334155', borderRadius: '12px', padding: '10px', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Intervalo:</span>
+                        <span style={{ fontSize: '11px', color: '#38BDF8', fontWeight: 800 }}>{speed} ms</span>
                     </div>
                     <input type="range" id="speed-slider" min="50" max="1000" step="50" value={speed} onChange={(e) => updatePlaySpeed(e.target.value)} style={{ width: '100%', cursor: 'pointer', accentColor: '#38BDF8' }} />
                 </div>
+
+                <div className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#94A3B8', marginBottom: '3px' }}>Etiquetas de Coordenadas</div>
+                <div style={{ marginBottom: '6px' }}>
+                    <select
+                        value={labelsVisibility}
+                        onChange={(e) => toggleLabelsVisibility(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '5px 8px',
+                            fontSize: '11px',
+                            backgroundColor: '#0F172A',
+                            color: '#F8FAFC',
+                            border: '1px solid #334155',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            outline: 'none',
+                            fontFamily: 'Arial, sans-serif'
+                        }}
+                    >
+                        <option value="none" style={{ backgroundColor: '#0F172A', color: '#94A3B8' }}>Ocultar Coordenadas</option>
+                        <option value="highlights" style={{ backgroundColor: '#0F172A', color: '#38BDF8' }}>Mostrar Solo Destacados</option>
+                        <option value="all" style={{ backgroundColor: '#0F172A', color: '#F8FAFC' }}>Mostrar Todas</option>
+                    </select>
+                </div>
+                {/* <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '20px' }}>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('none')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#94A3B8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Ocultar Coordenadas</button>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('highlights')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#38BDF8', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Solo Destacados</button>
+                    <button className="btn-vis" onClick={() => toggleLabelsVisibility('all')} style={{ width: '100%', padding: '7px', fontSize: '11px', backgroundColor: '#0F172A', color: '#F8FAFC', border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' }}>• Mostrar Todas</button>
+                </div> */}
+
+
 
 
             </div>
