@@ -4,6 +4,7 @@ import _reactPlotly from 'react-plotly.js';
 import createPlotlyComponent from 'react-plotly.js/factory';
 // Cargar el JSON de datos geométricos
 import toroData from '../data/toroData.json';
+import MenuLat from './MenuLat';
 // Configuración del factory seguro para Plotly en Vite
 const PlotComponent = _reactPlotly.default || _reactPlotly;
 const Plot = typeof createPlotlyComponent === 'function'
@@ -692,7 +693,8 @@ const Toro = () => {
   */
     return (
         <div id="app-container" style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#0F172A', color: '#F8FAFC', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
-
+            {/* INYECCIÓN DEL MENÚ NAVEGACIÓN FLOTANTE IZQUIERDO          */}
+            <MenuLat />
             {/* CANVAS INTERACTIVO CLARO */}
             <div id="plot-area" style={{ flex: 1, height: '100%', position: 'relative', backgroundColor: '#F8FAFC' }}>
                 <div style={{
