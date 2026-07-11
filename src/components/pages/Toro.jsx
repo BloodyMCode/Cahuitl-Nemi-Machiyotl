@@ -313,13 +313,16 @@ const Toro = () => {
                     [currentPt.y]
                 ],
                 z: [
+                    // segments.tlahuiztlanpa.map(s => s.z),
                     segments.tlahuiztlanpa.map(s => s.z),
                     segments.huitztlanpa.map(s => s.z),
                     segments.cihuatlanpa.map(s => s.z),
                     segments.mictlanpa.map(s => s.z),
                     [currentPt.z]
                 ],
-                text: [null, null, null, null, [textLabel]]
+                text: [null, null, null, null, [textLabel]],
+                // AGREGA ESTA LÍNEA para el tamaño del texto del marcador rojo en movimiento:
+                'textfont.size': [null, null, null, null, [representationRef.current === 'numeros' ? 13 : 18]]
             }, [7, 8, 9, 10, 11]);
 
             layoutRef.current.sliders[0].active = targetDay - 1;
@@ -462,7 +465,11 @@ const Toro = () => {
                     updatedData[8] = { ...updatedData[8], x: segments.huitztlanpa.map(s => s.x), y: segments.huitztlanpa.map(s => s.y), z: segments.huitztlanpa.map(s => s.z) };
                     updatedData[9] = { ...updatedData[9], x: segments.cihuatlanpa.map(s => s.x), y: segments.cihuatlanpa.map(s => s.y), z: segments.cihuatlanpa.map(s => s.z) };
                     updatedData[10] = { ...updatedData[10], x: segments.mictlanpa.map(s => s.x), y: segments.mictlanpa.map(s => s.y), z: segments.mictlanpa.map(s => s.z) };
-                    updatedData[11] = { ...updatedData[11], x: [[currentPt.x]], y: [[currentPt.y]], z: [[currentPt.z]], text: [[textLabel]] };
+                    updatedData[11] = {
+                        ...updatedData[11], x: [[currentPt.x]], y: [[currentPt.y]], z: [[currentPt.z]], text: [[textLabel]],
+                        // AGREGA ESTA PROPIEDAD:
+                        textfont: { ...updatedData[11].textfont, size: representationRef.current === 'numeros' ? 13 : 18 }
+                    };
 
                     Plotly.react(el, updatedData, layoutRef.current);
                 }
@@ -544,7 +551,10 @@ const Toro = () => {
             textposition: 'top center',
             textfont: {
                 color: textColor,
-                size: 13,
+                //size: 11,
+                size: currentRepresentation === 'numeros'
+                    ? (['base', 'familia_q_1'].includes(cat_key) ? 13 : 13)
+                    : (['base', 'familia_q_1'].includes(cat_key) ? 18 : 18),
                 family: 'Arial, sans-serif'
             },
             hovertext: cat.hover,
@@ -557,8 +567,8 @@ const Toro = () => {
     // CORRECCIÓN: Garantizar que tengan arrays con el origen inicial estructurado desde el día 1
     // --- CONFIGURACIÓN DE TRAZA DE RECORRIDO MULTICOLOR ---
     // Carga inicial estática de las 4 trazas independientes de rumbo
-    const initialSegments = getRumboSegments(1);
-    const initialPt = toroData.trajectory[0];
+    const initialSegments = getRumboSegments(currentDayRef.current);
+    const initialPt = toroData.trajectory[currentDayRef.current - 1] || toroData.trajectory[0];
     const initialMeta = toroData.points[initialPt.n];
 
     const trailTraces = [
@@ -576,7 +586,7 @@ const Toro = () => {
         marker: { size: 10, color: '#EF4444', symbol: 'circle', line: { color: '#FFFFFF', width: 1.5 } },
         text: [currentRepresentation === 'numeros' ? `(${initialMeta.q},${initialMeta.r})` : `${initialMeta.numeral}-${initialMeta.symName}`],
         textposition: 'top center',
-        textfont: { color: '#022249ff', size: 13, family: 'Arial, sans-serif' },
+        textfont: { color: '#022249ff', size: 12, family: 'Arial, sans-serif' },
         name: 'Generador Activo',
         hoverinfo: 'skip'
     };
@@ -610,7 +620,7 @@ const Toro = () => {
                 const updatedLabel = mode === 'numeros' ? `(${currentMeta.q},${currentMeta.r})` : `${currentMeta.numeral}-${currentMeta.symName}`;
                 Plotly.restyle(plotDiv, {
                     text: [[updatedLabel]],
-                    'textfont.size': mode === 'numeros' ? 13 : 15
+                    'textfont.size': mode === 'numeros' ? 13 : 18
                 }, [11]);
             }
         }
