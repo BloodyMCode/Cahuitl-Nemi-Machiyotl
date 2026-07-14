@@ -1,6 +1,48 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getImagePath } from '../funtions/funtions';
 
+// 18 veintenas (20 días) + 1 Nemontemi (5 días) = 365 días en total
+const SEGDATOS_VEINTENAS = [
+    { id: 'Atlcahualo', dias: 20 },
+    { id: 'Tlacaxipehualiztli', dias: 20 },
+    { id: 'Tozoztontli', dias: 20 },
+    { id: 'Ueitozoztli', dias: 20 },
+    { id: 'Toxcatl', dias: 20 },
+    { id: 'Etzalcualiztli', dias: 20 },
+    { id: 'Tecuilhuitontli', dias: 20 },
+    { id: 'Ueitecuilhuitl', dias: 20 },
+    { id: 'Tlaxochimaco', dias: 20 },
+    { id: 'Xocotl Uetzi', dias: 20 },
+    { id: 'Ochpaniztli', dias: 20 },
+    { id: 'Teotlehco', dias: 20 },
+    { id: 'Tepeihuitl', dias: 20 },
+    { id: 'Quecholli', dias: 20 },
+    { id: 'Panquetzaliztli', dias: 20 },
+    { id: 'Atemoztli', dias: 20 },
+    { id: 'Tititl', dias: 20 },
+    { id: 'Izcalli', dias: 20 },
+    { id: 'Nemontemi', dias: 5 },
+];
+// Función matemática para describir los arcos de las máscaras interactivas
+const describirArcoInteractivo = (x, y, radioInt, radioExt, anguloInicio, anguloFin) => {
+    const gradRad = (g) => (g - 90) * Math.PI / 180.0;
+
+    const extInicio = { x: x + radioExt * Math.cos(gradRad(anguloInicio)), y: y + radioExt * Math.sin(gradRad(anguloInicio)) };
+    const extFin = { x: x + radioExt * Math.cos(gradRad(anguloFin)), y: y + radioExt * Math.sin(gradRad(anguloFin)) };
+
+    const intInicio = { x: x + radioInt * Math.cos(gradRad(anguloInicio)), y: y + radioInt * Math.sin(gradRad(anguloInicio)) };
+    const intFin = { x: x + radioInt * Math.cos(gradRad(anguloFin)), y: y + radioInt * Math.sin(gradRad(anguloFin)) };
+
+    const grande = (anguloFin - anguloInicio) <= 180 ? "0" : "1";
+
+    return [
+        "M", extInicio.x, extInicio.y,
+        "A", radioExt, radioExt, 0, grande, 1, extFin.x, extFin.y,
+        "L", intFin.x, intFin.y,
+        "A", radioInt, radioInt, 0, grande, 0, intInicio.x, intInicio.y,
+        "Z"
+    ].join(" ");
+};
 const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
     const [isSpinning, setIsSpinning] = useState(true);
 
@@ -63,6 +105,17 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
     const angle20 = tonalliDiaMeza ? 364.5 - (signoIndex * (360 / 20)) : 0;
     // Calibración final corregida: Base 304.1° (Ajustado para nueva posición (69,45) y Tonalli 12-Lagartija)
     //const angle20 = tonalliDiaMeza ? 304.1 - (signoIndex * (360 / 20)) : 0;
+
+    // --- CÁLCULO DE MÁSCARAS ---
+    const centroSVG = 500; // Coordenada central interna (Vectorial 1000x1000)
+
+    // Calibración inicial de ángulos (Ajusta este desfase en grados si los sectores no coinciden con las imágenes)
+    const desfasamientoVeintenas = 106.5;
+    const desfasamientoDias = 107;
+
+    let anguloAcumuladoVeintenas = desfasamientoVeintenas;
+
+
 
     return (
         <div ref={containerRef} className="calendar-visual-container mt-4 p-2 p-md-4 rounded-5" style={{
@@ -184,7 +237,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         background: 'radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%)',
                         zIndex: 1
                     }}></div>
-
+                    {/* ANILLO 1: Ciclo 365 (Imagen Exterior) */}
                     <div className={`ring ring-365 ${isSpinning ? 'spinning-right' : ''}`} style={{
                         position: 'absolute', width: '100%', height: '100%',
                         transform: isSpinning ? '' : `rotate(${angle365}deg)`,
@@ -192,7 +245,37 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         zIndex: 2
                     }}>
                         <img src={getImagePath('365-02.png')} alt="Ciclo 365" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        {/* Máscara SVG dedicada para el anillo 365 */}
+                        {/* Máscara Vectorial Encima */}
+                        <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 1000 1000" style={{ pointerEvents: 'none' }}>
+                            <g>
+                                {Array.from({ length: 365 }).map((_, index) => {
+                                    const diaNumero = index + 1;
+                                    const amplitudDia = 360 / 365;
+                                    const anguloInicio = desfasamientoDias + (index * amplitudDia);
+                                    const anguloFin = anguloInicio + amplitudDia;
+
+                                    // Borde exterior e interior adaptables al grosor de 365-02.png (valores ej. 500 y 450)
+                                    const pathData = describirArcoInteractivo(centroSVG, centroSVG, 460, 500, anguloInicio, anguloFin);
+                                    const esDiaActivo = !isSpinning && Number(ritualDay) === diaNumero;
+
+                                    return (
+                                        <path
+                                            key={`dia-${diaNumero}`}
+                                            d={pathData}
+                                            fill={esDiaActivo ? '#021d03ff' : 'transparent'}
+                                            opacity={esDiaActivo ? '0.9' : '0'}
+                                            style={{
+                                                mixBlendMode: 'multiply',
+                                                transition: 'opacity 0.3s ease, fill 0.3s ease'
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </g>
+                        </svg>
                     </div>
+                    {/* ANILLO 2: Veintenas (Imagen Interior) */}
                     {/* <div className={`ring ring-veintenas ${isSpinning ? 'spinning-right' : ''}`} style={{ */}
                     <div className={`ring ring-veintenas ${isSpinning ? 'spinning-left' : ''}`} style={{
                         position: 'absolute', width: '88%', height: '88%',
@@ -201,6 +284,36 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         zIndex: 3
                     }}>
                         <img src={getImagePath('veintenas-02.png')} alt="Veintenas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        {/* Máscara SVG dedicada para el anillo Veintenas */}
+                        {/* Máscara Vectorial Encima */}
+                        <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 1000 1000" style={{ pointerEvents: 'none' }}>
+                            <g>
+                                {SEGDATOS_VEINTENAS.map((seg) => {
+                                    const deltaAngulo = (seg.dias / 365) * 360;
+                                    const anguloInicio = anguloAcumuladoVeintenas;
+                                    const anguloFin = anguloAcumuladoVeintenas + deltaAngulo;
+                                    anguloAcumuladoVeintenas = anguloFin;
+
+                                    const pathData = describirArcoInteractivo(centroSVG, centroSVG, 455, 500, anguloInicio, anguloFin);
+
+                                    // Compara con el string exacto que viene del prop 'veintenaMeza'
+                                    const esVeintenaActiva = !isSpinning && veintenaMeza === seg.id;
+
+                                    return (
+                                        <path
+                                            key={`veintena-${seg.id}`}
+                                            d={pathData}
+                                            fill={esVeintenaActiva ? '#ffc801c2' : 'transparent'}
+                                            opacity={esVeintenaActiva ? '0.9' : '0'}
+                                            style={{
+                                                mixBlendMode: 'multiply',
+                                                transition: 'opacity 0.3s ease, fill 0.3s ease'
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </g>
+                        </svg>
                     </div>
 
                     {!isSpinning && (

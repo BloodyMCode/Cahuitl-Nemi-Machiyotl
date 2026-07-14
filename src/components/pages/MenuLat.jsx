@@ -24,9 +24,9 @@ const MenuLat = () => {
                     top: '12px',
                     left: '12px',
                     zIndex: 1100, // Por encima del menú desplegado
-                    backgroundColor: '#1E293B',
+                    backgroundColor: '#011b4aff',
                     color: '#F8FAFC',
-                    border: '1px solid #334155',
+                    border: '1px solid #011a4ac8',
                     borderRadius: '8px',
                     width: '42px',
                     height: '42px',
@@ -53,8 +53,8 @@ const MenuLat = () => {
                         position: 'absolute',
                         top: 0,
                         left: 0,
-                        width: '100vw',
-                        height: '100vh',
+                        width: '100%',
+                        height: '100%',
                         backgroundColor: 'rgba(15, 23, 42, 0.4)',
                         backdropFilter: 'blur(2px)',
                         zIndex: 999,
@@ -70,7 +70,7 @@ const MenuLat = () => {
                     left: 0,
                     width: '280px',
                     height: '100%',
-                    backgroundColor: '#0F172A', // Slate 900 muy oscuro
+                    backgroundColor: '#011b4aff', // Slate 900 muy oscuro
                     borderRight: '1px solid #1E293B',
                     padding: '76px 16px 20px 16px',
                     display: 'flex',
@@ -84,7 +84,7 @@ const MenuLat = () => {
                 }}
             >
                 <div style={{ marginBottom: '24px', paddingLeft: '8px' }}>
-                    <span style={{ fontSize: '10px', color: '#38BDF8', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Navegación Principal</span>
+                    <span style={{ fontSize: '10px', color: '#38BDF8', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Menú Principal</span>
                 </div>
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -100,20 +100,20 @@ const MenuLat = () => {
                                 textDecoration: 'none',
                                 fontSize: '14px',
                                 fontWeight: isActive(item.path) ? '700' : '500',
-                                color: isActive(item.path) ? '#38BDF8' : '#94A3B8',
-                                backgroundColor: isActive(item.path) ? '#1E293B' : 'transparent',
+                                color: isActive(item.path) ? '#38BDF8' : '#e3e7ecff',
+                                backgroundColor: isActive(item.path) ? '#29394fff' : 'transparent',
                                 borderLeft: isActive(item.path) ? '4px solid #38BDF8' : '4px solid transparent',
                                 transition: 'all 0.2s ease'
                             }}
                             onMouseEnter={(e) => {
                                 if (!isActive(item.path)) {
-                                    e.currentTarget.style.color = '#F8FAFC';
-                                    e.currentTarget.style.backgroundColor = '#1E293B';
+                                    e.currentTarget.style.color = '#f7f7f7ff';
+                                    e.currentTarget.style.backgroundColor = '#29394fff';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (!isActive(item.path)) {
-                                    e.currentTarget.style.color = '#94A3B8';
+                                    e.currentTarget.style.color = '#e3e7ecff';
                                     e.currentTarget.style.backgroundColor = 'transparent';
                                 }
                             }}

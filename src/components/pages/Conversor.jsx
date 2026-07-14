@@ -14,20 +14,26 @@ const Conversor = () => {
     const [xihuitlAnioMeza, setXihuitlAnioMeza] = useState(null)
     const [veintenaMeza, setVeintenaMeza] = useState(null)
     const [ritualDay, setRitualDay] = useState(null)
-    //Funcion para manejar el clic en el boton
-    const handleConvert = () => {
-        if (!selectedDate) return
-        // Combinar fecha y hora, para Caso(si no hay hora, se usa 00:00)
-        const timeCaso = selectedTime ? selectedTime : '00:00'
-        const date = new Date(`${selectedDate}T${timeCaso}`)
-        // Fecha y hora Meza, se ocupan de manera separada para la funcion convertirTonalliMeza
-        const timeMeza = selectedTime
+    const [hasPrevious, setHasPrevious] = useState(() => {
+        try {
+            return typeof window !== 'undefined' && !!localStorage.getItem('lastConversionQuery')
+        } catch (e) {
+            return false
+        }
+    })
 
-        const tonalliResult = convertirTonalli(date)//llamada de funcion
-        const xihuitlResult = convertirXihuitl(date)//llamada de funcion
-        const tonalliResultMeza = convertirTonalliMeza(selectedDate, timeMeza)//llamada de funcion
-        const xihuitlResultMeza = convertirXihuitlMeza(selectedDate, timeMeza)//llamada de funcion
-        const veintenaResultMeza = cempohualliMeza(selectedDate, timeMeza)//llamada de funcion
+    // Funcion interna para ejecutar la conversion
+    const runConversion = (dateStr, timeStr) => {
+        // Combinar fecha y hora, para Caso(si no hay hora, se usa 00:00)
+        const timeCaso = timeStr ? timeStr : '00:00'
+        const dateObj = new Date(`${dateStr}T${timeCaso}`)
+
+        const tonalliResult = convertirTonalli(dateObj)//llamada de funcion
+        const xihuitlResult = convertirXihuitl(dateObj)//llamada de funcion
+        const tonalliResultMeza = convertirTonalliMeza(dateStr, timeStr)//llamada de funcion
+        const xihuitlResultMeza = convertirXihuitlMeza(dateStr, timeStr)//llamada de funcion
+        const veintenaResultMeza = cempohualliMeza(dateStr, timeStr)//llamada de funcion
+
         //Actualizar el estado
         setTonalliDia(tonalliResult)
         setXihuitlAnio(xihuitlResult)
@@ -35,11 +41,43 @@ const Conversor = () => {
         setXihuitlAnioMeza(xihuitlResultMeza)
         setVeintenaMeza(veintenaResultMeza)
 
-        const ritualData = obtenerDiaRitual(selectedDate, timeMeza)
+        const ritualData = obtenerDiaRitual(dateStr, timeStr)
         if (ritualData) {
             setRitualDay(((ritualData.day - 1) % 365) + 1)
+        } else {
+            setRitualDay(null)
         }
     }
+
+    //Funcion para manejar el clic en el boton Mostrar conversión
+    const handleConvert = () => {
+        if (!selectedDate) return
+        runConversion(selectedDate, selectedTime)
+
+        // Guardar la consulta en localStorage
+        try {
+            localStorage.setItem('lastConversionQuery', JSON.stringify({ date: selectedDate, time: selectedTime }))
+            setHasPrevious(true)
+        } catch (e) {
+            console.error("Error al guardar en localStorage", e)
+        }
+    }
+
+    // Funcion para manejar el clic en el boton Consulta anterior
+    const handleLoadPrevious = () => {
+        try {
+            const saved = localStorage.getItem('lastConversionQuery')
+            if (saved) {
+                const { date, time } = JSON.parse(saved)
+                setSelectedDate(date)
+                setSelectedTime(time || '')
+                runConversion(date, time || '')
+            }
+        } catch (e) {
+            console.error("Error al cargar la consulta de localStorage", e)
+        }
+    }
+
     return (
         <>
             <div className="container text-center">
@@ -54,22 +92,23 @@ const Conversor = () => {
                                 {/* <h5 className="card-title">Calendario</h5> */}
                                 <div className="row">
                                     <div className="col-md-7 mb-3">
-                                        <label className="form-label text-start d-block">Fecha:</label>
+                                        <label className="form-label text-start d-block" htmlFor="input-fecha">Fecha:</label>
                                         <div className="input-group">
                                             <span className="input-group-text"><i className="bi bi-calendar-event"></i></span>
-                                            <input type="date" className="form-control" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ colorScheme: 'dark' }} />
+                                            <input id="input-fecha" type="date" className="form-control" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ colorScheme: 'dark' }} />
                                         </div>
                                     </div>
                                     <div className="col-md-5 mb-3">
-                                        <label className="form-label text-start d-block">Hora (opcional):</label>
+                                        <label className="form-label text-start d-block" htmlFor="input-hora">Hora (opcional):</label>
                                         <div className="input-group">
                                             <span className="input-group-text"><i className="bi bi-clock"></i></span>
-                                            <input type="time" className="form-control" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} style={{ colorScheme: 'dark' }} />
+                                            <input id="input-hora" type="time" className="form-control" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} style={{ colorScheme: 'dark' }} />
                                         </div>
                                     </div>
                                 </div>
                                 <br />
-                                <button type="button" className="btn btn-secondary" onClick={handleConvert} disabled={!selectedDate}>Mostrar conversión</button>
+                                <button id="btn-mostrar-conversion" type="button" className="btn btn-secondary me-2" onClick={handleConvert} disabled={!selectedDate}>Mostrar conversión</button>
+                                <button id="btn-consulta-anterior" type="button" className="btn btn-outline-info" onClick={handleLoadPrevious} disabled={!hasPrevious}>Consulta anterior</button>
                                 <CalendarioGiratorio
                                     tonalliDiaMeza={tonalliDiaMeza}
                                     veintenaMeza={veintenaMeza}
