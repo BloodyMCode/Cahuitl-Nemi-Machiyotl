@@ -157,7 +157,7 @@ const Tablero = () => {
   return (
     <>
       <div className="container text-center">
-        <h1 className="text-center mb-4">Tablero de Imágenes</h1>
+        <h1 className="text-center mb-4">Tablero de Glifos</h1>
         <div className="row justify-content-center mb-4">
           <h5 className="text-center mb-4">Categorias</h5>
           <div className={`col-md-2 p-2 rounded ${selectedCategories.animales ? 'cell-animales' : ''}`} style={{ transition: 'all 0.3s ease' }}>

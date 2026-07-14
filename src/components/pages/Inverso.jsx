@@ -427,58 +427,22 @@ const Inverso = () => {
                     </div>
                 )}
 
-                {resultsCasoDesc.length > 0 && (
-                    <div className="card shadow-sm mb-4">
-                        <div className="card-header text-white" style={{ backgroundColor: '#1e3a8a' }}>
-                            <h5 className="mb-0">Resultados Tonalli desde Caso: {numero} - {simbolo} ({resultsCasoDesc.length} coincidencias)</h5>
-                        </div>
-                        <div className="table-responsive">
-                            <table className="table table-hover mb-0">
-                                <thead className="table-dark">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Fecha</th>
-                                        <th>Calendario</th>
-                                        <th>Tonalli (Caso)</th>
-                                        <th>Xihuitl (Caso)</th>
-                                        <th>Tonalli (Meza)</th>
-                                        <th>Xihuitl (Meza)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {resultsCasoDesc.map((result, index) => (
-                                        <tr key={index}>
-                                            <td>{index + 1}</td>
-                                            <td>{formatDate(result.date)}</td>
-                                            <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
-                                            <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
-                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
-                                            <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
-                                            <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
                 {resultsMezaDesc.length > 0 && (
                     <div className="card shadow-sm mb-4">
                         <div className="card-header text-white" style={{ backgroundColor: '#14532d' }}>
                             <h5 className="mb-0">Resultados Tonalli desde Meza: {numero} - {simbolo} ({resultsMezaDesc.length} coincidencias)</h5>
                         </div>
-                        <div className="table-responsive">
-                            <table className="table table-hover mb-0">
+                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="table table-bordered  table-hover mb-0">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th>#</th>
-                                        <th>Fecha</th>
-                                        <th>Calendario</th>
-                                        <th>Tonalli (Meza)</th>
-                                        <th>Xihuitl (Meza)</th>
-                                        <th>Tonalli (Caso)</th>
-                                        <th>Xihuitl (Caso)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>#</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Fecha</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Meza)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Caso)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -491,6 +455,41 @@ const Inverso = () => {
                                             <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                             <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
                                             <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+                {resultsCasoDesc.length > 0 && (
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-header text-white" style={{ backgroundColor: '#1e3a8a' }}>
+                            <h5 className="mb-0">Resultados Tonalli desde Caso: {numero} - {simbolo} ({resultsCasoDesc.length} coincidencias)</h5>
+                        </div>
+                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="table table-bordered table-hover mb-0">
+                                <thead className="table-dark">
+                                    <tr>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>#</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Fecha</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Caso)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Meza)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {resultsCasoDesc.map((result, index) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{formatDate(result.date)}</td>
+                                            <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                            <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
+                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
+                                            <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
+                                            <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -562,17 +561,17 @@ const Inverso = () => {
                                 Resultados Tonalli y Xihuitl: {numero} - {simbolo} / {numeroX} - {simboloX} ({ambosResults.length} coincidencias)
                             </h5>
                         </div>
-                        <div className="table-responsive">
-                            <table className="table table-hover mb-0">
+                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="table table-bordered table-hover mb-0">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th>#</th>
-                                        <th>Fecha</th>
-                                        <th>Calendario</th>
-                                        <th>Tonalli (Caso)</th>
-                                        <th>Xihuitl (Caso)</th>
-                                        <th>Tonalli (Meza)</th>
-                                        <th>Xihuitl (Meza)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>#</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Fecha</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Meza)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Caso)</th>
+                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -581,10 +580,10 @@ const Inverso = () => {
                                             <td>{index + 1}</td>
                                             <td>{formatDate(result.date)}</td>
                                             <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
-                                            <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
-                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                             <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
                                             <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
+                                            <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
+                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -606,14 +605,14 @@ const Inverso = () => {
                             <h5 className="mb-0">Resultado Año civil: {civilResults[0].year}</h5>
                         </div>
                         <div className="table-responsive">
-                            <table className="table table-hover mb-0">
+                            <table className="table table-bordered table-hover mb-0">
                                 <thead className="table-dark">
                                     <tr>
                                         <th>#</th>
                                         <th>Año</th>
                                         <th>Calendario</th>
-                                        <th>Xihuitl (Caso)</th>
                                         <th>Xihuitl (Meza)</th>
+                                        <th>Xihuitl (Caso)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -623,8 +622,8 @@ const Inverso = () => {
                                                 <td>{index + 1}</td>
                                                 <td>{result.year}</td>
                                                 <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
-                                                <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                                 <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
+                                                <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                             </tr>
                                             {result.xihuitlMezaStartTime && (
                                                 <tr>

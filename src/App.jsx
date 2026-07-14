@@ -20,6 +20,7 @@ function AppContent() {
   // 1. Creamos un componente interno para poder usar el hook useLocation
   const location = useLocation();
   const esPaginaToro = location.pathname === '/toro';
+
   // Render de la barra de imagen decorativa
   const BarraDecorativa = (
     <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center' }}>
@@ -28,6 +29,7 @@ function AppContent() {
       <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'center'/* , marginLeft: '15px'  */ }} />
     </div>
   );
+
   return (
     <>
       {/* SI NO es la página de Toro, la barra decorativa aparece ARRIBA */}
@@ -35,17 +37,33 @@ function AppContent() {
 
       {/* SI NO es la página de Toro, se muestra el menú superior normal */}
       {!esPaginaToro && <Menu />}
-      {/* Contenedor principal de las vistas */}
+
+      {/* Contenedor principal de las vistas (páginas normales) */}
       <div className={esPaginaToro ? "layout-toro-container" : ""}>
         <Routes>
           <Route path='/' element={<Inicio />} />
           <Route path="/conversor" element={<Conversor />} />
           <Route path="/inverso" element={<Inverso />} />
           <Route path="/tablero" element={<Tablero />} />
-          <Route path="/toro" element={<Toro />} />
+          {/* La ruta /toro ahora usa el Toro pre-montado de abajo (display: none/block) */}
+          <Route path="/toro" element={null} />
           <Route path="/calculadora" element={<Calculadora />} />
         </Routes>
       </div>
+
+      {/*
+        OPTIMIZACIÓN DE RENDIMIENTO: Toro se mantiene SIEMPRE MONTADO.
+        Plotly inicializa el contexto WebGL en segundo plano al cargar la app,
+        así cuando el usuario navega a /toro, la visualización es INMEDIATA.
+        Se usa display:none / display:block para mostrarlo/ocultarlo sin desmontarlo.
+      */}
+      <div
+        className="layout-toro-container"
+        style={{ display: esPaginaToro ? 'block' : 'none' }}
+      >
+        <Toro />
+      </div>
+
       {/* SI SÍ es la página de Toro, la barra decorativa aparece ABAJO */}
       {esPaginaToro && BarraDecorativa}
       <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
@@ -53,7 +71,6 @@ function AppContent() {
       </footer>
     </>
   )
-
 }
 
 function App() {
@@ -65,111 +82,6 @@ function App() {
       <Router>
         <AppContent />
       </Router>
-      {/* <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section> */}
     </>
   )
 }
