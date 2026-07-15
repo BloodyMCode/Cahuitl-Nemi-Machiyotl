@@ -70,7 +70,7 @@ const MenuLat = () => {
                     left: 0,
                     width: '280px',
                     height: '100%',
-                    backgroundColor: '#011b4aff', // Slate 900 muy oscuro
+                    backgroundColor: '#00205bc8', // Slate 900 muy oscuro
                     borderRight: '1px solid #1E293B',
                     padding: '76px 16px 20px 16px',
                     display: 'flex',

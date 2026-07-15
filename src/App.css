@@ -48,7 +48,7 @@
 
 /* PURPLE NAVBAR & MODERN THEME */
 .navbar-purple {
-  background: linear-gradient(135deg, #002559f5, #011a4ac8) !important;
+  background: linear-gradient(135deg, #00347cf5, #00205bc8) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
 }
