@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getImagePath } from '../funtions/funtions';
+import { useTheme } from '../../context/ThemeContext';
 
 // 18 veintenas (20 días) + 1 Nemontemi (5 días) = 365 días en total
 const SEGDATOS_VEINTENAS = [
@@ -45,6 +46,9 @@ const describirArcoInteractivo = (x, y, radioInt, radioExt, anguloInicio, angulo
 };
 const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
     const [isSpinning, setIsSpinning] = useState(true);
+
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     useEffect(() => {
         if (tonalliDiaMeza && veintenaMeza && ritualDay) {
@@ -119,9 +123,9 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
 
     return (
         <div ref={containerRef} className="calendar-visual-container mt-4 p-2 p-md-4 rounded-5" style={{
-            background: 'linear-gradient(145deg, #0f0f1a 0%, #1a1a2e 100%)',
-            boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.7)',
-            border: '2px solid rgba(255, 255, 255, 0.05)',
+            background: isDark ? '#1E293B' : '#FFFFFF',
+            boxShadow: isDark ? '#1E293B' : '#FFFFFF',
+            border: isDark ? '1px solid #334155' : '1px solid #E2E8F0',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -177,8 +181,8 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         {!isSpinning && tonalliDiaMeza && (
                             <div className="gear-center" style={{
                                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                                width: '80px', height: '80px', backgroundColor: 'rgba(0,0,0,0.7)',
-                                borderRadius: '50%', border: '1px solid rgba(255,215,0,0.5)',
+                                width: '80px', height: '80px', backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+                                borderRadius: '50%', border: isDark ? '1px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,215,0,0.5)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10
                             }}>
                                 <img src={tonalliDiaMeza.signTonalImage} alt="Sign" style={{ width: '85%' }} />
@@ -212,8 +216,8 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         {!isSpinning && tonalliDiaMeza && (
                             <div className="gear-center" style={{
                                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                                width: '65px', height: '65px', backgroundColor: 'rgba(0,0,0,0.7)',
-                                borderRadius: '50%', border: '1px solid rgba(255,215,0,0.5)',
+                                width: '65px', height: '65px', backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+                                borderRadius: '50%', border: isDark ? '1px solid rgba(255,215,0,0.5)' : '1px solid rgba(255,215,0,0.5)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10
                             }}>
                                 <img src={tonalliDiaMeza.numberTonalImage} alt="Num" style={{ width: '85%' }} />
@@ -263,10 +267,11 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                                         <path
                                             key={`dia-${diaNumero}`}
                                             d={pathData}
-                                            fill={esDiaActivo ? '#021d03ff' : 'transparent'}
-                                            opacity={esDiaActivo ? '0.9' : '0'}
+                                            fill={esDiaActivo ? '#ebcc05de' : 'transparent'}
+                                            //fill={esDiaActivo ? '#02161dff' : 'transparent'}
+                                            opacity={esDiaActivo ? '1' : '0'}
                                             style={{
-                                                mixBlendMode: 'multiply',
+                                                mixBlendMode: 'hard-light',
                                                 transition: 'opacity 0.3s ease, fill 0.3s ease'
                                             }}
                                         />
@@ -304,6 +309,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                                             key={`veintena-${seg.id}`}
                                             d={pathData}
                                             fill={esVeintenaActiva ? '#ffc801c2' : 'transparent'}
+                                            //fill={esVeintenaActiva ? isDark ? '#ffc801c2' : '#ffc801c2' : 'transparent'}
                                             opacity={esVeintenaActiva ? '0.9' : '0'}
                                             style={{
                                                 mixBlendMode: 'multiply',
@@ -334,9 +340,9 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(255, 215, 0, 0.3)', boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
                     }}>
-                        <span style={{ color: '#fff', marginLeft: '15px', opacity: 0.8 }}>Veintena: </span>
+                        <span style={{ color: isDark ? '#F8FAFC' : '#0F172A', marginLeft: '15px', opacity: 0.8 }}>Veintena: </span>
                         <span style={{ color: 'gold', fontWeight: 'bold', fontSize: '1.2rem' }}>{veintenaMeza}</span>
-                        <span style={{ color: '#fff', marginLeft: '15px', opacity: 0.8 }}>Día {ritualDay} de 365</span>
+                        <span style={{ color: isDark ? '#F8FAFC' : '#0F172A', marginLeft: '15px', opacity: 0.8 }}>Día {ritualDay} de 365</span>
                     </div>
                 ) : (
                     <div className="spinning-status" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontSize: '0.9rem' }}>

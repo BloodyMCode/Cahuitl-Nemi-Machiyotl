@@ -192,14 +192,21 @@ code {
 }
  */
 
-/* GLOBAL DARK THEME OVERRIDES FOR BOOTSTRAP */
-body {
+/* GLOBAL THEMES FOR BOOTSTRAP */
+
+/* Estilos de transición suaves para cambios de tema */
+body, .card, .card-header, .card-body, .card-footer, table, td, th, .form-control, .form-select, .input-group-text {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* --- TEMA OSCURO (Por defecto y cuando está activo) --- */
+body, body.dark-theme {
   background-color: #121212 !important;
   color: #e2e8f0 !important;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.card {
+body.dark-theme .card {
   background-color: #1e293b !important;
   border: 1px solid #334155 !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
@@ -208,108 +215,270 @@ body {
   overflow: hidden;
 }
 
-.card-header {
+body.dark-theme .card-header {
   background-color: #0f172a !important;
   border-bottom: 1px solid #334155 !important;
   font-weight: bold;
 }
 
-.card-body,
-.card-footer {
+body.dark-theme .card-body,
+body.dark-theme .card-footer {
   background-color: #1e293b !important;
   color: #f8fafc !important;
 }
 
-table {
+body.dark-theme table {
   color: #e2e8f0 !important;
 }
 
-.table {
+body.dark-theme .table {
   --bs-table-bg: transparent !important;
   --bs-table-color: #e2e8f0 !important;
   --bs-table-border-color: #334155 !important;
 }
 
-.table td,
-.table th {
+body.dark-theme .table td,
+body.dark-theme .table th {
   border-color: #334155 !important;
   background-color: #1e293b !important;
   color: #e2e8f0 !important;
 }
 
-.form-control,
-.form-select {
+body.dark-theme .form-control,
+body.dark-theme .form-select {
   background-color: #334155 !important;
   border: 1px solid #475569 !important;
   color: #f8fafc !important;
 }
 
-.form-control:focus,
-.form-select:focus {
+body.dark-theme .form-control:focus,
+body.dark-theme .form-select:focus {
   background-color: #1e293b !important;
   border-color: #9333ea !important;
   box-shadow: 0 0 0 0.25rem rgba(147, 51, 234, 0.25) !important;
   color: #f8fafc !important;
 }
 
-.form-check-input {
+body.dark-theme .form-check-input {
   background-color: #334155 !important;
   border-color: #475569 !important;
 }
 
-.form-check-input:checked {
+body.dark-theme .form-check-input:checked {
   background-color: #7e22ce !important;
   border-color: #9333ea !important;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6 {
   color: #f1f5f9 !important;
 }
 
-/* SOFT DARK THEME COLORS FOR TABLERO */
-.cell-animales,
-.table td.cell-animales {
-  background-color: rgba(34, 197, 94, 0.35) !important;
-  border: 1px solid rgba(34, 197, 94, 0.6) !important;
-}
-
-.cell-naturales,
-.table td.cell-naturales {
-  background-color: rgba(234, 179, 8, 0.35) !important;
-  border: 1px solid rgba(234, 179, 8, 0.6) !important;
-}
-
-.cell-cosas,
-.table td.cell-cosas {
-  background-color: rgba(6, 182, 212, 0.35) !important;
-  border: 1px solid rgba(6, 182, 212, 0.6) !important;
-}
-
-.cell-abstractos,
-.table td.cell-abstractos {
-  background-color: rgba(168, 85, 247, 0.35) !important;
-  border: 1px solid rgba(168, 85, 247, 0.6) !important;
-}
-
-.cell-vegetales,
-.table td.cell-vegetales {
-  background-color: rgba(59, 130, 246, 0.35) !important;
-  border: 1px solid rgba(59, 130, 246, 0.6) !important;
-}
-
-.input-group-text {
+body.dark-theme .input-group-text {
   background-color: #475569 !important;
   border-color: #475569 !important;
   color: #f8fafc !important;
 }
 
 /* Column containing digit '1' starting the trecena gets a darker background */
-.bg-column-one,
-.table td.bg-column-one {
+body.dark-theme .bg-column-one,
+body.dark-theme .table td.bg-column-one {
   background-color: #0b0f19 !important;
 }
+
+/* --- TEMA CLARO --- */
+body.light-theme {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body.light-theme .card {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03) !important;
+  color: #0f172a !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+body.light-theme .card-header {
+  background-color: #f1f5f9 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  font-weight: bold;
+}
+
+body.light-theme .card-body,
+body.light-theme .card-footer {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body.light-theme table {
+  color: #1e293b !important;
+}
+
+body.light-theme .table {
+  --bs-table-bg: transparent !important;
+  --bs-table-color: #1e293b !important;
+  --bs-table-border-color: #e2e8f0 !important;
+}
+
+body.light-theme .table td,
+body.light-theme .table th {
+  border-color: #e2e8f0 !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+body.light-theme .form-control,
+body.light-theme .form-select {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .form-control:focus,
+body.light-theme .form-select:focus {
+  background-color: #ffffff !important;
+  border-color: #9333ea !important;
+  box-shadow: 0 0 0 0.25rem rgba(147, 51, 234, 0.25) !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .form-check-input {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-theme .form-check-input:checked {
+  background-color: #7e22ce !important;
+  border-color: #9333ea !important;
+}
+
+body.light-theme h1,
+body.light-theme h2,
+body.light-theme h3,
+body.light-theme h4,
+body.light-theme h5,
+body.light-theme h6 {
+  color: #0f172a !important;
+}
+
+body.light-theme .input-group-text {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+/* Column containing digit '1' starting the trecena gets a lighter background */
+body.light-theme .bg-column-one,
+body.light-theme .table td.bg-column-one {
+  background-color: #f1f5f9 !important;
+}
+
+/* --- CLASES DE UTILIDAD GENERAL PARA TEMAS --- */
+.text-theme-muted {
+  transition: color 0.3s ease;
+}
+body.dark-theme .text-theme-muted {
+  color: #94a3b8 !important;
+}
+body.light-theme .text-theme-muted {
+  color: #475569 !important;
+}
+
+/* Controlar color-scheme nativo de entradas */
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+  color-scheme: dark !important;
+}
+body.light-theme input,
+body.light-theme select,
+body.light-theme textarea {
+  color-scheme: light !important;
+}
+
+/* --- COLORES SUAVES DE DESTACADO EN EL TABLERO (CON TRANSICIÓN) --- */
+
+/* Animales (Verde) */
+body.dark-theme .table td.cell-animales,
+body.dark-theme .cell-animales,
+.cell-animales {
+  background-color: rgba(34, 197, 94, 0.35) !important;
+  border: 1px solid rgba(34, 197, 94, 0.6) !important;
+  color: #ffffff !important;
+}
+body.light-theme .table td.cell-animales,
+body.light-theme .cell-animales {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  color: #166534 !important;
+}
+
+/* Naturales (Amarillo/Dorado) */
+body.dark-theme .table td.cell-naturales,
+body.dark-theme .cell-naturales,
+.cell-naturales {
+  background-color: rgba(234, 179, 8, 0.35) !important;
+  border: 1px solid rgba(234, 179, 8, 0.6) !important;
+  color: #ffffff !important;
+}
+body.light-theme .table td.cell-naturales,
+body.light-theme .cell-naturales {
+  background-color: rgba(234, 179, 8, 0.15) !important;
+  border: 1px solid rgba(234, 179, 8, 0.4) !important;
+  color: #854d0e !important;
+}
+
+/* Objetos / Cosas (Cian/Azul Claro) */
+body.dark-theme .table td.cell-cosas,
+body.dark-theme .cell-cosas,
+.cell-cosas {
+  background-color: rgba(6, 182, 212, 0.35) !important;
+  border: 1px solid rgba(6, 182, 212, 0.6) !important;
+  color: #ffffff !important;
+}
+body.light-theme .table td.cell-cosas,
+body.light-theme .cell-cosas {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+  border: 1px solid rgba(6, 182, 212, 0.4) !important;
+  color: #075985 !important;
+}
+
+/* Abstractos (Morado) */
+body.dark-theme .table td.cell-abstractos,
+body.dark-theme .cell-abstractos,
+.cell-abstractos {
+  background-color: rgba(168, 85, 247, 0.35) !important;
+  border: 1px solid rgba(168, 85, 247, 0.6) !important;
+  color: #ffffff !important;
+}
+body.light-theme .table td.cell-abstractos,
+body.light-theme .cell-abstractos {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  color: #6b21a8 !important;
+}
+
+/* Vegetales (Azul) */
+body.dark-theme .table td.cell-vegetales,
+body.dark-theme .cell-vegetales,
+.cell-vegetales {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+  border: 1px solid rgba(59, 130, 246, 0.6) !important;
+  color: #ffffff !important;
+}
+body.light-theme .table td.cell-vegetales,
+body.light-theme .cell-vegetales {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  color: #1e40af !important;
+}
+

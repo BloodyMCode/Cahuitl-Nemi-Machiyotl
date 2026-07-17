@@ -135,15 +135,15 @@ const Tablero = () => {
     if (isFeatured) {
       switch (cell.category) {
         case 'animales':
-          return 'cell-animales text-white'
+          return 'cell-animales'
         case 'naturales':
-          return 'cell-naturales text-white'
+          return 'cell-naturales'
         case 'cosas':
-          return 'cell-cosas text-white'
+          return 'cell-cosas'
         case 'abstractos':
-          return 'cell-abstractos text-white'
+          return 'cell-abstractos'
         case 'vegetales':
-          return 'cell-vegetales text-white'
+          return 'cell-vegetales'
         default:
           return ''
       }

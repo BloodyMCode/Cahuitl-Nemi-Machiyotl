@@ -15,15 +15,18 @@ import Tablero from './components/pages/Tablero'
 import Toro from './components/pages/Toro'
 import Calculadora from './components/pages/Calculadora'
 import { getImagePath } from './components/funtions/funtions'
+import { ThemeProvider, useTheme } from './context/ThemeContext'
+
 
 function AppContent() {
   // 1. Creamos un componente interno para poder usar el hook useLocation
   const location = useLocation();
   const esPaginaToro = location.pathname === '/toro';
+  const { theme } = useTheme();
 
   // Render de la barra de imagen decorativa
   const BarraDecorativa = (
-    <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: '#121212', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', width: '100%', margin: 0, padding: '5px 0', backgroundColor: theme === 'dark' ? '#121212' : '#ffffff', alignItems: 'center', justifyContent: 'center', transition: 'background-color 0.3s ease' }}>
       {/* <img src={new URL('./components/images/logo-tlacua.png', import.meta.url).href} alt="Logo TLACUATZIN" style={{ width: '100%', maxWidth: '120px', minWidth: '30px', height: 'auto', objectFit: 'contain', objectPosition: 'right' }} /> */}
       {/* <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'left'/* , marginLeft: '15px'  * /> */}
       <img src={getImagePath('prueba2.png')} alt="Barra decorativa" style={{ width: '100%', maxWidth: '2000px', minWidth: '100px', height: 'auto', objectFit: 'contain', objectPosition: 'center'/* , marginLeft: '15px'  */ }} />
@@ -66,7 +69,7 @@ function AppContent() {
 
       {/* SI SÍ es la página de Toro, la barra decorativa aparece ABAJO */}
       {esPaginaToro && BarraDecorativa}
-      <footer className="text-center mt-5 p-4" style={{ borderTop: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
+      <footer className="text-center mt-5 p-4" style={{ borderTop: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0', color: theme === 'dark' ? '#94a3b8' : '#475569', fontSize: '0.9rem', transition: 'all 0.3s ease' }}>
         <p className="mb-0">Creditos. © 2026 TLACUATZIN CODEX LAB Investigación Transdisciplinaria de la Matemática en los Códices Prehispánicos de México. Todos los derechos reservados.</p>
       </footer>
     </>
@@ -79,11 +82,14 @@ function App() {
 
   return (
     <>
-      <Router>
-        <AppContent />
-      </Router>
+      <ThemeProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </ThemeProvider>
     </>
   )
 }
+
 
 export default App

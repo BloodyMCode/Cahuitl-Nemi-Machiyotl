@@ -123,7 +123,7 @@ const Conversor = () => {
             {tonalliDia && tonalliDiaMeza && xihuitlAnio && xihuitlAnioMeza && (
                 <div className="container text-center">
                     <div className="row justify-content-center">
-                        <p className="text-white">* Correspondencia de Meza</p>
+                        <p className="text-theme-muted">* Correspondencia de Meza</p>
                         <div className="col-md-6">
                             <div className="card" >
                                 <p><img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="card-img-top img-com" /> <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="card-img-top img-com" /></p>
@@ -133,13 +133,13 @@ const Conversor = () => {
                                 </div> */}
                                 <div className="card-body">
                                     <h5 className="card-title">Tonalli</h5>
-                                    <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Meza</small>
+                                    <small className="text-secondary" style={{ fontSize: '11px' }}>* Según la correspondencia de Meza</small>
                                     <p className="card-text text-subtitle">Día:</p>
                                     {/* <p className="card-text text-white small">Hora considerada: {tonalliDiaMeza.usedTime}</p> */}
                                     {/* <p className="card-text">{tonalliDia.numero.español} - {tonalliDia.simbolo.español}</p>
                                     <p className="card-text">{tonalliDia.numero.nahuatl} - {tonalliDia.simbolo.nahuatl}</p>
                                     <p className='card-text'>{tonalliDia.numero.nusavi} - {tonalliDia.simbolo.nusavi}</p> */}
-                                    <table className="table table-dark table-hover">
+                                    <table className="table table-hover">
                                         <thead>
                                             <tr>
                                                 <th scope="col">Idioma</th>
@@ -179,7 +179,7 @@ const Conversor = () => {
                                     <h5 className="card-title">Xihuitl</h5>
                                     <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Meza</small>
                                     <p className="card-text text-subtitle">Año:</p>
-                                    <table className="table table-dark table-hover">
+                                    <table className="table table-hover">
                                         <thead>
                                             <tr>
                                                 <th scope="col">Idioma</th>
@@ -213,8 +213,8 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
-                        <small className="text-secondary" style={{ fontSize: '13px', color: '#adb5bd' }}>* Correspondencia de Meza basado en la fecha de referencia: día 1-Cipactli, año 1-Tochtli (12 de marzo de 2026)</small><br /><br />
-                        <p className="text-white">* Correspondencia de Caso</p>
+                        <small className="text-secondary" style={{ fontSize: '13px' }}>* Correspondencia de Meza basado en la fecha de referencia: día 1-Cipactli, año 1-Tochtli (12 de marzo de 2026)</small><br /><br />
+                        <p className="text-theme-muted">* Correspondencia de Caso</p>
                         <div className="col-md-6">
                             <div className="card" >
                                 <p><img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="card-img-top img-com" /> <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="card-img-top img-com" /></p>
@@ -224,13 +224,13 @@ const Conversor = () => {
                                 </div> */}
                                 <div className="card-body">
                                     <h5 className="card-title">Tonalli</h5>
-                                    <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Caso</small>
+                                    <small className="text-secondary" style={{ fontSize: '11px' }}>* Según la correspondencia de Caso</small>
                                     <p className="card-text text-subtitle">Día:</p>
                                     {/*  <p className="card-text text-white small">Hora considerada: {tonalliDia.usedTime}</p> */}
                                     {/* <p className="card-text">{tonalliDia.numero.español} - {tonalliDia.simbolo.español}</p>
                                     <p className="card-text">{tonalliDia.numero.nahuatl} - {tonalliDia.simbolo.nahuatl}</p>
                                     <p className='card-text'>{tonalliDia.numero.nusavi} - {tonalliDia.simbolo.nusavi}</p> */}
-                                    <table className="table table-dark table-hover">
+                                    <table className="table table-hover">
                                         <thead>
                                             <tr>
                                                 <th scope="col">Idioma</th>
@@ -276,7 +276,7 @@ const Conversor = () => {
                                     {/* <p className="card-text">{xihuitlAnio.numeroX.español} - {xihuitlAnio.simboloX.español}</p>
                                     <p className="card-text">{xihuitlAnio.numeroX.nahuatl} - {xihuitlAnio.simboloX.nahuatl}</p>
                                     <p className='card-text'>{xihuitlAnio.numeroX.nusavi} - {xihuitlAnio.simboloX.nusavi}</p> */}
-                                    <table className="table table-dark table-hover">
+                                    <table className="table table-hover">
                                         <thead>
                                             <tr>
                                                 <th scope="col">Idioma</th>
@@ -305,7 +305,7 @@ const Conversor = () => {
                                 </div>
                             </div>
                         </div>
-                        <small className="text-secondary" style={{ fontSize: '13px', color: '#adb5bd' }}>* Correspondencia de Caso basado en la fecha de referencia: día 1-Coatl, año 3-Calli (13 de agosto de 1521)</small>
+                        <small className="text-secondary" style={{ fontSize: '13px' }}>* Correspondencia de Caso basado en la fecha de referencia: día 1-Coatl, año 3-Calli (13 de agosto de 1521)</small>
                     </div>
                 </div>
             )}
