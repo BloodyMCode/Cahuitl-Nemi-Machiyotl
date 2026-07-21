@@ -1,20 +1,32 @@
-.img-com{
+.img-com {
     width: 40%;
     height: 40%;
 }
-.text-subtitle{
+
+.text-subtitle {
     font-size: large;
     font-weight: bold;
 }
+
 /* Estilos para los engranajes */
 @keyframes spin-right {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes spin-left {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
 }
 
 .spinning-right {
@@ -30,7 +42,6 @@
 }
 
 .gear.spinning-left {
-    animation-duration: 20s; /* Relación perfecta 13/20 para evitar desfasamiento a largo plazo */
+    animation-duration: 20s;
+    /* Relación perfecta 13/20 para evitar desfasamiento a largo plazo */
 }
-
-

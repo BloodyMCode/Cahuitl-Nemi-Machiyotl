@@ -438,9 +438,9 @@ const Inverso = () => {
                                     <tr>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>#</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Fecha</th>
-                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
+                                        <th className="col-divider" style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Meza)</th>
-                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
+                                        <th className="col-divider" style={{ position: 'sticky', top: 0, zIndex: 1, }}>Xihuitl (Meza)</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Caso)</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
                                     </tr>
@@ -450,9 +450,9 @@ const Inverso = () => {
                                         <tr key={index}>
                                             <td>{index + 1}</td>
                                             <td>{formatDate(result.date)}</td>
-                                            <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                            <td className="col-divider"><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
                                             <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
-                                            <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
+                                            <td className="col-divider">{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                             <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
                                             <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                         </tr>
@@ -473,9 +473,9 @@ const Inverso = () => {
                                     <tr>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>#</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Fecha</th>
-                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
+                                        <th className="col-divider" style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Caso)</th>
-                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
+                                        <th className="col-divider" style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Meza)</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
                                     </tr>
@@ -485,9 +485,9 @@ const Inverso = () => {
                                         <tr key={index}>
                                             <td>{index + 1}</td>
                                             <td>{formatDate(result.date)}</td>
-                                            <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                            <td className="col-divider"><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
                                             <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
-                                            <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
+                                            <td className="col-divider">{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                             <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
                                             <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                         </tr>
@@ -567,9 +567,9 @@ const Inverso = () => {
                                     <tr>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>#</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Fecha</th>
-                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
+                                        <th className="col-divider" style={{ position: 'sticky', top: 0, zIndex: 1 }}>Calendario</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Meza)</th>
-                                        <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
+                                        <th className="col-divider" style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Meza)</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Tonalli (Caso)</th>
                                         <th style={{ position: 'sticky', top: 0, zIndex: 1 }}>Xihuitl (Caso)</th>
                                     </tr>
@@ -579,9 +579,9 @@ const Inverso = () => {
                                         <tr key={index}>
                                             <td>{index + 1}</td>
                                             <td>{formatDate(result.date)}</td>
-                                            <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                            <td className="col-divider"><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
                                             <td>{result.tonalliMeza?.numeroT?.español} - {result.tonalliMeza?.signoT?.español}</td>
-                                            <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
+                                            <td className="col-divider">{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                             <td>{result.tonalli?.numero?.español} - {result.tonalli?.simbolo?.español}</td>
                                             <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                         </tr>

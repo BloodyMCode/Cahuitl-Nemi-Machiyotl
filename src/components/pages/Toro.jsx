@@ -149,7 +149,7 @@ const Toro = () => {
         uirevision: 'toro-view', // Firma inmutable global
         paper_bgcolor: '#F8FAFC',
         plot_bgcolor: '#F8FAFC',
-        margin: { l: 10, r: 10, b: 10, t: 120 }, // ↑ Aumentado de 70 a 120 para dar espacio arriba
+        margin: { l: 10, r: 10, b: 10, t: 10 }, // ↑ Aumentado de 70 a 120 para dar espacio arriba
         scene: {
             xaxis: { visible: false },
             yaxis: { visible: false },
@@ -169,14 +169,14 @@ const Toro = () => {
         },
         sliders: [{
             active: 0,
-            yanchor: 'bottom', // ↑ Cambiado de 'top' a 'bottom' para alineación superior
+            yanchor: 'top', // ↑ Cambiado de 'top' a 'bottom' para alineación superior
             xanchor: 'left',
             currentvalue: { font: { size: 13, color: '#0284C7' }, prefix: 'Día Actual (n): ', visible: true, xanchor: 'right' },
             transition: { duration: 0 },
             pad: { b: 10, t: 10 }, // Ajustado el espaciado
             len: 0.9,
             x: 0.05,
-            y: 1.12, // ↑ Cambiado de 0 a 1.12 para posicionarlo por encima del área de renderizado
+            y: 0, // ↑ Cambiado de 0 a 1.12 para posicionarlo por encima del área de renderizado
             font: { color: '#475569', size: 10 }, bgcolor: '#E2E8F0', bordercolor: '#CBD5E1',
             steps: slidersSteps
         }]
@@ -731,16 +731,16 @@ const Toro = () => {
             <div id="plot-area" style={{ flex: 1, height: '100%', position: 'relative', backgroundColor: '#F8FAFC' }}>
                 <div style={{
                     position: 'absolute',
-                    top: '12px',         // Alineado con la altura por defecto del ModeBar
+                    top: '10px',         // Alineado con la altura por defecto del ModeBar
                     right: '240px',      // Ajusta esta distancia según el ancho de los botones de             tu ModeBar
                     zIndex: 10,          // Por encima del canvas de WebGL
                     fontSize: '11px',
                     color: '#64748B',    // Color Slate intermedio
-                    fontWeight: '600',
+                    fontWeight: '300',
                     fontFamily: 'Arial, sans-serif',
                     pointerEvents: 'none', // Permite que los clics pasen a través del texto si es             necesario
                     backgroundColor: 'rgba(248, 250, 252, 0.85)', // Fondo sutil para que no se             pierda con el toro detrás
-                    padding: '4px 8px',
+                    padding: '2px 6px',
                     borderRadius: '4px',
                     display: 'flex',
                     alignItems: 'center',
