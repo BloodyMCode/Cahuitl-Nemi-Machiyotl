@@ -126,7 +126,20 @@ const Conversor = () => {
                         <p className="text-theme-muted">* Correspondencia de Meza</p>
                         <div className="col-md-6">
                             <div className="card" >
-                                <p><img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="card-img-top img-com" /> <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="card-img-top img-com" /></p>
+                                {/* <p><img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="card-img-top img-com" /> <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="card-img-top img-com" /></p> */}
+                                {/* AHORA: */}
+                                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                                    <img
+                                        src={tonalliDiaMeza.numberTonalImage}
+                                        alt="Numeral Tonalli"
+                                        className="img-com"
+                                    />
+                                    <img
+                                        src={tonalliDiaMeza.signTonalImage}
+                                        alt="Signo Tonalli"
+                                        className="img-com"
+                                    />
+                                </div>
                                 {/* <div className="card-header rounded-3 bg-light">
                                     <img src={tonalliDiaMeza.numberTonalImage} alt={tonalliDiaMeza.numberTonalImage} className="img-com" />
                                     <img src={tonalliDiaMeza.signTonalImage} alt={tonalliDiaMeza.signTonalImage} className="img-com" />
@@ -174,7 +187,11 @@ const Conversor = () => {
                         </div>
                         <div className="col-md-6">
                             <div className="card" >
-                                <p><img src={xihuitlAnioMeza.numberImageX} alt={xihuitlAnioMeza.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnioMeza.symbolImageX} alt={xihuitlAnioMeza.symbolImageX} className="card-img-top img-com" /></p>
+                                {/* <p><img src={xihuitlAnioMeza.numberImageX} alt={xihuitlAnioMeza.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnioMeza.symbolImageX} alt={xihuitlAnioMeza.symbolImageX} className="card-img-top img-com" /></p> */}
+                                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                                    <img src={xihuitlAnioMeza.numberImageX} alt={xihuitlAnioMeza.numberImageX} className="img-com" />
+                                    <img src={xihuitlAnioMeza.symbolImageX} alt={xihuitlAnioMeza.symbolImageX} className="img-com" />
+                                </div>
                                 <div className="card-body">
                                     <h5 className="card-title">Xihuitl</h5>
                                     <small className="text-secondary" style={{ fontSize: '11px', color: '#adb5bd' }}>* Según la correspondencia de Meza</small>
@@ -217,7 +234,11 @@ const Conversor = () => {
                         <p className="text-theme-muted">* Correspondencia de Caso</p>
                         <div className="col-md-6">
                             <div className="card" >
-                                <p><img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="card-img-top img-com" /> <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="card-img-top img-com" /></p>
+                                {/* <p><img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="card-img-top img-com" /> <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="card-img-top img-com" /></p> */}
+                                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                                    <img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="img-com" />
+                                    <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="img-com" />
+                                </div>
                                 {/*  <div className="card-header rounded-3 bg-light">
                                     <img src={tonalliDia.numberImage} alt={tonalliDia.numberImage} className="img-com" />
                                     <img src={tonalliDia.symbolImage} alt={tonalliDia.symbolImage} className="img-com" />
@@ -264,7 +285,11 @@ const Conversor = () => {
                         </div>
                         <div className="col-md-6">
                             <div className="card" >
-                                <p><img src={xihuitlAnio.numberImageX} alt={xihuitlAnio.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnio.symbolImageX} alt={xihuitlAnio.symbolImageX} className="card-img-top img-com" /></p>
+                                {/* <p><img src={xihuitlAnio.numberImageX} alt={xihuitlAnio.numberImageX} className="card-img-top img-com" /> <img src={xihuitlAnio.symbolImageX} alt={xihuitlAnio.symbolImageX} className="card-img-top img-com" /></p> */}
+                                <div className="d-flex justify-content-center align-items-center gap-3 pt-3">
+                                    <img src={xihuitlAnio.numberImageX} alt={xihuitlAnio.numberImageX} className="img-com" />
+                                    <img src={xihuitlAnio.symbolImageX} alt={xihuitlAnio.symbolImageX} className="img-com" />
+                                </div>
                                 {/*  <div className="card-header rounded-3 bg-light">
                                     <img src={xihuitlAnio.numberImageX} alt={xihuitlAnio.numberImageX} className="img-com" />
                                     <img src={xihuitlAnio.symbolImageX} alt={xihuitlAnio.symbolImageX} className="img-com"  />

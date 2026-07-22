@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import '../styles/Estilos.css'
 import { getImagePath } from '../funtions/funtions'
 
 
@@ -223,7 +224,7 @@ const Tablero = () => {
                     <tr key={rowIndex}>
                       {row.map((cell, colIndex) => (
                         <td key={`${rowIndex}-${colIndex}`} className={`text-center ${getCellClass(cell)}`}>
-                          <div><img src={getImagePath(cell.image)} alt={cell.image} className="card-img-top img-com" /></div>
+                          <div><img src={getImagePath(cell.image)} alt={cell.image} className="img-com" /* className="card-img-top img-com" */ /></div>
                           {/* condicional en el nombre para diferenciar el inicio de veintena */}
                           {cell.name === 'Lagarto' ? <small className="d-block" style={{ fontSize: '0.6rem', color: '#a30101', fontWeight: 'bold' }}>{cell.name}</small> : <small className="d-block" style={{ fontSize: '0.5rem' }}>{cell.name}</small>}
                           {/* <small className="d-block" style={{fontSize:'0.5rem'}}>{cell.name}</small> */}

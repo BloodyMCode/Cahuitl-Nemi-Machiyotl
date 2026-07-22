@@ -1,6 +1,17 @@
 .img-com {
-    width: 40%;
-    height: 40%;
+    /* width: 40%;
+    height: 40%; */
+    /* Evita que Firefox u otros navegadores estiren la imagen */
+    max-width: 100%;
+    height: auto;
+
+    /* Mantiene la relación de aspecto original intacta */
+    object-fit: contain;
+
+    /* Opcional: define un tamaño máximo razonable si son glifos/íconos */
+    max-height: 120px;
+    width: auto;
+    display: inline-block;
 }
 
 .text-subtitle {

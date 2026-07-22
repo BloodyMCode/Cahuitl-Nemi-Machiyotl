@@ -127,6 +127,7 @@ const Toro = () => {
     });
 
     const plotRef = useRef(null);
+    const plotAreaRef = useRef(null); // Referencia al contenedor principal del Plot
     const followModeRef = useRef('cursor');
     const representationRef = useRef('numeros');
     const [labelsVisibility, setLabelsVisibility] = useState('none'); // O 'none'/'all' según tu valor inicial por defecto
@@ -238,6 +239,31 @@ const Toro = () => {
         };
     }, []);
 
+    // --- CORRECCIÓN: REDIMENSIONAMIENTO AUTOMÁTICO AL MOSTRAR LA VISTA ---
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const plotDiv = plotRef.current?.el;
+            if (plotDiv) {
+                Plotly.Plots.resize(plotDiv);
+            }
+        }, 100);
+
+        let resizeObserver;
+        if (plotAreaRef.current) {
+            resizeObserver = new ResizeObserver(() => {
+                const plotDiv = plotRef.current?.el;
+                if (plotDiv) {
+                    Plotly.Plots.resize(plotDiv);
+                }
+            });
+            resizeObserver.observe(plotAreaRef.current);
+        }
+
+        return () => {
+            clearTimeout(timer);
+            if (resizeObserver) resizeObserver.disconnect();
+        };
+    }, []);
 
     // --- REFERENCIAS DE CONTROL DE ALTA VELOCIDAD Y RELOJ DE GPU ---
     const lastFrameTimeRef = useRef(0);
