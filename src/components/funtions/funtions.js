@@ -10,7 +10,7 @@ export const getImagePath = (imageName) => {
     const path = `../images/${imageName}`;
     return images[path] || '';
 };
-
+//Categias para tablero
 //Simbolos del calendario Tonalli
 export const tonalliSimbolos = [
     { español: "Lagarto", nahuatl: "Cipactli", nusavi: "Quevui", image: "lagarto.png" },
