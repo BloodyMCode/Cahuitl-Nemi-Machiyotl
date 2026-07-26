@@ -13,26 +13,26 @@ export const getImagePath = (imageName) => {
 //Categias para tablero
 //Simbolos del calendario Tonalli
 export const tonalliSimbolos = [
-    { español: "Lagarto", nahuatl: "Cipactli", nusavi: "Quevui", image: "lagarto.png" },
-    { español: "Viento", nahuatl: "Echecatl", nusavi: "Chi", image: "viento.png" },
-    { español: "Casa", nahuatl: "Calli", nusavi: "Cuau", image: "casa.png" },
-    { español: "Lagartija", nahuatl: "Cuetzpalli", nusavi: "Q, Que", image: "lagartija.png" },
-    { español: "Serpiente", nahuatl: "Coatl", nusavi: "Yo", image: "serpiente.png" },
-    { español: "Muerte", nahuatl: "Miquiztli", nusavi: "Mahu", image: "muerte.png" },
-    { español: "Venado", nahuatl: "Mazatl", nusavi: "Cuaa", image: "venado.png" },
-    { español: "Conejo", nahuatl: "Tochtli", nusavi: "Sayu", image: "conejo.png" },
-    { español: "Agua", nahuatl: "Atl", nusavi: "Agua", image: "agua.png" },
-    { español: "Perro", nahuatl: "Itzcuintli", nusavi: "Hua", image: "perro.png" },
-    { español: "Mono", nahuatl: "Ozomatli", nusavi: "Ñuu", image: "mono.png" },
-    { español: "Hierba", nahuatl: "Malinalli", nusavi: "Cuañe", image: "hierba.png" },
-    { español: "Caña", nahuatl: "Acatl", nusavi: "Huiyo", image: "caña.png" },
-    { español: "Jaguar", nahuatl: "Ocelotl", nusavi: "Huidzu", image: "jaguar.png" },
-    { español: "Águila", nahuatl: "Cuauhtli", nusavi: "Sa", image: "aguila.png" },
-    { español: "Zopilote", nahuatl: "Cozcacuauhtli", nusavi: "Cuii", image: "zopilote.png" },
-    { español: "Movimiento", nahuatl: "Ollin", nusavi: "Qhi", image: "movimiento.png" },
-    { español: "Pedernal", nahuatl: "Tecpatl", nusavi: "Cusi", image: "pedernal.png" },
-    { español: "Lluvia", nahuatl: "Quiahuitl", nusavi: "Co", image: "lluvia.png" },
-    { español: "Flor", nahuatl: "Xochitl", nusavi: "Huaco", image: "flor.png" }
+    { español: "Lagarto", nahuatl: "Cipactli", nusavi: "Quevui", category: 'animales', image: "lagarto.png" },
+    { español: "Viento", nahuatl: "Echecatl", nusavi: "Chi", category: 'naturales', image: "viento.png" },
+    { español: "Casa", nahuatl: "Calli", nusavi: "Cuau", category: 'cosas', image: "casa.png" },
+    { español: "Lagartija", nahuatl: "Cuetzpalli", nusavi: "Q, Que", category: 'animales', image: "lagartija.png" },
+    { español: "Serpiente", nahuatl: "Coatl", nusavi: "Yo", category: 'animales', image: "serpiente.png" },
+    { español: "Muerte", nahuatl: "Miquiztli", nusavi: "Mahu", category: 'abstractos', image: "muerte.png" },
+    { español: "Venado", nahuatl: "Mazatl", nusavi: "Cuaa", category: 'animales', image: "venado.png" },
+    { español: "Conejo", nahuatl: "Tochtli", nusavi: "Sayu", category: 'animales', image: "conejo.png" },
+    { español: "Agua", nahuatl: "Atl", nusavi: "Agua", category: 'naturales', image: "agua.png" },
+    { español: "Perro", nahuatl: "Itzcuintli", nusavi: "Hua", category: 'animales', image: "perro.png" },
+    { español: "Mono", nahuatl: "Ozomatli", nusavi: "Ñuu", category: 'animales', image: "mono.png" },
+    { español: "Hierba", nahuatl: "Malinalli", nusavi: "Cuañe", category: 'vegetales', image: "hierba.png" },
+    { español: "Caña", nahuatl: "Acatl", nusavi: "Huiyo", category: 'vegetales', image: "caña.png" },
+    { español: "Jaguar", nahuatl: "Ocelotl", nusavi: "Huidzu", category: 'animales', image: "jaguar.png" },
+    { español: "Águila", nahuatl: "Cuauhtli", nusavi: "Sa", category: 'animales', image: "aguila.png" },
+    { español: "Zopilote", nahuatl: "Cozcacuauhtli", nusavi: "Cuii", category: 'animales', image: "zopilote.png" },
+    { español: "Movimiento", nahuatl: "Ollin", nusavi: "Qhi", category: 'abstractos', image: "movimiento.png" },
+    { español: "Pedernal", nahuatl: "Tecpatl", nusavi: "Cusi", category: 'cosas', image: "pedernal.png" },
+    { español: "Lluvia", nahuatl: "Quiahuitl", nusavi: "Co", category: 'naturales', image: "lluvia.png" },
+    { español: "Flor", nahuatl: "Xochitl", nusavi: "Huaco", category: 'vegetales', image: "flor.png" }
 ]
 //Simbolos del Xihuitl
 export const xihuitlSimbolos = [
@@ -84,7 +84,8 @@ export const cempohuallapohualli = [
     { nahuatl: "Tititl" },
     { nahuatl: "Izcalli" }
 ]
-
+//Orientaciones
+export const orientation = ['Este', 'Norte', 'Oeste', 'Sur']
 // Función para verificar si un año es bisiesto según las reglas correspondientes
 const bisiestoAnio = (year) => {
     if (year < 1582) {
@@ -830,3 +831,53 @@ export const buscarAmbos = (
         setLoadingAmbos(false);
     }, 100);
 }
+//Funciones de TABLERO
+
+/**
+ * Manejo de cambio de checkbox de categorías para Tablero
+ * @param {string} category 
+ * @param {Function} setSelectedCategories 
+ */
+export const handleCategoryChange = (category, setSelectedCategories) => {
+    setSelectedCategories(prev => ({
+        ...prev,
+        [category]: !prev[category]
+    }));
+};
+
+const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"]
+export const revNumbers = [...numbers].toReversed()//invertir el orden
+
+/**
+ * Función para destacar celda CSS según la categoría
+ * @param {object} cell 
+ * @param {Set} featuredCells 
+ * @param {Array} revNumbers 
+ * @returns {string} Clase CSS para la celda
+ */
+export const getCellClass = (cell, featuredCells, revNumbers) => {
+    const cellId = `${cell.row}-${cell.col}`;
+    const isFeatured = featuredCells ? featuredCells.has(cellId) : false;
+    if (isFeatured) {
+        switch (cell.category) {
+            case 'animales':
+                return 'cell-animales';
+            case 'naturales':
+                return 'cell-naturales';
+            case 'cosas':
+                return 'cell-cosas';
+            case 'abstractos':
+                return 'cell-abstractos';
+            case 'vegetales':
+                return 'cell-vegetales';
+            default:
+                return '';
+        }
+    }
+    const isColOne = revNumbers && revNumbers[cell.col % revNumbers.length] === '1';
+    if (isColOne) {
+        return 'bg-column-one';
+    }
+    return '';
+};
+
