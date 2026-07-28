@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
-import { getImagePath, tonalliSimbolos, orientation, handleCategoryChange, getCellClass, revNumbers } from '../funtions/funtions'
+import { getImagePath, tonalliSimbolos, revOrientation, handleCategoryChange, getCellClass, revNumbers } from '../funtions/funtions'
 
 const Tablero = () => {
-  const revOrientation = [...orientation].toReversed()//invertir el orden
   // Estado para los checkboxes y celdas seleccionadas
   const [selectedCategories, setSelectedCategories] = useState({
     animales: false,
@@ -64,7 +63,7 @@ const Tablero = () => {
     updateFeaturedCells()
   }, [selectedCategories, board])
 
-  // Scroll to the rightmost column when the board data is loaded
+  // Visualizar de derecha a izquierda al cargar el Tablero
   useEffect(() => {
     if (board.length > 0 && tableContainerRef.current) {
       const timer = setTimeout(() => {

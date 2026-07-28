@@ -87,6 +87,7 @@ export const cempohuallapohualli = [
 //Orientaciones
 export const orientation = ['Este', 'Norte', 'Oeste', 'Sur']
 // Función para verificar si un año es bisiesto según las reglas correspondientes
+
 const bisiestoAnio = (year) => {
     if (year < 1582) {
         // Calendario juliano: divisible entre 4
@@ -831,8 +832,10 @@ export const buscarAmbos = (
         setLoadingAmbos(false);
     }, 100);
 }
-//Funciones de TABLERO
 
+//FUNCIONES TABLERO
+
+export const revOrientation = [...orientation].toReversed()//invertir el orden
 /**
  * Manejo de cambio de checkbox de categorías para Tablero
  * @param {string} category 
