@@ -4,7 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 // 18 veintenas (20 días) + 1 Nemontemi (5 días) = 365 días en total
 const SEGDATOS_VEINTENAS = [
-    { id: 'Atlcahualo', dias: 20 },
+    { id: 'Atlacahualo', dias: 20 },
     { id: 'Tlacaxipehualiztli', dias: 20 },
     { id: 'Tozoztontli', dias: 20 },
     { id: 'Ueitozoztli', dias: 20 },
@@ -16,7 +16,7 @@ const SEGDATOS_VEINTENAS = [
     { id: 'Xocotl Uetzi', dias: 20 },
     { id: 'Ochpaniztli', dias: 20 },
     { id: 'Teotlehco', dias: 20 },
-    { id: 'Tepeihuitl', dias: 20 },
+    { id: 'Tepeilhuitl', dias: 20 },
     { id: 'Quecholli', dias: 20 },
     { id: 'Panquetzaliztli', dias: 20 },
     { id: 'Atemoztli', dias: 20 },
@@ -293,31 +293,33 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay }) => {
                         {/* Máscara Vectorial Encima */}
                         <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 1000 1000" style={{ pointerEvents: 'none' }}>
                             <g>
-                                {SEGDATOS_VEINTENAS.map((seg) => {
-                                    const deltaAngulo = (seg.dias / 365) * 360;
-                                    const anguloInicio = anguloAcumuladoVeintenas;
-                                    const anguloFin = anguloAcumuladoVeintenas + deltaAngulo;
-                                    anguloAcumuladoVeintenas = anguloFin;
+                                {(() => {
+                                    let anguloAcum = desfasamientoVeintenas;
+                                    return SEGDATOS_VEINTENAS.map((seg) => {
+                                        const deltaAngulo = (seg.dias / 365) * 360;
+                                        const anguloInicio = anguloAcum;
+                                        const anguloFin = anguloAcum + deltaAngulo;
+                                        anguloAcum = anguloFin;
 
-                                    const pathData = describirArcoInteractivo(centroSVG, centroSVG, 455, 500, anguloInicio, anguloFin);
+                                        const pathData = describirArcoInteractivo(centroSVG, centroSVG, 455, 500, anguloInicio, anguloFin);
 
-                                    // Compara con el string exacto que viene del prop 'veintenaMeza'
-                                    const esVeintenaActiva = !isSpinning && veintenaMeza === seg.id;
+                                        // Compara con el string exacto que viene del prop 'veintenaMeza'
+                                        const esVeintenaActiva = !isSpinning && veintenaMeza === seg.id;
 
-                                    return (
-                                        <path
-                                            key={`veintena-${seg.id}`}
-                                            d={pathData}
-                                            fill={esVeintenaActiva ? '#ffc801c2' : 'transparent'}
-                                            //fill={esVeintenaActiva ? isDark ? '#ffc801c2' : '#ffc801c2' : 'transparent'}
-                                            opacity={esVeintenaActiva ? '0.9' : '0'}
-                                            style={{
-                                                mixBlendMode: 'multiply',
-                                                transition: 'opacity 0.3s ease, fill 0.3s ease'
-                                            }}
-                                        />
-                                    );
-                                })}
+                                        return (
+                                            <path
+                                                key={`veintena-${seg.id}`}
+                                                d={pathData}
+                                                fill={esVeintenaActiva ? '#ebcc05de' : 'transparent'}
+                                                opacity={esVeintenaActiva ? '1' : '0'}
+                                                style={{
+                                                    mixBlendMode: 'hard-light',
+                                                    transition: 'opacity 0.3s ease, fill 0.3s ease'
+                                                }}
+                                            />
+                                        );
+                                    });
+                                })()}
                             </g>
                         </svg>
                     </div>
