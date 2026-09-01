@@ -24,9 +24,16 @@ const Conversor = () => {
 
     // Funcion interna para ejecutar la conversion
     const runConversion = (dateStr, timeStr) => {
-        // Combinar fecha y hora, para Caso(si no hay hora, se usa 00:00)
-        const timeCaso = timeStr ? timeStr : '00:00'
-        const dateObj = new Date(`${dateStr}T${timeCaso}`)
+        // Combinar fecha y hora, para Caso (si no hay hora, se usa 12:00 como inicio de día)
+        const timeCaso = timeStr ? timeStr : '12:00'
+        const [yStr, mStr, dStr] = dateStr.split('-')
+        const [hStr, minStr] = timeCaso.split(':')
+        const year = parseInt(yStr, 10)
+        const month = parseInt(mStr, 10) - 1
+        const day = parseInt(dStr, 10)
+        const hour = parseInt(hStr, 10) || 0
+        const minute = parseInt(minStr, 10) || 0
+        const dateObj = new Date(year, month, day, hour, minute)
 
         const tonalliResult = convertirTonalli(dateObj)//llamada de funcion
         const xihuitlResult = convertirXihuitl(dateObj)//llamada de funcion

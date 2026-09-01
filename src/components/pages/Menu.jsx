@@ -20,10 +20,11 @@ const Menu = () => {
     <>
       <Navbar className='navbar-purple custom-navbar' data-bs-theme={theme} expand='lg' expanded={isNavOpen} onToggle={toggleNav}>
         <div className="container-fluid">
-          <Navbar.Toggle aria-controls='basic-navbar-nav' />
-          <Navbar.Collapse id='basic-navbar-nav'>
-            <Nav className='me-auto'>
-              <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+          <Navbar.Toggle aria-controls='basic-navbar-nav' className="ms-auto" />
+          <Navbar.Collapse id='basic-navbar-nav' className="custom-navbar-collapse">
+            <div className="d-none d-lg-block navbar-left-spacer"></div>
+            <Nav className='mx-auto text-center'>
+              <ul className="navbar-nav justify-content-center mb-2 mb-lg-0 text-center">
                 <li className="nav-item">
                   <Link className={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" to="/">Inicio{isActive('/') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
@@ -44,7 +45,7 @@ const Menu = () => {
                 </li>
               </ul>
             </Nav>
-            <Nav className='ms-auto align-items-center'>
+            <Nav className='navbar-right-button justify-content-center justify-content-lg-end align-items-center my-2 my-lg-0'>
               <Button
                 variant={theme === 'dark' ? 'outline-light' : 'outline-dark'}
                 onClick={toggleTheme}
@@ -77,4 +78,4 @@ const Menu = () => {
   )
 }
 
-export default Menu
+export default Menu

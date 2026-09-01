@@ -163,15 +163,28 @@ export const calcularDiasManual = (date) => {
 export const convertirTonalli = (date) => {
     // Fecha de referencia: 13 de agosto de 1521 (1-serpiente)
     const referenceFecha = new Date(1521, 7, 13)
-    const fechaInicial = new Date(referenceFecha.getTime())
-    const fechaFinal = new Date(date.getTime())
-    const digitoReferencia = 1 // índice para digito tomado del 1 al 13
-    const simboloReferencia = 4 // índice para serpiente tomado del 0 al 19
     const hours = date.getHours();
     const minutes = date.getMinutes();
+
+    // El día Tonalli en la correspondencia de Caso inicia a las 12:00 PM.
+    // Si la hora es anterior a las 12:00 PM (00:00 - 11:59 AM), corresponde al día Tonalli del día anterior.
+    const effectiveDate = new Date(date.getTime());
+    if (hours < 12) {
+        effectiveDate.setDate(effectiveDate.getDate() - 1);
+    }
+
+    const fechaInicial = new Date(referenceFecha.getFullYear(), referenceFecha.getMonth(), referenceFecha.getDate())
+    const fechaFinal = new Date(effectiveDate.getFullYear(), effectiveDate.getMonth(), effectiveDate.getDate())
+    const digitoReferencia = 1 // índice para digito tomado del 1 al 13
+    const simboloReferencia = 4 // índice para serpiente tomado del 0 al 19
+
+    const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+    const h12 = hours % 12 || 12;
+    const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
     // Si la fecha elegida es posterior a la fecha de referencia
     if (fechaInicial < fechaFinal) {
-        const diferenciaDias = (calcularDiasManual(date))
+        const diferenciaDias = (calcularDiasManual(effectiveDate))
         //El ciclo tonalli es de 260 dias (13*20)
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo //operacion modulas num mod 260
@@ -180,15 +193,10 @@ export const convertirTonalli = (date) => {
         numero = numero <= 0 ? numero + 13 : numero
         let simboloCal = ((simboloReferencia + diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
-        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
-        const h12 = hours % 12 || 12;
-        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
 
         return {
-            /* numero, */
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
-            /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
             numberImage: getImagePath(numerosNombres[numero - 1].image),
             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
             diaCiclo,
@@ -196,21 +204,13 @@ export const convertirTonalli = (date) => {
             usedTime: usedTime
         }
     } else if (fechaInicial > fechaFinal) {// Si la fecha elegida es anterior a la fecha dereferencia
-        const diferenciaDias = (calcularDiasManual(date))
-        /* console.log(diferenciaDias) */
-        //El ciclo tonalli es de 260 dias (13*20)
+        const diferenciaDias = (calcularDiasManual(effectiveDate))
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
-        /* console.log(diaCiclo) */
-        //Calcular el numero (1-13) y simbolo (0-19)
         let numero = ((digitoReferencia - diaCiclo) % 13)
         numero = numero <= 0 ? numero + 13 : numero
         let simboloCal = ((simboloReferencia - diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
-
-        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
-        const h12 = hours % 12 || 12;
-        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
 
         return {
             numero: numerosNombres[numero - 1],
@@ -224,10 +224,6 @@ export const convertirTonalli = (date) => {
     } else {// Si la fecha elegida es la fecha de referencia
         let numero = digitoReferencia
         let simboloCal = simboloReferencia
-
-        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
-        const h12 = hours % 12 || 12;
-        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
 
         return {
             numero: numerosNombres[numero - 1],

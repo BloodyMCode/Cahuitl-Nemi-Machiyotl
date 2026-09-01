@@ -467,3 +467,39 @@ body.light-theme .cell-vegetales {
   border: 1px solid rgba(59, 130, 246, 0.4) !important;
   color: #1e40af !important;
 }
+
+/* Estilos de centrado para el menú principal (Menu.jsx) */
+@media (min-width: 992px) {
+  .custom-navbar-collapse {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    width: 100%;
+  }
+
+  .custom-navbar-collapse .navbar-left-spacer {
+    grid-column: 1;
+  }
+
+  .custom-navbar-collapse .nav.mx-auto {
+    grid-column: 2;
+  }
+
+  .custom-navbar-collapse .navbar-right-button {
+    grid-column: 3;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .custom-navbar-collapse {
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  .custom-navbar-collapse .navbar-nav {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+}
