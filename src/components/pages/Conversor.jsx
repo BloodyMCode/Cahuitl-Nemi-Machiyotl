@@ -334,6 +334,7 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Inicio del año: {xihuitlAnio.inicioAñoText}</small>
                                 </div>
                             </div>
                         </div>

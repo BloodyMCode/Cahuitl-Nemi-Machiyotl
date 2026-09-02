@@ -235,62 +235,100 @@ export const convertirTonalli = (date) => {
         }
     }
 }
-//Funcion para convertir la fecha al calendario xihuitl
+//Funcion para convertir la fecha al calendario xihuitl (Caso con desplazamiento de inicios de año)
 export const convertirXihuitl = (date) => {
     // Fecha de referencia: 13 de agosto de 1521 (3-Casa en xihuitl)
     const referenceAño = 1521
-    // Obtener el año de la fecha seleccionada
-    const currentAño = date.getFullYear()
     // Fecha de referencia: 13 de agosto de 1521 (3-casa)
     const digitoReferencia = 3 // índice para digito tomado del 1 al 13
     const simboloReferencia = 2 // índice para casa tomado del 0 al 3
-    if (referenceAño < currentAño) {//Si el año de referencia (1521) es menor al añoseleccionado 
+    //Fecha de referencia de inicio de año en 1521 de acuerdo a Caso
+    const refInicioAnio = new Date(1521, 0, 24)
+    //Funcion auxiliar para contar años bisiestos civiles entre dos años
+    const contarBisisestos = (y1, y2) => {
+        let count = 0
+        const min = Math.min(y1, y2)
+        const max = Math.max(y1, y2)
+        for (let y = min; y < max; y++) {
+            if (bisiestoAnio(y)) {
+                count++
+            }
+        }
+        return count
+    }
+    // Función auxiliar para obtener la fecha de inicio del año de cualquier año civil
+    const obtenerInicioAño = (year) => {
+        const fechaInicio = new Date(refInicioAnio.getTime())
+        fechaInicio.setFullYear(year)
+        // Estructura condicional sobre cómo realizar el ajuste si el año es mayor, menor o igual a 1521
+        if (year > referenceAño) {
+            //Si el año es mayor a 1521, restamos los bisiestos acumulados
+            const bisiestos = contarBisisestos(referenceAño, year)
+            fechaInicio.setDate(fechaInicio.getDate() - bisiestos)
+        } else if (year < refInicioAnio) {
+            //Si el año es menor a 1521, sumanos los bisiestos acumulados
+            const bisiestos = contarBisisestos(year, referenceAño)
+            fechaInicio.setDate(fechaInicio.getDate() + bisiestos)
+        } else {//Si es el año de referencia (1521), el inicio es el 24 de enero
+            fechaInicio.setDate(24)
+        }
+        if (year > 1582) {
+            fechaInicio.setDate(fechaInicio.getDate() + 10)
+        }
+        return fechaInicio
+    }
+    // Obtener el año de la fecha seleccionada
+    const currentAño = date.getFullYear()
+    //Determinar si la fecha consultada ya pasó el inicio de año de este año civil
+    const inicioAñoSelected = obtenerInicioAño(currentAño)
+    let xihuitlYear = currentAño
+    let fechaInicioAñoSeleted = inicioAñoSelected
+    //Normalizar fechas para comparar solo año, mes y día (sin horas)
+    const dateSelectedOnly = new Date(date.getFullYear, date.getMonth(), date.getDate())
+    const inicioDateAñoSelected = new Date(inicioAñoSelected.getFullYear(), inicioAñoSelected.getMonth(), inicioAñoSelected.getDate())
+    if (dateSelectedOnly < inicioDateAñoSelected) {
+        //Si la fecha seleccionada es anterior al inicio del año xihuitl, la fecha pertenece al xhuitl anterior
+        xihuitlYear = currentAño - 1
+        fechaInicioAñoSeleted = obtenerInicioAño(xihuitlYear)
+    }
+    let numeroX = digitoReferencia
+    let simboloCalXihuitl = simboloReferencia
+    if (referenceAño < xihuitlYear) {//Si el año de referencia (1521) es menor al añoseleccionado 
         //Calcular diferencia
-        const diferencia = currentAño - referenceAño
+        const diferencia = xihuitlYear - referenceAño
         // Calcular el número cíclico (1-13)
-        let numeroX = ((digitoReferencia + diferencia) % 13)
+        numeroX = ((digitoReferencia + diferencia) % 13)
         numeroX = numeroX <= 0 ? numeroX + 13 : numeroX
         // Calcular el símbolo (0-3)
-        let simboloCalXihuitl = ((simboloReferencia + diferencia) % 4)
+        simboloCalXihuitl = ((simboloReferencia + diferencia) % 4)
         simboloCalXihuitl = simboloCalXihuitl < 0 ? simboloCalXihuitl + 4 : simboloCalXihuitl
-        return {
-            /* numeroX, */
-            numeroX: numerosNombres[numeroX - 1],
-            simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            /* numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href, */
-            numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
-            symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
-            simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
-            simboloCalXihuitl
-        }
-    } else if (referenceAño > currentAño) {//Si el año de referencia (1521) es mayor al añoseleccionado
+    } else if (referenceAño > xihuitlYear) {//Si el año de referencia (1521) es mayor al añoseleccionado
         //Calcular diferencia
-        const diferencia = referenceAño - currentAño
+        const diferencia = referenceAño - xihuitlYear
         // Calcular el número cíclico (1-13)
-        let numeroX = ((digitoReferencia - diferencia) % 13)
+        numeroX = ((digitoReferencia - diferencia) % 13)
         numeroX = numeroX <= 0 ? numeroX + 13 : numeroX
         // Calcular el símbolo (0-3)
-        let simboloCalXihuitl = ((simboloReferencia - diferencia) % 4)
+        simboloCalXihuitl = ((simboloReferencia - diferencia) % 4)
         simboloCalXihuitl = simboloCalXihuitl < 0 ? simboloCalXihuitl + 4 : simboloCalXihuitl
-        return {
-            numeroX: numerosNombres[numeroX - 1],
-            simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
-            symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
-            simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
-            simboloCalXihuitl
-        }
     } else {//Si el año de referencia (1521) es el año seleccionado
-        let numeroX = digitoReferencia
-        let simboloCalXihuitl = simboloReferencia
-        return {
-            numeroX: numerosNombres[numeroX - 1],
-            simboloX: xihuitlSimbolos[simboloCalXihuitl],
-            numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
-            symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
-            simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
-            simboloCalXihuitl
-        }
+        numeroX = digitoReferencia
+        simboloCalXihuitl = simboloReferencia
+    }
+    // Formato de texto de la fecha de inicio del año en español
+    const opcionFechaFormat = { day: 'numeric', month: 'long', year: 'numeric' }
+    const inicioAñoText = fechaInicioAñoSeleted.toLocaleDateString('es-MX', opcionFechaFormat)
+    return {
+        /* numeroX, */
+        numeroX: numerosNombres[numeroX - 1],
+        simboloX: xihuitlSimbolos[simboloCalXihuitl],
+        /* numberImageX: new URL(`../images/${getNumberoImage(numeroX)}`, import.meta.url).href, */
+        numberImageX: getImagePath(numerosNombres[numeroX - 1].image),
+        symbolImageX: getImagePath(xihuitlSimbolos[simboloCalXihuitl].image),
+        simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
+        simboloCalXihuitl,
+        inicioAñoFecha: fechaInicioAñoSeleted,
+        inicioAñoText: inicioAñoText
     }
 }
 
