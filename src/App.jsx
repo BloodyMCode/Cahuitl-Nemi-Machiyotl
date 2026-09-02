@@ -55,17 +55,15 @@ function AppContent() {
       </div>
 
       {/*
-        OPTIMIZACIÓN DE RENDIMIENTO: Toro se mantiene SIEMPRE MONTADO.
-        Plotly inicializa el contexto WebGL en segundo plano al cargar la app,
-        así cuando el usuario navega a /toro, la visualización es INMEDIATA.
-        Se usa display:none / display:block para mostrarlo/ocultarlo sin desmontarlo.
+        Toro se monta únicamente cuando la ruta activa es /toro.
+        Al desmontarse en otras páginas, se liberan los observadores de cambio de tamaño (ResizeObserver) 
+        y el hilo de renderizado 3D/WebGL de Plotly, evitando congelamientos en la aplicación.
       */}
-      <div
-        className="layout-toro-container"
-        style={{ display: esPaginaToro ? 'block' : 'none' }}
-      >
-        <Toro />
-      </div>
+      {esPaginaToro && (
+        <div className="layout-toro-container">
+          <Toro />
+        </div>
+      )}
 
       {/* SI SÍ es la página de Toro, la barra decorativa aparece ABAJO */}
       {esPaginaToro && BarraDecorativa}
