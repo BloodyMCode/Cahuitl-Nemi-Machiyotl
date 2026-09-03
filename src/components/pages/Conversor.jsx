@@ -36,6 +36,10 @@ const Conversor = () => {
         const dateObj = new Date(year, month, day, hour, minute)
 
         const tonalliResult = convertirTonalli(dateObj)//llamada de funcion
+        // Si el usuario no seleccionó hora, formatear la hora mostrada en Caso a 12:00 a.m.
+        /*  if (!timeStr && tonalliResult) {
+             tonalliResult.usedTime = '12:00 a.m.'
+         } */
         const xihuitlResult = convertirXihuitl(dateObj)//llamada de funcion
         const tonalliResultMeza = convertirTonalliMeza(dateStr, timeStr)//llamada de funcion
         const xihuitlResultMeza = convertirXihuitlMeza(dateStr, timeStr)//llamada de funcion

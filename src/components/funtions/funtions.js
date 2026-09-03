@@ -167,24 +167,43 @@ export const convertirTonalli = (date) => {
     const minutes = date.getMinutes();
 
     // El día Tonalli en la correspondencia de Caso inicia a las 12:00 PM.
-    // Si la hora es anterior a las 12:00 PM (00:00 - 11:59 AM), corresponde al día Tonalli del día anterior.
-    const effectiveDate = new Date(date.getTime());
-    if (hours < 12) {
-        effectiveDate.setDate(effectiveDate.getDate() - 1);
-    }
+    // Si la hora es posterior a las 12:00 PM, corresponde al día Tonalli del día siguiente.
+    /* const effectiveDate = new Date(date.getTime());
+    if (hours >= 12) {
+        effectiveDate.setDate(effectiveDate.getDate() + 1);
+    } */
+    // 2. Ajuste de 12 horas para que el cambio de día náhuatl sea a las 12:00 PM
+    const fechaAjustada = new Date(date.getTime() - (12 * 60 * 60 * 1000));
 
     const fechaInicial = new Date(referenceFecha.getFullYear(), referenceFecha.getMonth(), referenceFecha.getDate())
-    const fechaFinal = new Date(effectiveDate.getFullYear(), effectiveDate.getMonth(), effectiveDate.getDate())
+    const fechaFinal = new Date(fechaAjustada.getFullYear(), fechaAjustada.getMonth(), fechaAjustada.getDate())
     const digitoReferencia = 1 // índice para digito tomado del 1 al 13
     const simboloReferencia = 4 // índice para serpiente tomado del 0 al 19
 
     const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
     const h12 = hours % 12 || 12;
     const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+    // Calculamos la diferencia relativa en días la función
+    /* const diasFechaFinal = calcularDiasManual(effectiveDate);
+    const diasFechaInicial = calcularDiasManual(referenceFecha);
+    // Si están en el mismo año, la diferencia es directa.
+    // Si cambian de año, la diferencia incluye los años transcurridos.
+    let diferenciaDias = 0;
+    if (effectiveDate.getFullYear() === referenceFecha.getFullYear()) {
+        diferenciaDias = Math.abs(diasFechaFinal - diasFechaInicial);
+    } else {
+        // Para años distintos, se calcula la diferencia considerando años completos transcurridos
+        const msPorDia = 1000 * 60 * 60 * 24;
+        diferenciaDias = Math.abs(Math.round((fechaFinal - fechaInicial) / msPorDia));
+    }
+ */
+    let numero = digitoReferencia;
+    let simboloCal = simboloReferencia;
+    let diaCiclo = 0;
 
     // Si la fecha elegida es posterior a la fecha de referencia
     if (fechaInicial < fechaFinal) {
-        const diferenciaDias = (calcularDiasManual(effectiveDate))
+        const diferenciaDias = (calcularDiasManual(fechaFinal))
         //El ciclo tonalli es de 260 dias (13*20)
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo //operacion modulas num mod 260
@@ -194,17 +213,17 @@ export const convertirTonalli = (date) => {
         let simboloCal = ((simboloReferencia + diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
 
-        return {
-            numero: numerosNombres[numero - 1],
-            simbolo: tonalliSimbolos[simboloCal],
-            numberImage: getImagePath(numerosNombres[numero - 1].image),
-            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-            diaCiclo,
-            simboloInv: tonalliSimbolos[simboloCal].español, //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
-            usedTime: usedTime
-        }
+        /*  return {
+             numero: numerosNombres[numero - 1],
+             simbolo: tonalliSimbolos[simboloCal],
+             numberImage: getImagePath(numerosNombres[numero - 1].image),
+             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+             diaCiclo,
+             simboloInv: tonalliSimbolos[simboloCal].español, //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+             usedTime: usedTime
+         } */
     } else if (fechaInicial > fechaFinal) {// Si la fecha elegida es anterior a la fecha dereferencia
-        const diferenciaDias = (calcularDiasManual(effectiveDate))
+        const diferenciaDias = (calcularDiasManual(fechaFinal))
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
         let numero = ((digitoReferencia - diaCiclo) % 13)
@@ -212,7 +231,7 @@ export const convertirTonalli = (date) => {
         let simboloCal = ((simboloReferencia - diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
 
-        return {
+        /* return {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
             numberImage: getImagePath(numerosNombres[numero - 1].image),
@@ -220,19 +239,27 @@ export const convertirTonalli = (date) => {
             diaCiclo,
             simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
             usedTime: usedTime
-        }
+        } */
     } else {// Si la fecha elegida es la fecha de referencia
         let numero = digitoReferencia
         let simboloCal = simboloReferencia
 
-        return {
-            numero: numerosNombres[numero - 1],
-            simbolo: tonalliSimbolos[simboloCal],
-            numberImage: getImagePath(numerosNombres[numero - 1].image),
-            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-            simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
-            usedTime: usedTime
-        }
+        /*  return {
+             numero: numerosNombres[numero - 1],
+             simbolo: tonalliSimbolos[simboloCal],
+             numberImage: getImagePath(numerosNombres[numero - 1].image),
+             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+             simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
+             usedTime: usedTime
+         } */
+    }
+    return {
+        numero: numerosNombres[numero - 1],
+        simbolo: tonalliSimbolos[simboloCal],
+        numberImage: getImagePath(numerosNombres[numero - 1].image),
+        symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+        simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
+        usedTime: usedTime
     }
 }
 //Funcion para convertir la fecha al calendario xihuitl (Caso con desplazamiento de inicios de año)
@@ -242,8 +269,16 @@ export const convertirXihuitl = (date) => {
     // Fecha de referencia: 13 de agosto de 1521 (3-casa)
     const digitoReferencia = 3 // índice para digito tomado del 1 al 13
     const simboloReferencia = 2 // índice para casa tomado del 0 al 3
+    //Manejo de hora seleccionada
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    //Si la hora ingresada es menor a 12 pm se resta un día
+    const effectiveDate = new Date(date.getTime())
+    if (hours < 12) {
+        effectiveDate.setDate(effectiveDate.getDate() - 1)
+    }
     //Fecha de referencia de inicio de año en 1521 de acuerdo a Caso
-    const refInicioAnio = new Date(1521, 0, 24)
+    const refInicioAnio = new Date(1521, 0, 24, 12, 0, 0)
     //Funcion auxiliar para contar años bisiestos civiles entre dos años
     const contarBisisestos = (y1, y2) => {
         let count = 0
@@ -275,6 +310,8 @@ export const convertirXihuitl = (date) => {
         if (year > 1582) {
             fechaInicio.setDate(fechaInicio.getDate() + 10)
         }
+        //fijar el inicio de año a 12 pm
+        fechaInicio.setHours(12, 0, 0, 0)
         return fechaInicio
     }
     // Obtener el año de la fecha seleccionada
@@ -283,14 +320,19 @@ export const convertirXihuitl = (date) => {
     const inicioAñoSelected = obtenerInicioAño(currentAño)
     let xihuitlYear = currentAño
     let fechaInicioAñoSeleted = inicioAñoSelected
-    //Normalizar fechas para comparar solo año, mes y día (sin horas)
-    const dateSelectedOnly = new Date(date.getFullYear, date.getMonth(), date.getDate())
-    const inicioDateAñoSelected = new Date(inicioAñoSelected.getFullYear(), inicioAñoSelected.getMonth(), inicioAñoSelected.getDate())
-    if (dateSelectedOnly < inicioDateAñoSelected) {
-        //Si la fecha seleccionada es anterior al inicio del año xihuitl, la fecha pertenece al xhuitl anterior
+    if (effectiveDate < inicioAñoSelected) {
+        //Si la fecha y hora seleccionada es anterior al inicio del año xihuitl, la fecha pertenece al xhuitl anterior
         xihuitlYear = currentAño - 1
         fechaInicioAñoSeleted = obtenerInicioAño(xihuitlYear)
     }
+    //Normalizar fechas para comparar solo año, mes y día (sin horas)
+    //const dateSelectedOnly = new Date(date.getFullYear, date.getMonth(), date.getDate())
+    // const inicioDateAñoSelected = new Date(inicioAñoSelected.getFullYear(), inicioAñoSelected.getMonth(), inicioAñoSelected.getDate())
+    /*  if (dateSelectedOnly < inicioDateAñoSelected) {
+         //Si la fecha seleccionada es anterior al inicio del año xihuitl, la fecha pertenece al xhuitl anterior
+         xihuitlYear = currentAño - 1
+         fechaInicioAñoSeleted = obtenerInicioAño(xihuitlYear)
+     } */
     let numeroX = digitoReferencia
     let simboloCalXihuitl = simboloReferencia
     if (referenceAño < xihuitlYear) {//Si el año de referencia (1521) es menor al añoseleccionado 
@@ -317,7 +359,11 @@ export const convertirXihuitl = (date) => {
     }
     // Formato de texto de la fecha de inicio del año en español
     const opcionFechaFormat = { day: 'numeric', month: 'long', year: 'numeric' }
-    const inicioAñoText = fechaInicioAñoSeleted.toLocaleDateString('es-MX', opcionFechaFormat)
+    const inicioAñoText = `${fechaInicioAñoSeleted.toLocaleDateString('es-MX', opcionFechaFormat)}, 12:00 pm`
+    //formatear la hora de fecha seleccionada
+    const meridiem = hours >= 12 ? 'pm' : 'am'
+    const hoursMeridiem = hours % 12 || 12
+    const inicioTime = `${hoursMeridiem}:${minutes < 10 ? '0' + minutes : minutes} ${meridiem}`
     return {
         /* numeroX, */
         numeroX: numerosNombres[numeroX - 1],
@@ -328,7 +374,8 @@ export const convertirXihuitl = (date) => {
         simboloXInv: xihuitlSimbolos[simboloCalXihuitl].español,
         simboloCalXihuitl,
         inicioAñoFecha: fechaInicioAñoSeleted,
-        inicioAñoText: inicioAñoText
+        inicioAñoText: inicioAñoText,
+        inicioTime: inicioTime
     }
 }
 
