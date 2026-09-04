@@ -21,29 +21,23 @@ const Conversor = () => {
             return false
         }
     })
-
+    // Nuevo estado para el Tonalli a las 12:00 pm (Caso)
+    const [tonalliMediodia, setTonalliMediodia] = useState(null)
     // Funcion interna para ejecutar la conversion
     const runConversion = (dateStr, timeStr) => {
-        // Combinar fecha y hora, para Caso (si no hay hora, se usa 12:00 como inicio de día)
-        const timeCaso = timeStr ? timeStr : '12:00'
-        const [yStr, mStr, dStr] = dateStr.split('-')
-        const [hStr, minStr] = timeCaso.split(':')
-        const year = parseInt(yStr, 10)
-        const month = parseInt(mStr, 10) - 1
-        const day = parseInt(dStr, 10)
-        const hour = parseInt(hStr, 10) || 0
-        const minute = parseInt(minStr, 10) || 0
-        const dateObj = new Date(year, month, day, hour, minute)
+        // Combinar fecha y hora, para Caso(si no hay hora, se usa 00:00)
+        const timeCaso = timeStr ? timeStr : '00:00'
+        const dateObj = new Date(`${dateStr}T${timeCaso}`)
 
         const tonalliResult = convertirTonalli(dateObj)//llamada de funcion
-        // Si el usuario no seleccionó hora, formatear la hora mostrada en Caso a 12:00 a.m.
-        /*  if (!timeStr && tonalliResult) {
-             tonalliResult.usedTime = '12:00 a.m.'
-         } */
         const xihuitlResult = convertirXihuitl(dateObj)//llamada de funcion
         const tonalliResultMeza = convertirTonalliMeza(dateStr, timeStr)//llamada de funcion
         const xihuitlResultMeza = convertirXihuitlMeza(dateStr, timeStr)//llamada de funcion
         const veintenaResultMeza = cempohualliMeza(dateStr, timeStr)//llamada de funcion
+
+        // Calcular Tonalli para las 12:00 pm (mediodía) de la misma fecha
+        const dateMediodia = new Date(`${dateStr}T12:00:00`)
+        const tonalliMediodiaResult = convertirTonalli(dateMediodia)
 
         //Actualizar el estado
         setTonalliDia(tonalliResult)
@@ -51,6 +45,7 @@ const Conversor = () => {
         setTonalliDiaMeza(tonalliResultMeza)
         setXihuitlAnioMeza(xihuitlResultMeza)
         setVeintenaMeza(veintenaResultMeza)
+        setTonalliMediodia(tonalliMediodiaResult)
 
         const ritualData = obtenerDiaRitual(dateStr, timeStr)
         if (ritualData) {
@@ -288,7 +283,8 @@ const Conversor = () => {
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDia.usedTime}</small>
+                                    <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDia.usedTime}</small><br />
+                                    {tonalliMediodia && (<small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Al medio día de la fecha ingresada el Tonalli es: {tonalliMediodia.numero.español} - {tonalliMediodia.simbolo.español}</small>)}
                                     {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDia.usedTime}</div> */}
                                     {/* <div className="alert alert-info py-1 small">Inicio del año: {tonalliDia.startTime}</div> */}
                                 </div>

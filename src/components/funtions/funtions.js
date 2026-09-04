@@ -110,7 +110,7 @@ export const getDiasMonth = (year, month) => {
 // Función para calcular días transcurridos manualmente 
 export const calcularDiasManual = (date) => {
     let dias = 0
-    const referenceFecha = new Date(1521, 7, 13)//fecha referencia 13-Ago-1521
+    const referenceFecha = new Date(1521, 7, 12, 12, 0, 0)//fecha referencia 13-Ago-1521
     const fechaInicio = new Date(referenceFecha.getTime())
     const fechaFin = new Date(date.getTime())
     // Ajustar por el cambio de calendario (5-15 de octubre de 1582 no existieron)
@@ -120,7 +120,7 @@ export const calcularDiasManual = (date) => {
     // Si la fecha elegida es posterior a la fecha de referencia
     if (fechaInicio < fechaFin) {
         //Salto de días por el cambio del calendario juliano al gregoriano en 1582
-        if (fechaCambioCalendarioA && fechaCambioCalendarioB) {
+        if (fechaFin > fechaCambioCalendarioA) {
             dias -= diasSaltados
         }
         // Calcular días año por año
@@ -162,48 +162,21 @@ export const calcularDiasManual = (date) => {
 //Funcion para convertir la fecha al calendario Tonalli
 export const convertirTonalli = (date) => {
     // Fecha de referencia: 13 de agosto de 1521 (1-serpiente)
-    const referenceFecha = new Date(1521, 7, 13)
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-
-    // El día Tonalli en la correspondencia de Caso inicia a las 12:00 PM.
-    // Si la hora es posterior a las 12:00 PM, corresponde al día Tonalli del día siguiente.
-    /* const effectiveDate = new Date(date.getTime());
-    if (hours >= 12) {
-        effectiveDate.setDate(effectiveDate.getDate() + 1);
-    } */
-    // 2. Ajuste de 12 horas para que el cambio de día náhuatl sea a las 12:00 PM
-    const fechaAjustada = new Date(date.getTime() - (12 * 60 * 60 * 1000));
-
-    const fechaInicial = new Date(referenceFecha.getFullYear(), referenceFecha.getMonth(), referenceFecha.getDate())
-    const fechaFinal = new Date(fechaAjustada.getFullYear(), fechaAjustada.getMonth(), fechaAjustada.getDate())
+    const referenceFecha = new Date(1521, 7, 12, 12, 0, 0)
+    const fechaInicial = new Date(referenceFecha.getTime())
+    const fechaFinal = new Date(date.getTime())
     const digitoReferencia = 1 // índice para digito tomado del 1 al 13
     const simboloReferencia = 4 // índice para serpiente tomado del 0 al 19
-
-    const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
-    const h12 = hours % 12 || 12;
-    const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
-    // Calculamos la diferencia relativa en días la función
-    /* const diasFechaFinal = calcularDiasManual(effectiveDate);
-    const diasFechaInicial = calcularDiasManual(referenceFecha);
-    // Si están en el mismo año, la diferencia es directa.
-    // Si cambian de año, la diferencia incluye los años transcurridos.
-    let diferenciaDias = 0;
-    if (effectiveDate.getFullYear() === referenceFecha.getFullYear()) {
-        diferenciaDias = Math.abs(diasFechaFinal - diasFechaInicial);
-    } else {
-        // Para años distintos, se calcula la diferencia considerando años completos transcurridos
-        const msPorDia = 1000 * 60 * 60 * 24;
-        diferenciaDias = Math.abs(Math.round((fechaFinal - fechaInicial) / msPorDia));
-    }
- */
-    let numero = digitoReferencia;
-    let simboloCal = simboloReferencia;
-    let diaCiclo = 0;
-
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    let diferenciaDias; // diferencia en días (con signo, puede ser negativa)
     // Si la fecha elegida es posterior a la fecha de referencia
     if (fechaInicial < fechaFinal) {
-        const diferenciaDias = (calcularDiasManual(fechaFinal))
+        diferenciaDias = (calcularDiasManual(date))
+        // Ajuste por hora: si es antes de las 12:00, se resta un día
+        if (hours < 12) {
+            diferenciaDias -= 1;
+        }
         //El ciclo tonalli es de 260 dias (13*20)
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo //operacion modulas num mod 260
@@ -212,26 +185,43 @@ export const convertirTonalli = (date) => {
         numero = numero <= 0 ? numero + 13 : numero
         let simboloCal = ((simboloReferencia + diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
+        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+        const h12 = hours % 12 || 12;
+        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
 
-        /*  return {
-             numero: numerosNombres[numero - 1],
-             simbolo: tonalliSimbolos[simboloCal],
-             numberImage: getImagePath(numerosNombres[numero - 1].image),
-             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-             diaCiclo,
-             simboloInv: tonalliSimbolos[simboloCal].español, //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
-             usedTime: usedTime
-         } */
+        return {
+            /* numero, */
+            numero: numerosNombres[numero - 1],
+            simbolo: tonalliSimbolos[simboloCal],
+            /* numberImage: new URL(`../images/${getNumberoImage(numero)}`, import.meta.url).href, */
+            numberImage: getImagePath(numerosNombres[numero - 1].image),
+            symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+            diaCiclo,
+            simboloInv: tonalliSimbolos[simboloCal].español, //se integra para acceder a la propiedad en español en el codigo Inverso.jsx            
+            usedTime: usedTime
+        }
     } else if (fechaInicial > fechaFinal) {// Si la fecha elegida es anterior a la fecha dereferencia
-        const diferenciaDias = (calcularDiasManual(fechaFinal))
+        diferenciaDias = -(calcularDiasManual(date))
+        // Ajuste por hora: si es antes de las 12:00, se resta un día
+        if (hours < 12) {
+            diferenciaDias -= 1;
+        }
+        /* console.log(diferenciaDias) */
+        //El ciclo tonalli es de 260 dias (13*20)
         const tonalliCiclo = 260
         const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo
-        let numero = ((digitoReferencia - diaCiclo) % 13)
+        /* console.log(diaCiclo) */
+        //Calcular el numero (1-13) y simbolo (0-19)
+        let numero = ((digitoReferencia + diaCiclo) % 13)
         numero = numero <= 0 ? numero + 13 : numero
-        let simboloCal = ((simboloReferencia - diaCiclo) % 20)
+        let simboloCal = ((simboloReferencia + diaCiclo) % 20)
         simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal
 
-        /* return {
+        const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+        const h12 = hours % 12 || 12;
+        const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
+        return {
             numero: numerosNombres[numero - 1],
             simbolo: tonalliSimbolos[simboloCal],
             numberImage: getImagePath(numerosNombres[numero - 1].image),
@@ -239,27 +229,53 @@ export const convertirTonalli = (date) => {
             diaCiclo,
             simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
             usedTime: usedTime
-        } */
+        }
     } else {// Si la fecha elegida es la fecha de referencia
-        let numero = digitoReferencia
-        let simboloCal = simboloReferencia
+        // Si la hora es anterior a las 12:00, en realidad es el día anterior del ciclo
+        if (hours < 12) {
+            // Calculamos como si fuera un día antes de la referencia
+            // Diferencia = -1 día (ya que es antes del mediodía)
+            diferenciaDias = -1;
+            const tonalliCiclo = 260;
+            const diaCiclo = ((diferenciaDias % tonalliCiclo) + tonalliCiclo) % tonalliCiclo; // 259
 
-        /*  return {
-             numero: numerosNombres[numero - 1],
-             simbolo: tonalliSimbolos[simboloCal],
-             numberImage: getImagePath(numerosNombres[numero - 1].image),
-             symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-             simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
-             usedTime: usedTime
-         } */
-    }
-    return {
-        numero: numerosNombres[numero - 1],
-        simbolo: tonalliSimbolos[simboloCal],
-        numberImage: getImagePath(numerosNombres[numero - 1].image),
-        symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
-        simboloInv: tonalliSimbolos[simboloCal].español,//se integra para acceder a la propiedad en español en el codigo Inverso.jsx 
-        usedTime: usedTime
+            let numero = ((digitoReferencia + diaCiclo) % 13);
+            numero = numero <= 0 ? numero + 13 : numero;
+
+            let simboloCal = ((simboloReferencia + diaCiclo) % 20);
+            simboloCal = simboloCal < 0 ? simboloCal + 20 : simboloCal;
+
+            const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+            const h12 = hours % 12 || 12;
+            const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
+            return {
+                numero: numerosNombres[numero - 1],
+                simbolo: tonalliSimbolos[simboloCal],
+                numberImage: getImagePath(numerosNombres[numero - 1].image),
+                symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+                diaCiclo,
+                simboloInv: tonalliSimbolos[simboloCal].español,
+                usedTime: usedTime
+            }
+        } else {
+            // Es exactamente la referencia (12:00 o después)
+            let numero = digitoReferencia;
+            let simboloCal = simboloReferencia;
+
+            const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+            const h12 = hours % 12 || 12;
+            const usedTime = `${h12}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+
+            return {
+                numero: numerosNombres[numero - 1],
+                simbolo: tonalliSimbolos[simboloCal],
+                numberImage: getImagePath(numerosNombres[numero - 1].image),
+                symbolImage: getImagePath(tonalliSimbolos[simboloCal].image),
+                simboloInv: tonalliSimbolos[simboloCal].español,
+                usedTime: usedTime
+            }
+        }
     }
 }
 //Funcion para convertir la fecha al calendario xihuitl (Caso con desplazamiento de inicios de año)
