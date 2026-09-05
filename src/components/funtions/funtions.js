@@ -316,7 +316,7 @@ export const convertirXihuitl = (date) => {
             //Si el año es mayor a 1521, restamos los bisiestos acumulados
             const bisiestos = contarBisisestos(referenceAño, year)
             fechaInicio.setDate(fechaInicio.getDate() - bisiestos)
-        } else if (year < refInicioAnio) {
+        } else if (year < referenceAño) {
             //Si el año es menor a 1521, sumanos los bisiestos acumulados
             const bisiestos = contarBisisestos(year, referenceAño)
             fechaInicio.setDate(fechaInicio.getDate() + bisiestos)
@@ -393,6 +393,40 @@ export const convertirXihuitl = (date) => {
         inicioAñoText: inicioAñoText,
         inicioTime: inicioTime
     }
+}
+export const cempohualliCaso = (date) => {
+    const xihuitlDate = convertirXihuitl(date)
+    const inicioXihuitl = xihuitlDate.inicioAñoFecha
+    //ajustar fecha de restar un día
+    const hours = date.getHours()
+    const effectiveDate = new Date(date)
+    if (hours < 12) {
+        effectiveDate.setDate(effectiveDate.getDate() - 1)
+    }
+    //diferencia de dias completos entre fecha efectiva e inicio de año
+    const diferenciaTime = effectiveDate.getTime() - inicioXihuitl.getTime()
+    let diferenciaDias = Math.floor(diferenciaTime / (1000 * 60 * 60 * 24))
+    //asegurar el rango de 0-364
+    while (diferenciaDias < 0) diferenciaDias += 365
+    diferenciaDias = diferenciaDias % 365
+    const diaAño = diferenciaDias + 1
+    //determinar si es nemon
+    if (diferenciaDias >= 360) {
+        return {
+            veintena: "Nemontemi",
+            dia: diaAño,
+            mesIndex: -1
+        }
+    } else {
+        const mesIndex = (17 + Math.floor(diferenciaDias / 20)) % 18
+        const veintenaName = cempohuallapohualli[mesIndex].nahuatl;
+        return {
+            veintena: veintenaName,
+            dia: diaAño,
+            mesIndex: mesIndex
+        };
+    }
+
 }
 
 //CUENTA MEZA
