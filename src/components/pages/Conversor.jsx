@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza, cempohualliMeza, obtenerDiaRitual } from '../funtions/funtions';
+import { convertirTonalli, convertirXihuitl, convertirTonalliMeza, convertirXihuitlMeza, cempohualliMeza, obtenerDiaRitual, cempohualliCaso } from '../funtions/funtions';
 import CalendarioGiratorio from './CalendarioGiratorio';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/Estilos.css'
@@ -23,6 +23,7 @@ const Conversor = () => {
     })
     // Nuevo estado para el Tonalli a las 12:00 pm (Caso)
     const [tonalliMediodia, setTonalliMediodia] = useState(null)
+    const [veintenaCaso, setVeintenaCaso] = useState(null)
     // Funcion interna para ejecutar la conversion
     const runConversion = (dateStr, timeStr) => {
         // Combinar fecha y hora, para Caso(si no hay hora, se usa 00:00)
@@ -31,6 +32,7 @@ const Conversor = () => {
 
         const tonalliResult = convertirTonalli(dateObj)//llamada de funcion
         const xihuitlResult = convertirXihuitl(dateObj)//llamada de funcion
+        const veintenaResultCaso = cempohualliCaso(dateObj)
         const tonalliResultMeza = convertirTonalliMeza(dateStr, timeStr)//llamada de funcion
         const xihuitlResultMeza = convertirXihuitlMeza(dateStr, timeStr)//llamada de funcion
         const veintenaResultMeza = cempohualliMeza(dateStr, timeStr)//llamada de funcion
@@ -42,6 +44,7 @@ const Conversor = () => {
         //Actualizar el estado
         setTonalliDia(tonalliResult)
         setXihuitlAnio(xihuitlResult)
+        setVeintenaCaso(veintenaResultCaso)
         setTonalliDiaMeza(tonalliResultMeza)
         setXihuitlAnioMeza(xihuitlResultMeza)
         setVeintenaMeza(veintenaResultMeza)
@@ -285,6 +288,7 @@ const Conversor = () => {
                                     </table>
                                     <small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Hora procesada: {tonalliDia.usedTime}</small><br />
                                     {tonalliMediodia && (<small className="text-secondary" style={{ fontSize: '12px', color: '#adb5bd' }}>Al medio día de la fecha ingresada el Tonalli es: {tonalliMediodia.numero.español} - {tonalliMediodia.simbolo.español}</small>)}
+                                    {veintenaCaso && (<div className="alert alert-success py-1 small">Esta fecha pertenece a la veintena: {veintenaCaso.veintena} {veintenaCaso.mesIndex !== -1 && `(mes ${veintenaCaso.mesIndex + 1} de 18)`} <br />Día {veintenaCaso.dia} de 365 días</div>)}
                                     {/* <div className="alert alert-secondary py-1 small mb-1">Hora procesada: {tonalliDia.usedTime}</div> */}
                                     {/* <div className="alert alert-info py-1 small">Inicio del año: {tonalliDia.startTime}</div> */}
                                 </div>

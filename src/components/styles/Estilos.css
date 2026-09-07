@@ -56,3 +56,8 @@
     animation-duration: 20s;
     /* Relación perfecta 13/20 para evitar desfasamiento a largo plazo */
 }
+
+/* Estilo nabvar */
+.navbar-links {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}

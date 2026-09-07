@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button, Navbar, Nav } from 'react-bootstrap'
 import { Link, useLocation } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import '../styles/Estilos.css'
 import { useTheme } from '../../context/ThemeContext'
 
 const Menu = () => {
@@ -23,25 +24,25 @@ const Menu = () => {
           <Navbar.Toggle aria-controls='basic-navbar-nav' className="ms-auto" />
           <Navbar.Collapse id='basic-navbar-nav' className="custom-navbar-collapse">
             <div className="d-none d-lg-block navbar-left-spacer"></div>
-            <Nav className='mx-auto text-center'>
+            <Nav className='mx-auto text-center navbar-links'>
               <ul className="navbar-nav justify-content-center mb-2 mb-lg-0 text-center">
                 <li className="nav-item">
-                  <Link className={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" to="/">Inicio{isActive('/') && <span className="visually-hidden">(actual)</span>}</Link>
+                  <Link className={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" to="/">INICIO{isActive('/') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ${isActive('/conversor') ? 'active' : ''}`} to="/conversor">Conversor{isActive('/conversor') && <span className="visually-hidden">(actual)</span>}</Link>
+                  <Link className={`nav-link ${isActive('/conversor') ? 'active' : ''}`} to="/conversor" >CONVERSOR{isActive('/conversor') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ${isActive('/inverso') ? 'active' : ''}`} to="/inverso">Inverso{isActive('/inverso') && <span className="visually-hidden">(actual)</span>}</Link>
+                  <Link className={`nav-link ${isActive('/inverso') ? 'active' : ''}`} to="/inverso">INVERSO{isActive('/inverso') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ${isActive('/tablero') ? 'active' : ''}`} to="/tablero">Tablero{isActive('/tablero') && <span className="visually-hidden">(actual)</span>}</Link>
+                  <Link className={`nav-link ${isActive('/tablero') ? 'active' : ''}`} to="/tablero">TABLERO{isActive('/tablero') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ${isActive('/toro') ? 'active' : ''}`} to="/toro">Toro{isActive('/toro') && <span className="visually-hidden">(actual)</span>}</Link>
+                  <Link className={`nav-link ${isActive('/toro') ? 'active' : ''}`} to="/toro">TORO{isActive('/toro') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ${isActive('/calculadora') ? 'active' : ''}`} to="/calculadora">Calculadora{isActive('/calculadora') && <span className="visually-hidden">(actual)</span>}</Link>
+                  <Link className={`nav-link ${isActive('/calculadora') ? 'active' : ''}`} to="/calculadora">CALCULADORA{isActive('/calculadora') && <span className="visually-hidden">(actual)</span>}</Link>
                 </li>
               </ul>
             </Nav>

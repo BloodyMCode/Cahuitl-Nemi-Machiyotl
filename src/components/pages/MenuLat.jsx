@@ -9,12 +9,12 @@ const MenuLat = () => {
     const isDark = theme === 'dark'
     const isActive = (path) => location.pathname === path
     const menuItems = [
-        { path: '/', label: 'Inicio' },
-        { path: '/conversor', label: 'Conversor' },
-        { path: '/inverso', label: 'Inverso' },
-        { path: '/tablero', label: 'Tablero' },
-        { path: '/toro', label: 'Toro' },
-        { path: '/calculadora', label: 'Calculadora' }
+        { path: '/', label: 'INICIO' },
+        { path: '/conversor', label: 'CONVERSOR' },
+        { path: '/inverso', label: 'INVERSO' },
+        { path: '/tablero', label: 'TABLERO' },
+        { path: '/toro', label: 'TORO' },
+        { path: '/calculadora', label: 'CALCULADORA' }
     ]
 
     return (
@@ -93,7 +93,7 @@ const MenuLat = () => {
                 }}
             >
                 <div style={{ marginBottom: '24px', paddingLeft: '8px' }}>
-                    <span style={{ fontSize: '10px', color: isDark ? '#29394fff' : '#38BDF8', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Menú Principal</span>
+                    <span style={{ fontSize: '10px', color: isDark ? '#29394fff' : '#38BDF8', fontWeight: '800', letterSpacing: '1.5px', textTransform: 'uppercase' }}>MENÚ PRINCIPAL</span>
                 </div>
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -107,6 +107,7 @@ const MenuLat = () => {
                                 padding: '12px 16px',
                                 borderRadius: '8px',
                                 textDecoration: 'none',
+                                fontFamily: 'Verdana',
                                 fontSize: '14px',
                                 fontWeight: isActive(item.path) ? '700' : '500',
                                 /* color: isActive(item.path) ? (isDark ? '#38BDF8' : '#2563EB') : (isDark ? '#e3e7ecff' : '#475569'), */

@@ -400,9 +400,9 @@ export const cempohualliCaso = (date) => {
     //ajustar fecha de restar un día
     const hours = date.getHours()
     const effectiveDate = new Date(date)
-    if (hours < 12) {
+    /* if (hours < 12) {
         effectiveDate.setDate(effectiveDate.getDate() - 1)
-    }
+    } */
     //diferencia de dias completos entre fecha efectiva e inicio de año
     const diferenciaTime = effectiveDate.getTime() - inicioXihuitl.getTime()
     let diferenciaDias = Math.floor(diferenciaTime / (1000 * 60 * 60 * 24))
@@ -417,7 +417,7 @@ export const cempohualliCaso = (date) => {
             dia: diaAño,
             mesIndex: -1
         }
-    } else {
+    } else {//mes de inicio izcalli tiene el index 17 en la lista
         const mesIndex = (17 + Math.floor(diferenciaDias / 20)) % 18
         const veintenaName = cempohuallapohualli[mesIndex].nahuatl;
         return {
