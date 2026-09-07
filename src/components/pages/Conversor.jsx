@@ -118,11 +118,33 @@ const Conversor = () => {
                                 <br />
                                 <button id="btn-mostrar-conversion" type="button" className="btn btn-secondary me-2" onClick={handleConvert} disabled={!selectedDate}>Mostrar conversión</button>
                                 <button id="btn-consulta-anterior" type="button" className="btn btn-outline-info" onClick={handleLoadPrevious} disabled={!hasPrevious}>Consulta anterior</button>
-                                <CalendarioGiratorio
-                                    tonalliDiaMeza={tonalliDiaMeza}
-                                    veintenaMeza={veintenaMeza}
-                                    ritualDay={ritualDay}
-                                />
+
+                                {(!tonalliDiaMeza || !tonalliDia) ? (
+                                    <CalendarioGiratorio
+                                        tipo="meza"
+                                        tonalliDiaMeza={tonalliDiaMeza}
+                                        veintenaMeza={veintenaMeza}
+                                        ritualDay={ritualDay}
+                                    />
+                                ) : (
+                                    <div className="row justify-content-center mt-3 g-4">
+                                        <div className="col-12 col-xl-6 d-flex justify-content-center">
+                                            <CalendarioGiratorio
+                                                tipo="meza"
+                                                tonalliDiaMeza={tonalliDiaMeza}
+                                                veintenaMeza={veintenaMeza}
+                                                ritualDay={ritualDay}
+                                            />
+                                        </div>
+                                        <div className="col-12 col-xl-6 d-flex justify-content-center">
+                                            <CalendarioGiratorio
+                                                tipo="caso"
+                                                tonalliDia={tonalliDia}
+                                                veintenaCaso={veintenaCaso}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
