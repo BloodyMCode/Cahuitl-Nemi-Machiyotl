@@ -68,7 +68,7 @@ function AppContent() {
       {/* SI SÍ es la página de Toro, la barra decorativa aparece ABAJO */}
       {esPaginaToro && BarraDecorativa}
       <footer className="text-center mt-5 p-4" style={{ borderTop: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0', color: theme === 'dark' ? '#94a3b8' : '#475569', fontSize: '0.9rem', transition: 'all 0.3s ease' }}>
-        <p className="mb-0">Creditos. © 2026 FLOR DE M. CRUZ R.  Todos los derechos reservados.</p>
+        <p className="mb-0">Creditos. © 2026 FLOR DE MARIA CRUZ REYES - RAMIRO CARRILLO CATALÁN. Todos los derechos reservados.</p>
       </footer>
     </>
   )
