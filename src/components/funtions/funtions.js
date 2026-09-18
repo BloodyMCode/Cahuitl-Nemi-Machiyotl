@@ -332,23 +332,25 @@ export const convertirXihuitl = (date) => {
     }
     // Obtener el año de la fecha seleccionada
     const currentAño = date.getFullYear()
-    //Determinar si la fecha consultada ya pasó el inicio de año de este año civil
-    const inicioAñoSelected = obtenerInicioAño(currentAño)
+    // Determinar a qué año Xihuitl pertenece la fecha seleccionada comparando con los inicios de año
+    const inicioAñoNext = obtenerInicioAño(currentAño + 1)
+    const inicioAñoCurr = obtenerInicioAño(currentAño)
+
     let xihuitlYear = currentAño
-    let fechaInicioAñoSeleted = inicioAñoSelected
-    if (effectiveDate < inicioAñoSelected) {
-        //Si la fecha y hora seleccionada es anterior al inicio del año xihuitl, la fecha pertenece al xhuitl anterior
+    let fechaInicioAñoSeleted = inicioAñoCurr
+
+    if (date >= inicioAñoNext) {
+        // Si la fecha y hora seleccionada es igual o posterior al inicio del año xihuitl del año civil siguiente
+        xihuitlYear = currentAño + 1
+        fechaInicioAñoSeleted = inicioAñoNext
+    } else if (date < inicioAñoCurr) {
+        // Si la fecha y hora seleccionada es anterior al inicio del año xihuitl del año actual civil
         xihuitlYear = currentAño - 1
         fechaInicioAñoSeleted = obtenerInicioAño(xihuitlYear)
+    } else {
+        xihuitlYear = currentAño
+        fechaInicioAñoSeleted = inicioAñoCurr
     }
-    //Normalizar fechas para comparar solo año, mes y día (sin horas)
-    //const dateSelectedOnly = new Date(date.getFullYear, date.getMonth(), date.getDate())
-    // const inicioDateAñoSelected = new Date(inicioAñoSelected.getFullYear(), inicioAñoSelected.getMonth(), inicioAñoSelected.getDate())
-    /*  if (dateSelectedOnly < inicioDateAñoSelected) {
-         //Si la fecha seleccionada es anterior al inicio del año xihuitl, la fecha pertenece al xhuitl anterior
-         xihuitlYear = currentAño - 1
-         fechaInicioAñoSeleted = obtenerInicioAño(xihuitlYear)
-     } */
     let numeroX = digitoReferencia
     let simboloCalXihuitl = simboloReferencia
     if (referenceAño < xihuitlYear) {//Si el año de referencia (1521) es menor al añoseleccionado 
