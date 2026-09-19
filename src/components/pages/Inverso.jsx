@@ -531,6 +531,13 @@ const Inverso = () => {
                                                 <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
                                                 <td>{result.xihuitl.numeroX.español} - {result.xihuitl.simboloX.español}</td>
                                             </tr>
+                                            {result.xihuitlCasoStartTime && (
+                                                <tr>
+                                                    <td colSpan={4} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>
+                                                        <span style={{ color: '#60a5fa' }}>📅 Nota: </span> De acuerdo a la conversión de Caso, el año {result.year} comienza el <strong>{result.xihuitlCasoStartTime}</strong> ({result.xihuitlCasoCal}).
+                                                    </td>
+                                                </tr>
+                                            )}
                                             {result.xihuitlMezaStartTime && (
                                                 <tr>
                                                     <td colSpan={4} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>

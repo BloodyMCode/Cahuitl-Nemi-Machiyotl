@@ -682,14 +682,10 @@ export const encuentraCoincidence = (
     setTonalliMessage,
     setLoading
 ) => {
-    if (selectedStartDate === selectedEndDate) {
-        setResults([])
-        setTonalliMessage("En este periodo no existen coincidencias con el nombre Tonalli indicado, por favor introduzca un periodo distinto")
-        return
-    }
-
-    const fechaInicio = new Date(selectedStartDate + 'T00:00:00')
-    const fechaFin = new Date(selectedEndDate + 'T00:00:00')
+    const fechaA = new Date(selectedStartDate + 'T00:00:00')
+    const fechaB = new Date(selectedEndDate + 'T23:59:59')
+    const fechaInicio = fechaA <= fechaB ? fechaA : fechaB
+    const fechaFin = fechaA <= fechaB ? fechaB : fechaA
 
     setLoading(true)
     setTonalliMessage("")
@@ -697,7 +693,7 @@ export const encuentraCoincidence = (
 
     setTimeout(() => {
         const matches = []
-        const fechaJuliano = new Date(1582, 9, 4)
+        const fechaJuliano = new Date(1582, 9, 4, 23, 59, 59)
 
         // Recorrer años, meses y días desde la fecha inicio hasta la fecha fin
         for (let year = fechaInicio.getFullYear(); year <= fechaFin.getFullYear(); year++) {
@@ -712,7 +708,11 @@ export const encuentraCoincidence = (
                 const endDay = (year === fechaFin.getFullYear() && month === fechaFin.getMonth()) ? fechaFin.getDate() : diasInMonth
 
                 for (let day = startDay; day <= endDay; day++) {
-                    const currentDate = new Date(year, month, day)
+                    // Considerar los días quitados del cambio de calendario juliano a gregoriano (5 al 14 de octubre de 1582)
+                    if (year === 1582 && month === 9 && day >= 5 && day <= 14) continue;
+
+                    // Instanciar a las 00:00:00 (12:00 a.m. / medianoche) para que convertirTonalli considere las 12 am y reste las 12 horas (hours < 12)
+                    const currentDate = new Date(year, month, day, 0, 0, 0)
                     if (currentDate > fechaFin) break
 
                     const tonalli = convertirTonalli(currentDate)
@@ -720,9 +720,8 @@ export const encuentraCoincidence = (
                     const tonalliMeza = convertirTonalliMeza(currentDate)
                     const xihuitlMeza = convertirXihuitlMeza(currentDate)
 
-                    //if (tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo) {
-                    const matchCaso = tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo;
-                    const matchMeza = tonalliMeza && tonalliMeza.numeroT.español === numero.toString() && tonalliMeza.signoT.español === simbolo;
+                    const matchCaso = tonalli && tonalli.numero && tonalli.numero.español === numero.toString() && tonalli.simbolo && tonalli.simbolo.español === simbolo;
+                    const matchMeza = tonalliMeza && tonalliMeza.numeroT && tonalliMeza.numeroT.español === numero.toString() && tonalliMeza.signoT && tonalliMeza.signoT.español === simbolo;
 
                     if (matchCaso || matchMeza) {
                         matches.push({
@@ -773,23 +772,63 @@ export const buscarXihuitl = (
         const firstYear = Math.min(yearStart, yearEnd)
         const lastYear = Math.max(yearStart, yearEnd)
 
+        // Función auxiliar para obtener la fecha de inicio de año según Caso
+        const obtenerInicioAñoCaso = (year) => {
+            if (year >= 1654) {
+                return new Date(year, 0, 1, 12, 0, 0);
+            }
+            const refInicioAnio = new Date(1521, 0, 24, 12, 0, 0);
+            const fechaInicio = new Date(refInicioAnio.getTime());
+            fechaInicio.setFullYear(year);
+            if (year > 1521) {
+                let bisiestos = 0;
+                for (let y = 1521; y < year; y++) {
+                    if (bisiestoAnio(y)) bisiestos++;
+                }
+                fechaInicio.setDate(fechaInicio.getDate() - bisiestos);
+            } else if (year < 1521) {
+                let bisiestos = 0;
+                for (let y = year; y < 1521; y++) {
+                    if (bisiestoAnio(y)) bisiestos++;
+                }
+                fechaInicio.setDate(fechaInicio.getDate() + bisiestos);
+            } else {
+                fechaInicio.setDate(24);
+            }
+            if (year > 1582) {
+                fechaInicio.setDate(fechaInicio.getDate() + 10);
+            }
+            fechaInicio.setHours(12, 0, 0, 0);
+            return fechaInicio;
+        };
+
         for (let year = firstYear; year <= lastYear; year++) {
             if (year === 0) continue
-            // Cada año tiene un identificador Xihuitl.
-            const xihuitl = convertirXihuitl(new Date(year, 0, 1))
-            // Se pasa el año como string 'YYYY-01-01' para que obtenerDiaRitual calcule
-            // correctamente la fecha y hora de inicio del año ritual (startTime) según el
-            // ciclo de 4 posiciones: año 1 = 2/12-mar 06:43, año 2 = 2/12-mar 12:43,
-            // año 3 = 1/11-mar 18:43, año 4 = 2/12-mar 00:43 (juliano/gregoriano)
+
+            // Obtener la fecha de inicio de año según la cuenta Caso:
+            // Para años >= 1654 es el 1 de enero; para años anteriores (< 1654) es su inicio de año correspondiente
+            const fechaInicioCaso = obtenerInicioAñoCaso(year)
+            const xihuitl = convertirXihuitl(fechaInicioCaso)
+
+            // Se pasa el año como string 'YYYY-01-01' para que obtenerDiaRitual calcule la cuenta Meza
             const xihuitlMeza = convertirXihuitlMeza(`${year}-01-01`)
-            if (xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX.español === simboloX) {
+
+            if (xihuitl && xihuitl.numeroX && xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX && xihuitl.simboloX.español === simboloX) {
+                const inicioFecha = xihuitl.inicioAñoFecha
+                const inicioAno = inicioFecha ? inicioFecha.getFullYear() : year
+                const diaMes = inicioFecha ? inicioFecha.toLocaleDateString('es-MX', { day: '2-digit', month: 'long' }) : ''
+                const textoDia = (inicioFecha && inicioAno !== year) ? `${diaMes} de ${inicioAno}` : `${diaMes}`
+                const calCaso = (inicioFecha && inicioFecha < new Date(1582, 9, 15)) ? 'Juliano' : 'Gregoriano'
+
                 matches.push({
                     year: year,
                     calendar: year < 1582 ? 'Juliano' : 'Gregoriano',
                     xihuitl: xihuitl,
                     xihuitlMeza: xihuitlMeza,
                     xihuitlMezaStartTime: xihuitlMeza ? xihuitlMeza.startTime : null,
-                    xihuitlMezaCal: xihuitlMeza ? (year <= 1582 ? 'Juliano' : 'Gregoriano') : null
+                    xihuitlMezaCal: xihuitlMeza ? (year <= 1582 ? 'Juliano' : 'Gregoriano') : null,
+                    xihuitlCasoStartTime: `${textoDia}, 12 pm`,
+                    xihuitlCasoCal: calCaso
                 })
             }
         }

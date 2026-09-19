@@ -308,7 +308,7 @@ body.light-theme .input-group-text {
 /* Column containing digit '1' starting the trecena gets a lighter background */
 body.light-theme .bg-column-one,
 body.light-theme .table td.bg-column-one {
-  background-color: #f1f5f9 !important;
+  background-color: #e9ebee !important;
 }
 
 /* --- CLASES DE UTILIDAD GENERAL PARA TEMAS --- */
