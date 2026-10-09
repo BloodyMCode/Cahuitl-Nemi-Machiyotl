@@ -843,8 +843,8 @@ export const buscarXihuitl = (
 
 /**
  * Busca el Xihuitl de un año civil dado.
- * - Usa convertirXihuitl con el 1 de enero del año para la cuenta Caso.
- * - Usa convertirXihuitlMeza con el 12 de marzo del año para la cuenta Meza.
+ * - Usa convertirXihuitl con la fecha de inicio de año según Caso.
+ * - Usa convertirXihuitlMeza con el día y hora de inicio de año según Meza.
  * @param {number} year - Año civil a consultar
  * @param {Function} setCivilResults - Setter del estado de resultados
  * @param {Function} setCivilMessage - Setter del estado de mensaje
@@ -862,15 +862,70 @@ export const buscarAnioCivil = (year, setCivilResults, setCivilMessage, setLoadi
             return
         }
 
-        // Xihuitl Caso: 1 de enero del año civil
-        const dateEnero = new Date(year, 0, 1)
-        const xihuitlCaso = convertirXihuitl(dateEnero)
+        // 1. Xihuitl Caso: determinar la fecha de inicio del año a buscar
+        const refInicioAnio = new Date(1521, 0, 24, 12, 0, 0);
+        const contarBisiestos = (y1, y2) => {
+            let count = 0;
+            const min = Math.min(y1, y2);
+            const max = Math.max(y1, y2);
+            for (let y = min; y < max; y++) {
+                if (bisiestoAnio(y)) {
+                    count++;
+                }
+            }
+            return count;
+        };
+        const obtenerInicioAñoCaso = (y) => {
+            const fechaInicio = new Date(refInicioAnio.getTime());
+            fechaInicio.setFullYear(y);
+            if (y > 1521) {
+                const bisiestos = contarBisiestos(1521, y);
+                fechaInicio.setDate(fechaInicio.getDate() - bisiestos);
+            } else if (y < 1521) {
+                const bisiestos = contarBisiestos(y, 1521);
+                fechaInicio.setDate(fechaInicio.getDate() + bisiestos);
+            } else {
+                fechaInicio.setDate(24);
+            }
+            if (y > 1582) {
+                fechaInicio.setDate(fechaInicio.getDate() + 10);
+            }
+            fechaInicio.setHours(12, 0, 0, 0);
+            return fechaInicio;
+        };
 
-        // Xihuitl Meza: 12 de marzo del año civil (inicio del año ritual Meza)
-        const dateMarzoStr = `${year}-03-12`
-        const xihuitlMeza = convertirXihuitlMeza(dateMarzoStr)
+        const fechaInicioCaso = obtenerInicioAñoCaso(year);
+        const xihuitlCaso = convertirXihuitl(fechaInicioCaso);
 
-        const calendar = year < 1582 ? 'Juliano' : 'Gregoriano'
+        const fechaInicioCasoDate = xihuitlCaso?.inicioAñoFecha || fechaInicioCaso;
+        const diaMesAno = fechaInicioCasoDate.toLocaleDateString('es-MX', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        const xihuitlCasoStartTime = `${diaMesAno} a las 12 pm`;
+        const calCaso = fechaInicioCasoDate < new Date(1582, 9, 15) ? 'Juliano' : 'Gregoriano';
+
+        // 2. Xihuitl Meza: determinar el inicio del año según la hora y día de inicio que corresponda
+        const isJuliano = year <= 1582;
+        const baseDay = isJuliano ? 2 : 12;
+        let cyclePos = (year - 2026) % 4;
+        if (cyclePos < 0) cyclePos += 4;
+
+        let sDay = baseDay;
+        let sHour = 6;
+        let sMin = 43;
+
+        if (cyclePos === 1) sHour = 12;
+        if (cyclePos === 2) { sDay = baseDay - 1; sHour = 18; }
+        if (cyclePos === 3) { sHour = 0; }
+
+        const sDayStr = String(sDay).padStart(2, '0');
+        const dateMezaStr = `${year}-03-${sDayStr}`;
+        const timeMezaStr = `${String(sHour).padStart(2, '0')}:${String(sMin).padStart(2, '0')}`;
+        const xihuitlMeza = convertirXihuitlMeza(dateMezaStr, timeMezaStr);
+
+        const calendar = year < 1582 ? 'Juliano' : 'Gregoriano';
 
         setCivilResults([{
             year: year,
@@ -878,11 +933,13 @@ export const buscarAnioCivil = (year, setCivilResults, setCivilMessage, setLoadi
             xihuitl: xihuitlCaso,
             xihuitlMeza: xihuitlMeza,
             xihuitlMezaStartTime: xihuitlMeza ? xihuitlMeza.startTime : null,
-            xihuitlMezaCal: xihuitlMeza ? (year <= 1582 ? 'Juliano' : 'Gregoriano') : null
-        }])
-        setLoading(false)
-    }, 100)
-}
+            xihuitlMezaCal: xihuitlMeza ? (year <= 1582 ? 'Juliano' : 'Gregoriano') : null,
+            xihuitlCasoStartTime: xihuitlCasoStartTime,
+            xihuitlCasoCal: calCaso
+        }]);
+        setLoading(false);
+    }, 100);
+};
 
 // Formatear fecha para mostrar
 export const formatDate = (date) => {
@@ -909,29 +966,31 @@ export const buscarAmbos = (
     setLoadingAmbos
 ) => {
     // Determinar fechaInicio y fechaFin según modoAmbos
-    let startDateStr, endDateStr;
+    let fechaA, fechaB;
 
     if (modoAmbos === 'fecha') {
-        // Usar directamente las fechas ingresadas; normalizar orden internamente
-        startDateStr = selectedStartDate;
-        endDateStr = selectedEndDate;
+        let dateStrA = selectedStartDate;
+        let dateStrB = selectedEndDate;
+        if (dateStrA > dateStrB) {
+            [dateStrA, dateStrB] = [dateStrB, dateStrA];
+        }
+        fechaA = new Date(dateStrA + 'T00:00:00');
+        fechaB = new Date(dateStrB + 'T23:59:59');
     } else {
-        // Año inicio y año fin: se usa el primer día del año inicio y el último del año fin
+        // Año inicio y año fin: se usa del 01 de enero del año inicial al 31 de diciembre del año final
         const yA = parseInt(yearStart);
         const yB = parseInt(yearEnd);
         const yMin = Math.min(yA, yB);
         const yMax = Math.max(yA, yB);
-        startDateStr = `${yMin}-01-01`;
-        endDateStr = `${yMax}-12-31`;
+        fechaA = new Date(yMin, 0, 1, 0, 0, 0);
+        fechaB = new Date(yMax, 11, 31, 23, 59, 59);
     }
 
-    const fechaA = new Date(startDateStr + 'T00:00:00');
-    const fechaB = new Date(endDateStr + 'T00:00:00');
     // Normalizar: fechaInicio siempre es la menor, fechaFin la mayor (permite ingreso invertido)
     const fechaInicio = fechaA <= fechaB ? fechaA : fechaB;
     const fechaFin = fechaA <= fechaB ? fechaB : fechaA;
 
-    if (fechaInicio.getTime() === fechaFin.getTime()) {
+    if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
         setAmbosResults([]);
         setAmbosMessage("En este periodo no existen coincidencias con los nombres indicados, por favor introduzca un periodo distinto");
         return;
@@ -943,11 +1002,11 @@ export const buscarAmbos = (
 
     setTimeout(() => {
         const matches = [];
-        const fechaJuliano = new Date(1582, 9, 4);
+        const fechaJuliano = new Date(1582, 9, 4, 23, 59, 59);
 
-        // Recorrer todos los días del periodo, igual que en encuentraCoincidence
+        // Recorrer todos los días del periodo
         for (let year = fechaInicio.getFullYear(); year <= fechaFin.getFullYear(); year++) {
-            if (year === 0) continue;//el año 0 no existe en el calendario civil
+            if (year === 0) continue; // El año 0 no existe en el calendario civil
 
             const startMonth = (year === fechaInicio.getFullYear()) ? fechaInicio.getMonth() : 0;
             const endMonth = (year === fechaFin.getFullYear()) ? fechaFin.getMonth() : 11;
@@ -958,37 +1017,40 @@ export const buscarAmbos = (
                 const endDay = (year === fechaFin.getFullYear() && month === fechaFin.getMonth()) ? fechaFin.getDate() : diasEnMes;
 
                 for (let day = startDay; day <= endDay; day++) {
-                    const currentDate = new Date(year, month, day);
+                    // Considerar los días quitados del cambio de calendario juliano a gregoriano (5 al 14 de octubre de 1582)
+                    if (year === 1582 && month === 9 && day >= 5 && day <= 14) continue;
+
+                    // Instanciar a las 00:00:00 (12:00 a.m. / medianoche) para que convertirTonalli considere las 12 am y reste las 12 horas (hours < 12)
+                    const currentDate = new Date(year, month, day, 0, 0, 0);
                     if (currentDate > fechaFin) break;
 
                     const tonalli = convertirTonalli(currentDate);
-                    // Para xihuitl: en modo 'fecha' el xihuitl considera el año de la fecha actual
-                    // En modo 'anio' también se usa el año de la fecha actual (primer día del año)
                     const xihuitl = convertirXihuitl(currentDate);
                     const tonalliMeza = convertirTonalliMeza(currentDate);
                     const xihuitlMeza = convertirXihuitlMeza(currentDate);
 
-                    const matchTonalliCaso = tonalli.numero.español === numero.toString() && tonalli.simbolo.español === simbolo;
-                    const matchTonalliMeza = tonalliMeza && tonalliMeza.numeroT.español === numero.toString() && tonalliMeza.signoT.español === simbolo;
-                    const matchXihuitlCaso = xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX.español === simboloX;
-                    const matchXihuitlMeza = xihuitlMeza && xihuitlMeza.numeroX.español === numeroX.toString() && xihuitlMeza.simboloX.español === simboloX;
+                    const matchTonalliCaso = tonalli && tonalli.numero && tonalli.numero.español === numero.toString() && tonalli.simbolo && tonalli.simbolo.español === simbolo;
+                    const matchXihuitlCaso = xihuitl && xihuitl.numeroX && xihuitl.numeroX.español === numeroX.toString() && xihuitl.simboloX && xihuitl.simboloX.español === simboloX;
+                    const matchCaso = matchTonalliCaso && matchXihuitlCaso;
 
-                    // Solo incluir si coincide tonalli Y xihuitl (cualquier combinación Caso/Meza)
-                    const coincideTonalli = matchTonalliCaso || matchTonalliMeza;
-                    const coincideXihuitl = matchXihuitlCaso || matchXihuitlMeza;
+                    const matchTonalliMeza = tonalliMeza && tonalliMeza.numeroT && tonalliMeza.numeroT.español === numero.toString() && tonalliMeza.signoT && tonalliMeza.signoT.español === simbolo;
+                    const matchXihuitlMeza = xihuitlMeza && xihuitlMeza.numeroX && xihuitlMeza.numeroX.español === numeroX.toString() && xihuitlMeza.simboloX && xihuitlMeza.simboloX.español === simboloX;
+                    const matchMeza = matchTonalliMeza && matchXihuitlMeza;
 
-                    if (coincideTonalli && coincideXihuitl) {
+                    if (matchCaso || matchMeza) {
                         matches.push({
                             date: currentDate,
                             calendar: currentDate <= fechaJuliano ? 'Juliano' : 'Gregoriano',
-                            tonalli,
-                            xihuitl,
-                            tonalliMeza,
-                            xihuitlMeza,
-                            matchTonalliCaso,
-                            matchTonalliMeza,
-                            matchXihuitlCaso,
-                            matchXihuitlMeza,
+                            tonalli: tonalli,
+                            xihuitl: xihuitl,
+                            tonalliMeza: tonalliMeza,
+                            xihuitlMeza: xihuitlMeza,
+                            matchCaso: matchCaso,
+                            matchMeza: matchMeza,
+                            matchTonalliCaso: matchTonalliCaso,
+                            matchXihuitlCaso: matchXihuitlCaso,
+                            matchTonalliMeza: matchTonalliMeza,
+                            matchXihuitlMeza: matchXihuitlMeza
                         });
                     }
                 }

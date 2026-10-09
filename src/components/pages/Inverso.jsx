@@ -512,40 +512,31 @@ const Inverso = () => {
                             <h5 className="mb-0">Resultados Xihuitl: {numeroX} - {simboloX} ({xihuitlResultsDesc.length} coincidencias)</h5>
                         </div>
                         <div className="table-responsive">
-                            <table className="table table-hover mb-0">
+                            <table className="table table-hover align-middle mb-0">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th>#</th>
-                                        <th>Año</th>
-                                        <th>Calendario</th>
-                                        <th>Xihuitl</th>
+                                        <th style={{ width: '8%', textAlign: 'center' }}>#</th>
+                                        <th style={{ width: '18%', textAlign: 'center' }}>Año</th>
+                                        <th style={{ width: '28%', textAlign: 'center' }}>Xihuitl</th>
+                                        <th style={{ width: '18%', textAlign: 'center' }}>Calendario</th>
+                                        <th style={{ width: '28%' }}>Nota</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {xihuitlResultsDesc.map((result, index) => (
-                                        /* React.Fragment para poder renderizar la fila de datos y la fila de nota juntas */
-                                        <React.Fragment key={index}>
-                                            <tr>
-                                                <td>{index + 1}</td>
-                                                <td>{result.year}</td>
-                                                <td><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
-                                                <td>{result.xihuitl.numeroX.español} - {result.xihuitl.simboloX.español}</td>
-                                            </tr>
-                                            {result.xihuitlCasoStartTime && (
-                                                <tr>
-                                                    <td colSpan={4} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>
-                                                        <span style={{ color: '#60a5fa' }}>📅 Nota: </span> De acuerdo a la conversión de Caso, el año {result.year} comienza el <strong>{result.xihuitlCasoStartTime}</strong> ({result.xihuitlCasoCal}).
-                                                    </td>
-                                                </tr>
-                                            )}
-                                            {result.xihuitlMezaStartTime && (
-                                                <tr>
-                                                    <td colSpan={4} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>
-                                                        <span style={{ color: '#4ade80' }}>📅 Nota: </span> De acuerdo a la conversión de Meza, el año {result.year} comienza el <strong>{result.xihuitlMezaStartTime}</strong> ({result.xihuitlMezaCal}).
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </React.Fragment>
+                                        <tr key={index}>
+                                            <td className="text-center">{index + 1}</td>
+                                            <td className="text-center fw-bold">{result.year}</td>
+                                            <td className="text-center">{result.xihuitl.numeroX.español} - {result.xihuitl.simboloX.español}</td>
+                                            <td className="text-center"><span className={`badge ${result.calendar === 'Juliano' ? 'bg-warning text-dark' : 'bg-info text-dark'}`}>{result.calendar}</span></td>
+                                            <td className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '4px', paddingBottom: '4px', lineHeight: '1.3' }}>
+                                                {(result.xihuitlCasoStartTime || result.xihuitlMezaStartTime) && (
+                                                    <>
+                                                        <span style={{ color: '#60a5fa' }}>Nota: </span> En correlación de Caso el año inicia el <strong>{result.xihuitlCasoStartTime}</strong> y en correlación de Meza el año inicia el <strong>{result.xihuitlMezaStartTime}</strong>.
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
                                     ))}
                                 </tbody>
                             </table>
@@ -632,10 +623,10 @@ const Inverso = () => {
                                                 <td>{result.xihuitlMeza?.numeroX?.español} - {result.xihuitlMeza?.simboloX?.español}</td>
                                                 <td>{result.xihuitl?.numeroX?.español} - {result.xihuitl?.simboloX?.español}</td>
                                             </tr>
-                                            {result.xihuitlMezaStartTime && (
+                                            {(result.xihuitlMezaStartTime || result.xihuitlCasoStartTime) && (
                                                 <tr>
                                                     <td colSpan={5} className="text-muted fst-italic" style={{ fontSize: '0.85em', paddingTop: '2px', paddingBottom: '6px', borderTop: 'none' }}>
-                                                        <span style={{ color: '#059669' }}>📅 Nota (Meza): </span> De acuerdo a la conversión de Meza, el año {result.year} inicia el <strong>{result.xihuitlMezaStartTime}</strong> ({result.xihuitlMezaCal}).
+                                                        <span style={{ color: '#059669' }}>📅 Nota: </span> De acuerdo a la correlación de Meza, el año inicia el <strong>{result.xihuitlMezaStartTime}</strong> y de acuerdo a la correlación de Caso el año inicia el <strong>{result.xihuitlCasoStartTime}</strong>.
                                                     </td>
                                                 </tr>
                                             )}

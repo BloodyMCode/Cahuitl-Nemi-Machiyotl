@@ -177,7 +177,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay, tonalliD
         }}>
             {/* Título de Cuenta */}
             <h5 className="fw-bold mb-3" style={{ color: 'gold', zIndex: 20, textAlign: 'center' }}>
-                {isCaso ? 'Cuenta de Caso' : 'Cuenta de Meza'}
+                {isCaso ? 'Correspondencia de Caso' : 'Correspondencia de Meza'}
             </h5>
 
             {/* Contenedor Escalable */}
@@ -385,7 +385,7 @@ const CalendarioGiratorio = ({ tonalliDiaMeza, veintenaMeza, ritualDay, tonalliD
                     </div>
                 ) : (
                     <div className="spinning-status" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontSize: '0.9rem' }}>
-                        {isCaso ? "RUEDA CALENDÁRICA BASADA EN LA CUENTA DE CASO" : "RUEDA CALENDÁRICA BASADA EN LA CUENTA DE MEZA"}
+                        {isCaso ? "RUEDA CALENDÁRICA BASADA EN LA CORRESPONDENCIA DE CASO" : "RUEDA CALENDÁRICA BASADA EN LA CORRESPONDENCIA DE MEZA"}
                     </div>
                 )}
             </div>
