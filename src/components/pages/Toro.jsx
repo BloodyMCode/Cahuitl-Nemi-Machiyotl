@@ -63,6 +63,30 @@ const slidersSteps = toroData.trajectory.map((_, i) => ({
     label: (i + 1).toString(),
     method: 'skip'
 }));
+
+// ============================================================================
+// OPTIMIZACIÓN: catContainers se construye UNA SOLA VEZ al cargar el módulo.
+// Moverlo aquí evita recalcular los ~260 puntos en cada re-render de React,
+// lo que causaba llamadas innecesarias a Plotly.react() y congelamientos.
+// ============================================================================
+const catContainers = {
+    base: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 5, color: '#94A3B8', symbol: 'circle', name: 'Día Regular' },
+    familia_q_1: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 7, color: '#00B5B5', symbol: 'diamond', name: 'Inicio Veintena' },
+    tlahuiztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.tlahuiztlanpa, symbol: 'circle', name: 'Tlahuiztlanpa (Oriente)' },
+    huitztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.huitztlanpa, symbol: 'circle', name: 'Huitztlanpa (Sur)' },
+    cihuatlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.cihuatlanpa, symbol: 'circle', name: 'Cihuatlanpa (Poniente)' },
+    mictlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.mictlanpa, symbol: 'circle', name: 'Mictlanpa (Norte)' }
+};
+// Distribuir la data geométrica dentro de las 6 categorías estructurales (una sola vez al cargar el módulo)
+toroData.trajectory.forEach((t) => {
+    const pt = toroData.points[t.n];
+    const container = catContainers[pt.classKey] || catContainers.base;
+    container.x.push(t.x); container.y.push(t.y); container.z.push(t.z); container.n.push(t.n);
+    container.text_num.push(`(${pt.q},${pt.r})`);
+    container.text_img.push(`${pt.numeral}-${pt.symName}`);
+    container.hover.push(`Día n=${t.n}<br>Tonal: ${pt.numeral} ${pt.symName}<br>Coord: (${pt.q},${pt.r})`);
+});
+
 // --- COMPONENTE LÓGICO CON CAMBIO DE COLOR EXACTO EN EL VÉRTICE ---
 // --- NUEVA LOGICA: TRAZAS DE TRAYECTORIA SEPARADAS POR RUMBO (ELIMINA DEGRADADOS) ---
 const getRumboSegments = (maxDay) => {
@@ -158,7 +182,9 @@ const Toro = () => {
             bgcolor: '#FFFFFF',
             aspectmode: 'data',
             uirevision: 'toro-view', // Firma inmutable de la escena 3D
-            camera: {} // Aquí Plotly almacenará dinámicamente tu rotación/zoom
+            // Proyección ortográfica: elimina el escalado de texto por profundidad 3D
+            // que causaba que las etiquetas se vieran grandes/chicas al rotar el toro
+            camera: { projection: { type: 'orthographic' } }
         },
         showlegend: false,
         // Configuración de la barra
@@ -321,7 +347,9 @@ const Toro = () => {
                 layoutRef.current.scene.camera = {
                     up: { x: currentCamera.up.x, y: currentCamera.up.y, z: currentCamera.up.z },
                     center: { x: currentCamera.center.x, y: currentCamera.center.y, z: currentCamera.center.z },
-                    eye: { x: currentCamera.eye.x, y: currentCamera.eye.y, z: currentCamera.eye.z }
+                    eye: { x: currentCamera.eye.x, y: currentCamera.eye.y, z: currentCamera.eye.z },
+                    // Preservar proyección ortográfica en cada frame para evitar reseteo por Plotly
+                    projection: { type: 'orthographic' }
                 };
             }
 
@@ -534,26 +562,10 @@ const Toro = () => {
     // ============================================================================
     // 4. CONSTRUCCIÓN DE LAS TRAZAS ESTRUCTURALES DEL ENTORNO
     // ============================================================================
-    const catContainers = {
-        base: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 5, color: '#94A3B8', symbol: 'circle', name: 'Día Regular' },
-        familia_q_1: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 7, color: '#00B5B5', symbol: 'diamond', name: 'Inicio Veintena' },
-        tlahuiztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.tlahuiztlanpa, symbol: 'circle', name: 'Tlahuiztlanpa (Oriente)' },
-        huitztlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.huitztlanpa, symbol: 'circle', name: 'Huitztlanpa (Sur)' },
-        cihuatlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.cihuatlanpa, symbol: 'circle', name: 'Cihuatlanpa (Poniente)' },
-        mictlanpa: { x: [], y: [], z: [], text_num: [], text_img: [], hover: [], n: [], size: 9, color: RUMBO_COLORS.mictlanpa, symbol: 'circle', name: 'Mictlanpa (Norte)' }
-    };
-
-    // Distribuir la data geométrica dentro de las 6 categorías estructurales
-    toroData.trajectory.forEach((t) => {
-        const pt = toroData.points[t.n];
-        const container = catContainers[pt.classKey] || catContainers.base;
-        container.x.push(t.x); container.y.push(t.y); container.z.push(t.z); container.n.push(t.n);
-        container.text_num.push(`(${pt.q},${pt.r})`);
-        container.text_img.push(`${pt.numeral}-${pt.symName}`);
-        container.hover.push(`Día n=${t.n}<br>Tonal: ${pt.numeral} ${pt.symName}<br>Coord: (${pt.q},${pt.r})`);
-    });
-
-    const categoryTraces = TRACE_KEYS.map((cat_key) => {
+    // OPTIMIZACIÓN: catContainers fue movido al nivel de módulo (fuera del componente).
+    // categoryTraces se memoiza para evitar que Plotly.react() se llame en cada
+    // re-render menor (cambio de followMode, activeDayData, speed, etc.)
+    const categoryTraces = useMemo(() => TRACE_KEYS.map((cat_key) => {
         const cat = catContainers[cat_key];
         const isBase = cat_key === 'base';
         // Asignación dinámica del modo de marcadores
@@ -590,7 +602,7 @@ const Toro = () => {
             customdata: cat.n,
             name: cat.name
         };
-    });
+    }), [labelsVisibility, currentRepresentation]); // Solo se recalcula cuando cambia la representación o visibilidad
 
     // --- TRAZO 7: RASTRO (TRAIL) ANIMADO ---
     // CORRECCIÓN: Garantizar que tengan arrays con el origen inicial estructurado desde el día 1
@@ -608,6 +620,8 @@ const Toro = () => {
     ];
 
     // --- TRAZO 8: GENERADOR ACTIVO (TRACER) ANIMADO ---
+    // CORRECCIÓN: El tamaño de fuente inicial debe coincidir con el que usa la animación
+    // (13 para números, 18 para Numeral/Glifo) para evitar el salto visual al primer frame
     const tracerTrace = {
         type: 'scatter3d',
         x: [initialPt.x], y: [initialPt.y], z: [initialPt.z],
@@ -615,7 +629,7 @@ const Toro = () => {
         marker: { size: 10, color: '#EF4444', symbol: 'circle', line: { color: '#FFFFFF', width: 1.5 } },
         text: [currentRepresentation === 'numeros' ? `(${initialMeta.q},${initialMeta.r})` : `${initialMeta.numeral}-${initialMeta.symName}`],
         textposition: 'top center',
-        textfont: { color: '#022249ff', size: 12, family: 'Arial, sans-serif' },
+        textfont: { color: '#022249ff', size: currentRepresentation === 'numeros' ? 13 : 18, family: 'Arial, sans-serif' },
         name: 'Generador Activo',
         hoverinfo: 'skip'
     };
@@ -868,11 +882,11 @@ const Toro = () => {
 
                             {currentRepresentation === 'numeros' ? (
                                 <div className="visual-numeros" style={{ display: 'flex', gap: '8px', flexGrow: 1, alignItems: 'center' }}>
-                                    <div style={{ flex: 1, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid #334155' : '1px solid #E2E8F0', borderRadius: '8px', padding: '0.6vh 2px', display: 'flex', flexDirection: 'column', textAlign: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}>
+                                    <div style={{ flex: 1, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid #334155' : '1px solid #E2E8F0', borderRadius: '8px', padding: '0.6vh 2px', display: 'flex', flexDirection: 'column', textAlign: 'center', justifyContent: 'center', transition: 'background-color 0.3s ease, border-color 0.3s ease' }}>
                                         <span style={{ fontSize: 'clamp(3vw, 3.5vh, 28px)', fontWeight: 800, color: isDark ? '#F87171' : '#DC2626', lineHeight: '1.1', transition: 'color 0.3s ease' }}>{activeDayData.q}</span>
                                         <span style={{ fontSize: 'clamp(8px, 1.1vh, 10px)', color: isDark ? '#adb7c6ff' : '#64748B', textTransform: 'uppercase', marginTop: '2px', transition: 'color 0.3s ease' }}>módulo 13</span>
                                     </div>
-                                    <div style={{ flex: 1, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid #334155' : '1px solid #E2E8F0', borderRadius: '8px', padding: '0.6vh 2px', display: 'flex', flexDirection: 'column', textAlign: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}>
+                                    <div style={{ flex: 1, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid #334155' : '1px solid #E2E8F0', borderRadius: '8px', padding: '0.6vh 2px', display: 'flex', flexDirection: 'column', textAlign: 'center', justifyContent: 'center', transition: 'background-color 0.3s ease, border-color 0.3s ease' }}>
                                         <span style={{ fontSize: 'clamp(3vw, 3.5vh, 28px)', fontWeight: 800, color: isDark ? '#34D399' : '#16A34A', lineHeight: '1.1', transition: 'color 0.3s ease' }}>{activeDayData.r}</span>
                                         <span style={{ fontSize: 'clamp(8px, 1.1vh, 10px)', color: isDark ? '#adb7c6ff' : '#64748B', textTransform: 'uppercase', marginTop: '2px', transition: 'color 0.3s ease' }}>módulo 20</span>
                                     </div>
@@ -932,12 +946,15 @@ const Toro = () => {
                                 cursor: 'pointer',
                                 outline: 'none',
                                 fontFamily: 'Arial, sans-serif',
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.3s ease',
+                                // colorScheme fuerza al navegador a renderizar el dropdown nativo
+                                // con colores legibles en el tema actual (evita el cuadro negro en Windows)
+                                colorScheme: isDark ? 'dark' : 'light'
                             }}
                         >
-                            <option value="none" style={{ backgroundColor: isDark ? '#0F172A' : '#FFFFFF', color: isDark ? '#94A3B8' : '#475569' }}>Ocultar Coordenadas</option>
-                            <option value="highlights" style={{ backgroundColor: isDark ? '#0F172A' : '#FFFFFF', color: isDark ? '#94A3B8' : '#475569' }}>Mostrar Solo Destacados</option>
-                            <option value="all" style={{ backgroundColor: isDark ? '#0F172A' : '#FFFFFF', color: isDark ? '#94A3B8' : '#475569' }}>Mostrar Todas</option>
+                            <option value="none" style={{ backgroundColor: isDark ? '#1E293B' : '#FFFFFF', color: isDark ? '#F8FAFC' : '#0F172A' }}>Ocultar Coordenadas</option>
+                            <option value="highlights" style={{ backgroundColor: isDark ? '#1E293B' : '#FFFFFF', color: isDark ? '#F8FAFC' : '#0F172A' }}>Mostrar Solo Destacados</option>
+                            <option value="all" style={{ backgroundColor: isDark ? '#1E293B' : '#FFFFFF', color: isDark ? '#F8FAFC' : '#0F172A' }}>Mostrar Todas</option>
                         </select>
                     </div>
                 </div><br />
