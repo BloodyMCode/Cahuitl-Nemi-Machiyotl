@@ -11,8 +11,10 @@ Puedes descargar el instalador oficial más reciente directamente desde GitHub R
 🔗 **Página de Descargas Oficial**:  
 [https://github.com/MathCoffee/Cahuitl-Nemi-Machiyotl/releases/latest](https://github.com/MathCoffee/Cahuitl-Nemi-Machiyotl/releases/latest)
 
-* **Para usuarios de Mac (Apple Silicon - M1, M2, M3, M4)**:  
-  Descarga el archivo con terminación **`.dmg`** (ejemplo: `Machiyotl_1.0.0_aarch64.dmg`).
+* **Para usuarios de Mac con Apple Silicon (M1, M2, M3, M4)**:  
+  Descarga el archivo [Machiyotl_1.0.0_aarch64.dmg](https://github.com/MathCoffee/Cahuitl-Nemi-Machiyotl/releases/download/v1.0.0/Machiyotl_1.0.0_aarch64.dmg).
+* **Para usuarios de Mac con procesador Intel (Core i3, i5, i7, i9 — macOS Sequoia, Sonoma, Ventura)**:  
+  Descarga el archivo [Machiyotl_1.0.0_x64.dmg](https://github.com/MathCoffee/Cahuitl-Nemi-Machiyotl/releases/download/v1.0.0/Machiyotl_1.0.0_x64.dmg).
 * **Para usuarios de Windows (PC)**:  
   Descarga el archivo instalador con terminación **`.exe`** (Setup) o **`.msi`**.
 
