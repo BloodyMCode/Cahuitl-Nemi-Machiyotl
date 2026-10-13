@@ -16,7 +16,7 @@ Puedes descargar el instalador oficial más reciente directamente desde GitHub R
 * **Para usuarios de Mac con procesador Intel (Core i3, i5, i7, i9 — macOS Sequoia, Sonoma, Ventura)**:  
   Descarga el archivo [Machiyotl_1.0.0_x64.dmg](https://github.com/MathCoffee/Cahuitl-Nemi-Machiyotl/releases/download/v1.0.0/Machiyotl_1.0.0_x64.dmg).
 * **Para usuarios de Windows (PC)**:  
-  Descarga el archivo instalador con terminación **`.exe`** (Setup) o **`.msi`**.
+  *(Próximamente / en proceso de compilación en GitHub Actions)*. El instalador `.exe` (Setup) o `.msi` estará disponible en cuanto se ejecute el flujo de compilación para Windows.
 
 ---
 
